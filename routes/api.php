@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PromoController;
@@ -38,4 +39,12 @@ Route::group(['prefix' => 'promo'], function () {
     Route::get('/show/{id}', [PromoController::class, 'show']);
     Route::post('/update/{id}', [PromoController::class, 'update']);
     Route::delete('/delete/{id}', [PromoController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'order'], function () {
+    Route::get('/', [OrderController::class, 'index']);
+    Route::post('/store', [OrderController::class, 'store']);
+    Route::get('/show/{id}', [OrderController::class, 'show']);
+    Route::put('/update/{id}', [OrderController::class, 'update']);
+    Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
 });
