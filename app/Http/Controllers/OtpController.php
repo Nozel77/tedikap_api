@@ -18,7 +18,7 @@ class OtpController extends Controller
 
         Otp::where('email', $request->email)->delete();
 
-        $otp = rand(1000, 9999);
+        $otp = rand(100000, 999999);
 
         Mail::to($request->email)->send(new ResetPassword($otp));
 
