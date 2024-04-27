@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PromoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,4 +22,20 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('/otp', [OtpController::class, 'sendOtp']);
     Route::post('/resetpw', [AuthController::class, 'resetPassword']);
+});
+
+Route::group(['prefix' => 'product'], function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::post('/store', [ProductController::class, 'store']);
+    Route::get('/show/{id}', [ProductController::class, 'show']);
+    Route::post('/update/{id}', [ProductController::class, 'update']);
+    Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'promo'], function () {
+    Route::get('/', [PromoController::class, 'index']);
+    Route::post('/store', [PromoController::class, 'store']);
+    Route::get('/show/{id}', [PromoController::class, 'show']);
+    Route::post('/update/{id}', [PromoController::class, 'update']);
+    Route::delete('/delete/{id}', [PromoController::class, 'destroy']);
 });
