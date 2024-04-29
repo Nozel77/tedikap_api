@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PromoController;
+use App\Models\Point;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,3 +42,18 @@ Route::group(['prefix' => 'promo'], function () {
     Route::post('/update/{id}', [PromoController::class, 'update']);
     Route::delete('/delete/{id}', [PromoController::class, 'destroy']);
 });
+
+Route::group(['prefix' => 'order'], function () {
+    Route::get('/', [OrderController::class, 'index']);
+    Route::post('/store', [OrderController::class, 'store']);
+    Route::get('/show/{id}', [OrderController::class, 'show']);
+    Route::put('/update/{id}', [OrderController::class, 'update']);
+    Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'point'], function () {
+    Route::get('/{user_id}', [PointController::class, 'index']);
+    Route::post('/store', [PointController::class, 'store']);
+    
+});
+
