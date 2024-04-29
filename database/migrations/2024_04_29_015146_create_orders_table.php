@@ -17,19 +17,18 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products');
-            $table->unsignedBigInteger('promo_id')->nullable(); 
+            $table->unsignedBigInteger('promo_id')->nullable();
             $table->foreign('promo_id')->references('id')->on('promos');
-            $table->enum('temperatur', ['Hot', 'Ice']);
-            $table->enum('size', ['Large', 'Regular']);
-            $table->enum('ice', ['Less', 'Normal']); 
-            $table->enum('sugar', ['Less', 'Normal']); 
-            $table->text('note');
+            $table->enum('temperatur', ['hot', 'ice']);
+            $table->enum('size', ['large', 'regular']);
+            $table->enum('ice', ['less', 'normal']);
+            $table->enum('sugar', ['less', 'normal']);
+            $table->text('note')->nullable();
             $table->integer('quantity');
             $table->integer('total');
             $table->timestamps();
         });
-        
-    }
+    }   
 
     /**
      * Reverse the migrations.
