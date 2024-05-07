@@ -25,7 +25,7 @@ class RewardProductController extends Controller
 
         $rewardProduct = new RewardProduct([
             'name' => $request->name,
-            'price_point' => $request->price_point,
+            'point_price' => $request->point_price,
             'category' => $request->category,
             'image' => $imageName
         ]);
@@ -71,16 +71,14 @@ class RewardProductController extends Controller
 
         $rewardProduct->update([
             'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price,
+            'point_price' => $request->point_price,
             'category' => $request->category,
             'image' => $imageName
         ]);
     } else {
         $rewardProduct->update([
             'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price,
+            'point_price' => $request->point_price,
             'category' => $request->category,
             'image' => $request->image
         ]);
