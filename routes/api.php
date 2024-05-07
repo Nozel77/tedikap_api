@@ -6,6 +6,7 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\RewardItemController;
 use App\Http\Controllers\RewardProductController;
 use App\Models\Point;
 use Illuminate\Support\Facades\Route;
@@ -55,14 +56,22 @@ Route::group(['prefix' => 'order'], function () {
 Route::group(['prefix' => 'point'], function () {
     Route::get('/{user_id}', [PointController::class, 'index']);
     Route::post('/store', [PointController::class, 'store']);
+    Route::put('/update/{user_id}', [PointController::class, 'update']);
+    Route::post('/points', [PointController::class, 'storeOrUpdate']);
 });
 
 Route::group(['prefix' => 'rewardProduct'], function () {
     Route::get('/', [RewardProductController::class, 'index']);
     Route::post('/store', [RewardProductController::class, 'store']);
     Route::get('/show/{id}', [RewardProductController::class, 'show']);
-    Route::put('/update/{id}', [RewardProductController::class, 'update']);
+    Route::post('/update/{id}', [RewardProductController::class, 'update']);
     Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
+});
+
+Route::group(['prefix' => 'rewardItem'], function () {
+    Route::get('/', [RewardItemController::class, 'index']);
+    Route::post('/store', [RewardItemController::class, 'store']);
+    Route::delete('/delete/{id}', [RewardItemController::class, 'destroy']);
 });
 
 
