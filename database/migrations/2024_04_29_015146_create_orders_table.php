@@ -28,7 +28,7 @@ return new class extends Migration
             $table->integer('total');
             $table->timestamps();
         });
-    }   
+    }
 
     /**
      * Reverse the migrations.

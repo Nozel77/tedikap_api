@@ -8,7 +8,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\RewardItemController;
 use App\Http\Controllers\RewardProductController;
-use App\Models\Point;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,11 +21,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['prefix' => 'auth'], function () {
+Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::post('/otp', [OtpController::class, 'sendOtp']);
-    Route::post('/resetpw', [AuthController::class, 'resetPassword']);
+    Route::post('otp', [OtpController::class, 'sendOtp']);
+    Route::post('resetpw', [AuthController::class, 'resetPassword']);
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
 Route::group(['prefix' => 'product'], function () {
@@ -73,6 +73,3 @@ Route::group(['prefix' => 'rewardItem'], function () {
     Route::post('/store', [RewardItemController::class, 'store']);
     Route::delete('/delete/{id}', [RewardItemController::class, 'destroy']);
 });
-
-
-

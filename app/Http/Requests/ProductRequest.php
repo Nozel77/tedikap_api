@@ -22,11 +22,11 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'name' => 'required',
-        'description' => 'required',
-        'price' => 'required|numeric',
-        'category' => 'required',
-        'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'name' => 'required',
+            'description' => 'required',
+            'price' => 'required|numeric',
+            'category' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
     }
 }

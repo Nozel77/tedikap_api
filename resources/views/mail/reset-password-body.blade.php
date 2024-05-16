@@ -20,19 +20,20 @@
     "
   >
     <div
-      style="
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 45px 30px 60px;
-        background: #f4f7ff;
-        background-image: url(https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661497957196_595865/email-template-background-banner);
-        background-repeat: no-repeat;
-        background-size: 800px 452px;
-        background-position: top center;
-        font-size: 14px;
-        color: #434343;
-      "
-    >
+    style="
+    max-width: 680px;
+    height: 1000px;
+    object-fit: cover;
+    margin: 0 auto;
+    padding: 45px 30px 60px;
+    background: radial-gradient(circle at 3% 4.8%, rgb(169, 224, 127) 0%, rgb(248, 247, 121) 86.6%);
+    background-repeat: no-repeat;
+    background-size: 800px 452px;
+    background-position: top center;
+    font-size: 14px;
+    color: #434343;
+  "
+  
       <header>
         <table style="width: 100%;">
           <tbody>
@@ -40,7 +41,7 @@
               <td>
                 <img
                   alt=""
-                  src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1663574980688_114990/archisketch-logo"
+                  src="https://i.imgur.com/2TNjNuW.png"
                   height="30px"
                 />
               </td>
@@ -130,14 +131,14 @@
           Need help? Ask at
           <a
             href="mailto:archisketch@gmail.com"
-            style="color: #499fb6; text-decoration: none;"
+            style="color: #FCC548; text-decoration: none;"
             >archisketch@gmail.com</a
           >
           or visit our
           <a
             href=""
             target="_blank"
-            style="color: #499fb6; text-decoration: none;"
+            style="color: #FCC548; text-decoration: none;"
             >Help Center</a
           >
         </p>
@@ -161,7 +162,7 @@
             color: #434343;
           "
         >
-          Archisketch Company
+          Tedikap 
         </p>
         <p style="margin: 0; margin-top: 8px; color: #434343;">
           Address 540, City, State.

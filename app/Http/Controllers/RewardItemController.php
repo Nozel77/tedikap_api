@@ -4,32 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RewardItemRequest;
 use App\Models\RewardItem;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class RewardItemController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         $rewardItems = RewardItem::all();
+
         return response()->json([
             'status' => 'success',
-            'data' => $rewardItems
+            'data' => $rewardItems,
         ]);
     }
 
-    public function store(RewardItemRequest $request){
+    public function store(RewardItemRequest $request)
+    {
         $request->validated();
 
         $rewardItem = new RewardItem([
             'user_id' => $request->user_id,
-            'reward_product_id' => $request->reward_product_id
+            'reward_product_id' => $request->reward_product_id,
         ]);
         $rewardItem->save();
 
         return response()->json([
             'success' => true,
             'message' => 'reward item created successfully',
-            'data' => $rewardItem
+            'data' => $rewardItem,
         ], 201);
     }
 
@@ -44,13 +45,13 @@ class RewardItemController extends Controller
     //             'message' => 'Reward item not found'
     //         ], 404);
     //     }
-        
+
     //     $rewardItem->update([
     //         'user_id' => $request->user_id,
     //         'reward_product_id' => $request->reward_product_id
     //     ]);
     //     $rewardItem->save();
-        
+
     //     return response()->json([
     //         'status' => 'success',
     //         'message' => 'Reward Item updated successfully',
@@ -58,13 +59,14 @@ class RewardItemController extends Controller
     //     ]);
     // }
 
-    public function destroy($id){
+    public function destroy($id)
+    {
         $rewardItem = RewardItem::find($id);
 
-        if (!$rewardItem) {
+        if (! $rewardItem) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Reward item not found'
+                'message' => 'Reward item not found',
             ], 404);
         }
 
@@ -72,7 +74,7 @@ class RewardItemController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Reward item deleted successfully'
+            'message' => 'Reward item deleted successfully',
         ]);
     }
 }
