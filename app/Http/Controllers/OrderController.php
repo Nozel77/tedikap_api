@@ -11,18 +11,14 @@ class OrderController extends Controller
     {
         $data = Order::all();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'get data success',
-            'data' => $data,
-        ]);
+        return $this->resShowData($data);
     }
 
     public function store(OrderRequest $request)
     {
         $request->validated();
 
-        $order = new Order([
+        $data = new Order([
             'user_id' => $request->user_id,
             'product_id' => $request->product_id,
             'promo_id' => $request->promo_id,
@@ -34,13 +30,9 @@ class OrderController extends Controller
             'quantity' => $request->quantity,
             'total' => $request->total,
         ]);
-        $order->save();
+        $data->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order created successfully',
-            'data' => $order,
-        ], 201);
+        return $this->resShowData($data);
 
     }
 
@@ -48,31 +40,22 @@ class OrderController extends Controller
     {
         $data = Order::find($id);
         if (! $data) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Order not found',
-            ], 404);
+            return $this->resDataNotFound('Order');
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'get data successfully',
-            'data' => $data,
-        ]);
+        return $this->resShowData($data);
     }
 
     public function update(OrderRequest $request, $id)
     {
         $request->validated();
-        $order = Order::find($id);
-        if (! $order) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Order not found',
-            ], 404);
+
+        $data = Order::find($id);
+        if (! $data) {
+            return $this->resDataNotFound('Order');
         }
 
-        $order->update([
+        $data->update([
             'user_id' => $request->user_id,
             'product_id' => $request->product_id,
             'promo_id' => $request->promo_id,
@@ -85,27 +68,17 @@ class OrderController extends Controller
             'total' => $request->total,
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Order updated successfully',
-            'data' => $order,
-        ]);
+        return $this->resUpdatedData($data);
     }
 
     public function destroy($id)
     {
-        $order = Order::find($id);
-        if (! $order) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Order not found',
-            ], 404);
+        $data = Order::find($id);
+        if (! $data) {
+            return $this->resDataNotFound('Order'); 
         }
-        $order->delete();
+        $data->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Order deleted successfully',
-        ]);
+        return $this->resDataDeleted();
     }
 }

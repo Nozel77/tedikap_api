@@ -20,9 +20,12 @@ class Controller extends BaseController
         return response(['message' => 'Email or Password Is Invalid'], 409);
     }
 
-    public function resUpdatedData()
+    public function resUpdatedData($data)
     {
-        return response(['message' => 'Data Updated'], 409);
+        return response([
+            'message' => 'Data Updated',
+            'data' => $data
+        ], 409);
     }
 
     public function resUserNotFound()
