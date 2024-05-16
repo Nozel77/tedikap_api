@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPassword as RequestsResetPassword;
+use App\Http\Resources\AuthResource;
 use App\Models\Otp;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -22,6 +23,7 @@ class AuthController extends Controller
         ];
 
         $user = User::create($userData);
+        $user = new AuthResource($user);
         $token = $user->createToken('tedikap')->plainTextToken;
 
         return response()->json([
@@ -41,6 +43,7 @@ class AuthController extends Controller
             ], 401);
         }
 
+        $user = new AuthResource($user);
         $token = $user->createToken('forumapp')->plainTextToken;
 
         return response()->json([
@@ -81,4 +84,10 @@ class AuthController extends Controller
             'message' => 'Password has been reset successfully',
         ], 200);
     }
+
+    // public function logout(){
+    //     auth()->user()->tokens()->delete();
+
+    //     return response()->json(['message' => 'Successfully logged out']);
+    // }
 }

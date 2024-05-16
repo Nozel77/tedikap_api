@@ -11,7 +11,7 @@ class Point extends Model
 
     protected $fillable = [
         'user_id',
-        'point'
+        'point',
     ];
 
     protected static function boot()

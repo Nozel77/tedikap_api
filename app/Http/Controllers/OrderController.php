@@ -4,21 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
 use App\Models\Order;
-use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
     public function index()
     {
         $data = Order::all();
+
         return response()->json([
             'status' => 'success',
             'message' => 'get data success',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
-    public function store(OrderRequest $request){
+    public function store(OrderRequest $request)
+    {
         $request->validated();
 
         $order = new Order([
@@ -31,30 +32,32 @@ class OrderController extends Controller
             'sugar' => $request->sugar,
             'note' => $request->note,
             'quantity' => $request->quantity,
-            'total' => $request->total
+            'total' => $request->total,
         ]);
         $order->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Order created successfully',
-            'data' => $order
+            'data' => $order,
         ], 201);
 
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $data = Order::find($id);
-        if (!$data) {
+        if (! $data) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Order not found'
+                'message' => 'Order not found',
             ], 404);
         }
+
         return response()->json([
             'status' => 'success',
             'message' => 'get data successfully',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -62,13 +65,13 @@ class OrderController extends Controller
     {
         $request->validated();
         $order = Order::find($id);
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Order not found'
+                'message' => 'Order not found',
             ], 404);
         }
-        
+
         $order->update([
             'user_id' => $request->user_id,
             'product_id' => $request->product_id,
@@ -79,29 +82,30 @@ class OrderController extends Controller
             'sugar' => $request->sugar,
             'note' => $request->note,
             'quantity' => $request->quantity,
-            'total' => $request->total
+            'total' => $request->total,
         ]);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Order updated successfully',
-            'data' => $order
+            'data' => $order,
         ]);
     }
 
     public function destroy($id)
     {
         $order = Order::find($id);
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Order not found'
+                'message' => 'Order not found',
             ], 404);
         }
         $order->delete();
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Order deleted successfully'
+            'message' => 'Order deleted successfully',
         ]);
     }
 }

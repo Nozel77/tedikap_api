@@ -23,7 +23,7 @@ class RewardItemRequest extends FormRequest
     {
         return [
             'user_id' => 'required',
-            'reward_product_id' => 'required'
+            'reward_product_id' => 'required',
         ];
     }
 }

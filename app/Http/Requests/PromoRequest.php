@@ -27,7 +27,7 @@ class PromoRequest extends FormRequest
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'value' => 'required|numeric',
             'min_transaction' => 'required|numeric',
-            'expired' => 'required|date'
+            'expired' => 'required|date',
         ];
     }
 }
