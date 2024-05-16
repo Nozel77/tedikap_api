@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PromoRequest;
+use App\Http\Resources\PromoResource;
 use App\Models\Promo;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,11 +13,7 @@ class PromoController extends Controller
     {
         $data = Promo::all();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'get data success',
-            'data' => $data,
-        ]);
+        return PromoResource::collection($data);
     }
 
     public function store(PromoRequest $request)
@@ -26,57 +23,45 @@ class PromoController extends Controller
         $imageName = time().'.'.$request->image->extension();
         $request->image->move(public_path('images'), $imageName);
 
-        $promo = new Promo([
+        $data = new Promo([
             'title' => $request->title,
             'description' => $request->description,
-            'image' => $request->image,
+            'image' => $imageName,
             'value' => $request->value,
             'min_transaction' => $request->min_transaction,
             'expired' => $request->expired,
         ]);
-        $promo->save();
+        $data->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Promo created successfully',
-            'data' => $promo,
-        ], 201);
+        return new PromoResource($data);
     }
 
     public function show($id)
     {
         $data = Promo::find($id);
         if (! $data) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Promo not found',
-            ], 404);
-        }
+            return $this->resDataNotFound('Promo');      }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'get data successfully',
-            'data' => $data,
-        ]);
+        return new PromoResource($data);
     }
 
     public function update(PromoRequest $request, $id)
     {
         $request->validated();
 
-        $promo = Promo::find($id);
+        $data = Promo::find($id);
 
-        if (! $promo) {
-            return response()->json(['error' => 'Promo not found'], 404);
+        if (! $data) {
+            return $this->resDataNotFound('Promo');
         }
 
         if ($request->hasFile('image')) {
-            Storage::delete('public/images/'.$promo->image);
+            Storage::delete('public/images/'.$data->image);
 
             $imageName = time().'.'.$request->image->extension();
             $request->image->move(public_path('images'), $imageName);
 
-            $promo->update([
+            $data->update([
                 'title' => $request->title,
                 'description' => $request->description,
                 'image' => $request->image,
@@ -85,7 +70,7 @@ class PromoController extends Controller
                 'expired' => $request->expired,
             ]);
         } else {
-            $promo->update([
+            $data->update([
                 'title' => $request->title,
                 'description' => $request->description,
                 'value' => $request->value,
@@ -94,27 +79,20 @@ class PromoController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Promo updated successfully',
-            'data' => $promo,
-        ], 200);
+        return $this->resUpdatedData($data);
     }
 
     public function destroy($id)
     {
-        $promo = Promo::find($id);
+        $data = Promo::find($id);
 
-        if (! $promo) {
-            return response()->json(['error' => 'Promo not found'], 404);
+        if (! $data) {
+            return $this->resDataNotFound('Promo');
         }
 
-        Storage::delete('public/images/'.$promo->image);
-        $promo->delete();
+        Storage::delete('public/images/'.$data->image);
+        $data->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Promo deleted successfully',
-        ]);
+        return $this->resDataDeleted();
     }
 }
