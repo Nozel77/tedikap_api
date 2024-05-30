@@ -14,24 +14,28 @@ class ProductController extends Controller
         return ProductResource::collection(Product::all());
     }
 
-    public function store(ProductRequest $request)
-    {
-        $request->validated();
 
-        $imageName = time().'.'.$request->image->extension();
-        $request->image->move(public_path('images'), $imageName);
 
-        $data = new Product([
-            'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price,
-            'category' => $request->category,
-            'image' => $imageName,
-        ]);
-        $data->save();
+public function store(ProductRequest $request)
+{
+    $request->validated();
 
-        return new ProductResource($data);
-    }
+    $imageName = time().'.'.$request->file('image')->extension();
+    $request->file('image')->storeAs('product', $imageName, 'public');
+
+    $data = new Product([
+        'name' => $request->name,
+        'description' => $request->description,
+        'price' => $request->price,
+        'category' => $request->category,
+        'image' => $imageName,
+    ]);
+    $data->save();
+
+    return new ProductResource($data);
+}
+
+
 
     public function show($id)
     {
@@ -54,10 +58,10 @@ class ProductController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            Storage::delete('public/images/'.$data->image);
+            Storage::delete('public/product/'.$data->image);
 
             $imageName = time().'.'.$request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
+            $request->file('image')->storeAs('product', $imageName, 'public');
 
             $data->update([
                 'name' => $request->name,

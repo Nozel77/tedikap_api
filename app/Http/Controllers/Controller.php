@@ -24,8 +24,15 @@ class Controller extends BaseController
     {
         return response([
             'message' => 'Data Updated',
-            'data' => $data
+            'data' => $data,
         ], 409);
+    }
+    public function resAddData($data)
+    {
+        return response([
+            'message' => 'Data Added',
+            'data' => $data,
+        ], 201);
     }
 
     public function resUserNotFound()

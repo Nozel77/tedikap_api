@@ -20,8 +20,8 @@ class PromoController extends Controller
     {
         $request->validated();
 
-        $imageName = time().'.'.$request->image->extension();
-        $request->image->move(public_path('images'), $imageName);
+        $imageName = time().'.'.$request->file('image')->extension();
+        $request->image->storeAs('promo', $imageName, 'public');
 
         $data = new Promo([
             'title' => $request->title,
@@ -56,10 +56,10 @@ class PromoController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            Storage::delete('public/images/'.$data->image);
+            Storage::delete('public/promo/'.$data->image);
 
             $imageName = time().'.'.$request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
+            $request->file('image')->storeAs('promo', $imageName, 'public');
 
             $data->update([
                 'title' => $request->title,

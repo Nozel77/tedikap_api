@@ -9,14 +9,21 @@ class PointController extends Controller
 {
     public function index($user_id)
     {
+        $userExists = Point::where('user_id', $user_id)->exists();
+
+        if (!$userExists) {
+            return response()->json(['error' => 'user_id not found'], 404);
+        }
+
         $data = Point::where('user_id', $user_id)->get();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'get data success',
-            'data' => $data,
-        ]);
+        if ($data->isEmpty()) {
+            return response()->json(['user_id' => $user_id, 'points' => 0]);
+        }
+
+        return $this->resShowData($data);
     }
+
 
     public function store(PointRequest $request)
     {
@@ -46,11 +53,7 @@ class PointController extends Controller
             'point' => $request->point,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Point update successfully',
-            'data' => $point,
-        ], 201);
+        return $this->resUpdateData($point);
     }
 
     public function storeOrUpdate(PointRequest $request)

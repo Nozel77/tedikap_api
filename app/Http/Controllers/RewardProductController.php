@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RewardProductRequest;
+use App\Http\Resources\RewardProductResource;
 use App\Models\RewardProduct;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,32 +13,25 @@ class RewardProductController extends Controller
     {
         $data = RewardProduct::all();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $data,
-        ]);
+        return RewardProductResource::collection($data);
     }
 
     public function store(RewardProductRequest $request)
     {
         $request->validated();
 
-        $imageName = time().'.'.$request->image->extension();
-        $request->image->move(public_path('images'), $imageName);
+        $imageName = time().'.'.$request->file('image')->extension();
+        $request->file('image')->storeAs('rewardproduct', $imageName, 'public');
 
-        $rewardProduct = new RewardProduct([
+        $data = new RewardProduct([
             'name' => $request->name,
             'point_price' => $request->point_price,
             'category' => $request->category,
             'image' => $imageName,
         ]);
-        $rewardProduct->save();
+        $data->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'reward product created successfully',
-            'data' => $rewardProduct,
-        ], 201);
+        return $this->resAddData($data);
     }
 
     public function show($id)
@@ -61,26 +55,26 @@ class RewardProductController extends Controller
     {
         $request->validated();
 
-        $rewardProduct = RewardProduct::find($id);
+        $data = RewardProduct::find($id);
 
-        if (! $rewardProduct) {
+        if (! $data) {
             return response()->json(['error' => 'reward product not found'], 404);
         }
 
         if ($request->hasFile('image')) {
-            Storage::delete('public/images/'.$rewardProduct->image);
+            Storage::delete('public/rewardproduct/'.$data->image);
 
             $imageName = time().'.'.$request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
+            $request->file('image')->storeAs('rewardproduct', $imageName, 'public');
 
-            $rewardProduct->update([
+            $data->update([
                 'name' => $request->name,
                 'point_price' => $request->point_price,
                 'category' => $request->category,
                 'image' => $imageName,
             ]);
         } else {
-            $rewardProduct->update([
+            $data->update([
                 'name' => $request->name,
                 'point_price' => $request->point_price,
                 'category' => $request->category,
@@ -88,27 +82,20 @@ class RewardProductController extends Controller
             ]);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Product updated successfully',
-            'data' => $rewardProduct,
-        ], 200);
+        return $this->resUpdatedData($data);
     }
 
     public function destroy($id)
     {
-        $rewardProduct = RewardProduct::find($id);
+        $data = RewardProduct::find($id);
 
-        if (! $rewardProduct) {
+        if (! $data) {
             return response()->json(['error' => 'reward product not found'], 404);
         }
 
-        Storage::delete('public/images/'.$rewardProduct->image);
-        $rewardProduct->delete();
+        Storage::delete('public/images/'.$data->image);
+        $data->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'reward product deleted successfully',
-        ], 200);
+        return $this->resDataDeleted();
     }
 }
