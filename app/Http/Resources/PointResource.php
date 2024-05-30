@@ -16,7 +16,7 @@ class PointResource extends JsonResource
     {
         return [
             'user_id' => $this->user_id,
-            'point' => $this->point
+            'point' => $this->point,
         ];
     }
 }

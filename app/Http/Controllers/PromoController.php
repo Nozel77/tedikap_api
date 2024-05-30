@@ -40,7 +40,8 @@ class PromoController extends Controller
     {
         $data = Promo::find($id);
         if (! $data) {
-            return $this->resDataNotFound('Promo');      }
+            return $this->resDataNotFound('Promo');
+        }
 
         return new PromoResource($data);
     }

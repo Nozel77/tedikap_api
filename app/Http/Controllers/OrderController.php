@@ -75,7 +75,7 @@ class OrderController extends Controller
     {
         $data = Order::find($id);
         if (! $data) {
-            return $this->resDataNotFound('Order'); 
+            return $this->resDataNotFound('Order');
         }
         $data->delete();
 

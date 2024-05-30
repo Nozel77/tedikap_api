@@ -14,28 +14,24 @@ class ProductController extends Controller
         return ProductResource::collection(Product::all());
     }
 
+    public function store(ProductRequest $request)
+    {
+        $request->validated();
 
+        $imageName = time().'.'.$request->file('image')->extension();
+        $request->file('image')->storeAs('product', $imageName, 'public');
 
-public function store(ProductRequest $request)
-{
-    $request->validated();
+        $data = new Product([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'category' => $request->category,
+            'image' => $imageName,
+        ]);
+        $data->save();
 
-    $imageName = time().'.'.$request->file('image')->extension();
-    $request->file('image')->storeAs('product', $imageName, 'public');
-
-    $data = new Product([
-        'name' => $request->name,
-        'description' => $request->description,
-        'price' => $request->price,
-        'category' => $request->category,
-        'image' => $imageName,
-    ]);
-    $data->save();
-
-    return new ProductResource($data);
-}
-
-
+        return new ProductResource($data);
+    }
 
     public function show($id)
     {

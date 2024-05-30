@@ -11,7 +11,7 @@ class PointController extends Controller
     {
         $userExists = Point::where('user_id', $user_id)->exists();
 
-        if (!$userExists) {
+        if (! $userExists) {
             return response()->json(['error' => 'user_id not found'], 404);
         }
 
@@ -23,7 +23,6 @@ class PointController extends Controller
 
         return $this->resShowData($data);
     }
-
 
     public function store(PointRequest $request)
     {

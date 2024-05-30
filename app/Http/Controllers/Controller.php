@@ -27,6 +27,7 @@ class Controller extends BaseController
             'data' => $data,
         ], 409);
     }
+
     public function resAddData($data)
     {
         return response([
