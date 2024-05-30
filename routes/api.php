@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PromoController;
@@ -55,8 +56,6 @@ Route::group(['prefix' => 'order'], function () {
 
 Route::group(['prefix' => 'point'], function () {
     Route::get('/{user_id}', [PointController::class, 'index']);
-    Route::post('/store', [PointController::class, 'store']);
-    Route::put('/update/{user_id}', [PointController::class, 'update']);
     Route::post('/points', [PointController::class, 'storeOrUpdate']);
 });
 
@@ -73,3 +72,6 @@ Route::group(['prefix' => 'rewardItem'], function () {
     Route::post('/store', [RewardItemController::class, 'store']);
     Route::delete('/delete/{id}', [RewardItemController::class, 'destroy']);
 });
+
+Route::post('payments', [PaymentController::class, 'store']);
+Route::post('payments/notification', [PaymentController::class, 'notification']);
