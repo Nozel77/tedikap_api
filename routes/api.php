@@ -75,8 +75,10 @@ Route::group(['prefix' => 'rewardItem'], function () {
     Route::delete('/delete/{id}', [RewardItemController::class, 'destroy']);
 });
 
-Route::post('payments', [PaymentController::class, 'store']);
-Route::post('payments/notification', [PaymentController::class, 'notification']);
+Route::group(['prefix' => 'payment'], function () {
+    Route::post('/', [PaymentController::class, 'store']);
+    Route::post('/notification', [PaymentController::class, 'notification']);
+});
 
 Route::group(['prefix' => 'filter'], function () {
     Route::get('/product', [ProductController::class, 'filter']);
