@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
@@ -40,18 +41,19 @@ Route::group(['prefix' => 'product'], function () {
 
 Route::group(['prefix' => 'promo'], function () {
     Route::get('/', [PromoController::class, 'index']);
+    Route::get('/active', [PromoController::class, 'indexActive']);
     Route::post('/store', [PromoController::class, 'store']);
     Route::get('/show/{id}', [PromoController::class, 'show']);
     Route::post('/update/{id}', [PromoController::class, 'update']);
     Route::delete('/delete/{id}', [PromoController::class, 'destroy']);
 });
 
-Route::group(['prefix' => 'order'], function () {
-    Route::get('/', [OrderController::class, 'index']);
-    Route::post('/store', [OrderController::class, 'store']);
-    Route::get('/show/{id}', [OrderController::class, 'show']);
-    Route::put('/update/{id}', [OrderController::class, 'update']);
-    Route::delete('/delete/{id}', [OrderController::class, 'destroy']);
+Route::group(['prefix' => 'cart'], function () {
+    Route::get('/', [CartController::class, 'index']);
+    Route::post('/store', [CartController::class, 'store']);
+    Route::get('/show/{id}', [CartController::class, 'show']);
+    Route::put('/update/{id}', [CartController::class, 'update']);
+    Route::delete('/delete/{id}', [CartController::class, 'destroy']);
 });
 
 Route::group(['prefix' => 'point'], function () {
@@ -75,3 +77,12 @@ Route::group(['prefix' => 'rewardItem'], function () {
 
 Route::post('payments', [PaymentController::class, 'store']);
 Route::post('payments/notification', [PaymentController::class, 'notification']);
+
+Route::group(['prefix' => 'filter'], function () {
+    Route::get('/product', [ProductController::class, 'filter']);
+});
+
+Route::group(['prefix' => 'order'], function () {
+    Route::get('/', [OrderController::class, 'index']);
+    Route::post('/store', [OrderController::class, 'store']);
+});

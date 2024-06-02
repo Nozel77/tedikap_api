@@ -16,6 +16,16 @@ class PromoController extends Controller
         return PromoResource::collection($data);
     }
 
+    public function indexActive(){
+        $promo = Promo::query()->where('start_date', '<=', now())->where('end_date', '>=', now())->get();
+
+        return response()->json(
+            [
+                'data' => PromoResource::collection($promo)
+            ]
+        );
+    }
+
     public function store(PromoRequest $request)
     {
         $request->validated();
@@ -27,9 +37,10 @@ class PromoController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'image' => $imageName,
-            'value' => $request->value,
+            'discount' => $request->discount,
             'min_transaction' => $request->min_transaction,
-            'expired' => $request->expired,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
         ]);
         $data->save();
 
@@ -40,7 +51,8 @@ class PromoController extends Controller
     {
         $data = Promo::find($id);
         if (! $data) {
-            return $this->resDataNotFound('Promo');      }
+            return $this->resDataNotFound('Promo');
+        }
 
         return new PromoResource($data);
     }
@@ -64,18 +76,20 @@ class PromoController extends Controller
             $data->update([
                 'title' => $request->title,
                 'description' => $request->description,
-                'image' => $request->image,
-                'value' => $request->value,
+                'image' => $imageName,
+                'discount' => $request->discount,
                 'min_transaction' => $request->min_transaction,
-                'expired' => $request->expired,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
             ]);
         } else {
             $data->update([
                 'title' => $request->title,
                 'description' => $request->description,
-                'value' => $request->value,
+                'discount' => $request->discount,
                 'min_transaction' => $request->min_transaction,
-                'expired' => $request->expired,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
             ]);
         }
 

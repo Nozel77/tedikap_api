@@ -23,4 +23,3 @@ class RewardProductResource extends JsonResource
         ];
     }
 }
-

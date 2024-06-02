@@ -13,8 +13,9 @@ class Promo extends Model
         'title',
         'description',
         'image',
-        'value',
+        'discount',
         'min_transaction',
-        'expired',
+        'start_date',
+        'end_date',
     ];
 }

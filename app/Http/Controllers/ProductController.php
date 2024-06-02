@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -14,28 +15,24 @@ class ProductController extends Controller
         return ProductResource::collection(Product::all());
     }
 
+    public function store(ProductRequest $request)
+    {
+        $request->validated();
 
+        $imageName = time().'.'.$request->file('image')->extension();
+        $request->file('image')->storeAs('product', $imageName, 'public');
 
-public function store(ProductRequest $request)
-{
-    $request->validated();
+        $data = new Product([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'category' => $request->category,
+            'image' => $imageName,
+        ]);
+        $data->save();
 
-    $imageName = time().'.'.$request->file('image')->extension();
-    $request->file('image')->storeAs('product', $imageName, 'public');
-
-    $data = new Product([
-        'name' => $request->name,
-        'description' => $request->description,
-        'price' => $request->price,
-        'category' => $request->category,
-        'image' => $imageName,
-    ]);
-    $data->save();
-
-    return new ProductResource($data);
-}
-
-
+        return new ProductResource($data);
+    }
 
     public function show($id)
     {
@@ -95,5 +92,18 @@ public function store(ProductRequest $request)
         $data->delete();
 
         return $this->resDataDeleted();
+    }
+
+    public function filter(Request $request){
+        $category = $request->input('category');
+
+        $result = Product::where('category', 'like', '%'.$category.'%');
+        $result = $result->get();
+
+        if ($result->count() > 0) {
+            return new ProductResource($result);
+        } else {
+            return $this->resDataNotFound('Product');
+        }
     }
 }
