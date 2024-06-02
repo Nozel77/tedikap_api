@@ -15,12 +15,14 @@ class PromoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
             'image' => $this->image,
-            'value' => $this->value,
+            'discount' => $this->discount,
             'min_transaction' => $this->min_transaction,
-            'expired' => $this->expired,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
         ];
     }
 }

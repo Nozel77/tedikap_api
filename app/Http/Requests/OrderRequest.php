@@ -23,15 +23,7 @@ class OrderRequest extends FormRequest
     {
         return [
             'user_id' => 'required|numeric',
-            'product_id' => 'required|numeric',
-            'promo_id' => 'nullable|numeric',
-            'temperatur' => 'required',
-            'size' => 'required',
-            'ice' => 'required',
-            'sugar' => 'required',
-            'note' => 'required',
-            'quantity' => 'required|numeric',
-            'total' => 'required|numeric',
+            'cart_id' => 'required|numeric',
         ];
     }
 }

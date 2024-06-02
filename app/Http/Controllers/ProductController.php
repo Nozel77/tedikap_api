@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -91,5 +92,18 @@ class ProductController extends Controller
         $data->delete();
 
         return $this->resDataDeleted();
+    }
+
+    public function filter(Request $request){
+        $category = $request->input('category');
+
+        $result = Product::where('category', 'like', '%'.$category.'%');
+        $result = $result->get();
+
+        if ($result->count() > 0) {
+            return new ProductResource($result);
+        } else {
+            return $this->resDataNotFound('Product');
+        }
     }
 }

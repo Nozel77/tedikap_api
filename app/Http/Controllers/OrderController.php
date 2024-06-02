@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
+use App\Models\Cart;
 use App\Models\Order;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -14,71 +16,16 @@ class OrderController extends Controller
         return $this->resShowData($data);
     }
 
-    public function store(OrderRequest $request)
-    {
-        $request->validated();
+    public function store(OrderRequest $request){
+        $data = $request->validated();
 
-        $data = new Order([
-            'user_id' => $request->user_id,
-            'product_id' => $request->product_id,
-            'promo_id' => $request->promo_id,
-            'temperatur' => $request->temperatur,
-            'size' => $request->size,
-            'ice' => $request->ice,
-            'sugar' => $request->sugar,
-            'note' => $request->note,
-            'quantity' => $request->quantity,
-            'total' => $request->total,
-        ]);
-        $data->save();
+        $data['user_id'] = Cart::all()->where('id', $data['cart_id'])->first()->user_id;
 
-        return $this->resShowData($data);
+        $order = new Order();
 
-    }
+        $order->fill($data);
+        $order->save();
 
-    public function show($id)
-    {
-        $data = Order::find($id);
-        if (! $data) {
-            return $this->resDataNotFound('Order');
-        }
-
-        return $this->resShowData($data);
-    }
-
-    public function update(OrderRequest $request, $id)
-    {
-        $request->validated();
-
-        $data = Order::find($id);
-        if (! $data) {
-            return $this->resDataNotFound('Order');
-        }
-
-        $data->update([
-            'user_id' => $request->user_id,
-            'product_id' => $request->product_id,
-            'promo_id' => $request->promo_id,
-            'temperatur' => $request->temperatur,
-            'size' => $request->size,
-            'ice' => $request->ice,
-            'sugar' => $request->sugar,
-            'note' => $request->note,
-            'quantity' => $request->quantity,
-            'total' => $request->total,
-        ]);
-
-        return $this->resUpdatedData($data);
-    }
-
-    public function destroy($id)
-    {
-        $data = Order::find($id);
-        if (! $data) {
-            return $this->resDataNotFound('Order');
-        }
-        $data->delete();
-
-        return $this->resDataDeleted();
+        return $this->resShowData($order);
     }
 }
