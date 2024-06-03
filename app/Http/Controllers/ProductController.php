@@ -25,7 +25,8 @@ class ProductController extends Controller
         $data = new Product([
             'name' => $request->name,
             'description' => $request->description,
-            'price' => $request->price,
+            'regular_price' => $request->regular_price,
+            'large_price' => $request->large_price,
             'category' => $request->category,
             'image' => $imageName,
         ]);
@@ -63,7 +64,8 @@ class ProductController extends Controller
             $data->update([
                 'name' => $request->name,
                 'description' => $request->description,
-                'price' => $request->price,
+                'regular_price' => $request->regular_price,
+                'large_price' => $request->large_price,
                 'category' => $request->category,
                 'image' => $imageName,
             ]);
@@ -71,7 +73,8 @@ class ProductController extends Controller
             $data->update([
                 'name' => $request->name,
                 'description' => $request->description,
-                'price' => $request->price,
+                'regular_price' => $request->regular_price,
+                'large_price' => $request->large_price,
                 'category' => $request->category,
                 'image' => $request->image,
             ]);

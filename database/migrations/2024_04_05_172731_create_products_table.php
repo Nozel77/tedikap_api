@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description');
-            $table->integer('price');
+            $table->integer('regular_price');
+            $table->integer('large_price');
             $table->enum('category', ['tea', 'nontea', 'snack']);
             $table->text('image');
             $table->timestamps();
