@@ -51,6 +51,7 @@ Route::group(['prefix' => 'promo'], function () {
 
 Route::group(['prefix' => 'cart'], function () {
     Route::get('/', [CartController::class, 'index']);
+    Route::get('/getById/{id}', [CartController::class, 'indexById']);
     Route::post('/store', [CartController::class, 'store']);
     Route::get('/show/{id}', [CartController::class, 'show']);
     Route::put('/update/{id}', [CartController::class, 'update']);
