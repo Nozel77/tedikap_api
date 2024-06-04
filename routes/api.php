@@ -37,6 +37,7 @@ Route::group(['prefix' => 'product'], function () {
     Route::get('/show/{id}', [ProductController::class, 'show']);
     Route::post('/update/{id}', [ProductController::class, 'update']);
     Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
+    Route::post('/favorite/{id}', [ProductController::class, 'likeProduct']);
 });
 
 Route::group(['prefix' => 'promo'], function () {
@@ -78,6 +79,8 @@ Route::group(['prefix' => 'rewardItem'], function () {
 Route::group(['prefix' => 'payment'], function () {
     Route::post('/', [PaymentController::class, 'store']);
     Route::post('/notification', [PaymentController::class, 'notification']);
+    Route::post('/callback', [PaymentController::class, 'paymentCallback']);
+
 });
 
 Route::group(['prefix' => 'filter'], function () {

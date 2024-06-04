@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Favorite;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -97,16 +98,57 @@ class ProductController extends Controller
         return $this->resDataDeleted();
     }
 
-    public function filter(Request $request){
+    public function filter(Request $request)
+    {
         $category = $request->input('category');
+        $search = $request->input('search');
 
-        $result = Product::where('category', 'like', '%'.$category.'%');
-        $result = $result->get();
+        $query = Product::query();
+
+        if ($category) {
+            $query->where('category', $category);
+        }
+        if ($search) {
+            $query->where('name', 'like', '%'.$search.'%');
+        }
+
+        $result = $query->get();
 
         if ($result->count() > 0) {
-            return new ProductResource($result);
+            return ProductResource::collection($result);
         } else {
             return $this->resDataNotFound('Product');
         }
+    }
+
+    public function likeProduct(Request $request, $product_id)
+    {
+        $user_id = $request->input('user_id');
+
+        if (! $user_id) {
+            return response()->json(['error' => 'User ID is required'], 400);
+        }
+
+        $product = Product::whereId($product_id)->first();
+
+        if (! $product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        $unlike_post = Favorite::where('user_id', $user_id)->where('product_id', $product_id)->delete();
+        if ($unlike_post) {
+            return response()->json(['message' => 'Unliked'], 200);
+        }
+
+        $like_post = Favorite::create([
+            'user_id' => $user_id,
+            'product_id' => $product_id,
+        ]);
+
+        if ($like_post) {
+            return response()->json(['message' => 'Liked'], 200);
+        }
+
+        return response()->json(['error' => 'Unable to like product'], 500);
     }
 }

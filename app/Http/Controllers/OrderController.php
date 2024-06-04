@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\OrderRequest;
 use App\Models\Cart;
 use App\Models\Order;
-use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -16,7 +15,8 @@ class OrderController extends Controller
         return $this->resShowData($data);
     }
 
-    public function store(OrderRequest $request){
+    public function store(OrderRequest $request)
+    {
         $data = $request->validated();
 
         $data['user_id'] = Cart::all()->where('id', $data['cart_id'])->first()->user_id;

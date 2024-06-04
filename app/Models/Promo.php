@@ -14,6 +14,7 @@ class Promo extends Model
         'description',
         'image',
         'discount',
+        'max_discount',
         'min_transaction',
         'start_date',
         'end_date',
