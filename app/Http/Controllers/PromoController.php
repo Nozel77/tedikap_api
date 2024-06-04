@@ -16,12 +16,13 @@ class PromoController extends Controller
         return PromoResource::collection($data);
     }
 
-    public function indexActive(){
+    public function indexActive()
+    {
         $promo = Promo::query()->where('start_date', '<=', now())->where('end_date', '>=', now())->get();
 
         return response()->json(
             [
-                'data' => PromoResource::collection($promo)
+                'data' => PromoResource::collection($promo),
             ]
         );
     }
@@ -38,6 +39,7 @@ class PromoController extends Controller
             'description' => $request->description,
             'image' => $imageName,
             'discount' => $request->discount,
+            'max_discount' => $request->max_discount,
             'min_transaction' => $request->min_transaction,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
@@ -78,6 +80,7 @@ class PromoController extends Controller
                 'description' => $request->description,
                 'image' => $imageName,
                 'discount' => $request->discount,
+                'max_discount' => $request->max_discount,
                 'min_transaction' => $request->min_transaction,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
@@ -87,6 +90,7 @@ class PromoController extends Controller
                 'title' => $request->title,
                 'description' => $request->description,
                 'discount' => $request->discount,
+                'max_discount' => $request->max_discount,
                 'min_transaction' => $request->min_transaction,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
