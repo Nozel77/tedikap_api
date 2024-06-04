@@ -14,6 +14,17 @@ class CartController extends Controller
         return $this->resShowData($data);
     }
 
+    public function indexById($id)
+    {
+        $data = Cart::where('user_id', $id)->get();
+
+        if (! $data) {
+            return $this->resDataNotFound('Cart');
+        }
+
+        return $this->resShowData($data);
+    }
+
     public function store(CartRequest $request)
     {
         $request->validated();
