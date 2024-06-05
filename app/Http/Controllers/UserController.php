@@ -9,28 +9,25 @@ use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Otp;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        $request->validated();
+        $data = $request->validated();
 
-        $userData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ];
-
-        $user = User::create($userData);
-        $user = new UserResource($user);
-        $token = $user->createToken('tedikap')->plainTextToken;
+        $user = new User($data);
+        $user->password = Hash::make($data['password']);
+        $user->save();
 
         return response()->json([
-            'user' => $user,
-            'token' => $token,
+            'message' => 'User created successfully',
+            'data' => new UserResource($user),
+            'token' => $user->createToken('tedikap')->plainTextToken,
         ], 201);
     }
 
@@ -38,27 +35,29 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        return response()->json($user);
+        return new UserResource($user);
     }
 
     public function login(LoginRequest $request)
     {
-        $request->validated();
+        $data = $request->validated();
 
-        $user = User::whereEmail($request->email)->first();
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (! Auth::attempt($data)) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
-        $user = new UserResource($user);
+        $user = User::all()->where('email', $data['email'])->first();
+
         $token = $user->createToken('tedikap')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'message' => 'Login successful',
+            'data' => new UserResource($user),
             'token' => $token,
-        ], 201);
+        ], 200);
+
     }
 
     public function resetPassword(RequestsResetPassword $request)
@@ -98,13 +97,17 @@ class UserController extends Controller
     {
         $data = $request->validated();
 
-        $user = User::all()->where('id', Auth::id())->first();
+        $user = User::findOrFail(Auth::id());
 
         $user->fill($data);
 
         if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::delete('public/avatar/'.$user->avatar);
+            }
+
             $imageName = time().'.'.$request->file('avatar')->extension();
-            $request->file('avatar')->storeAs('avatar', $imageName, 'public');
+            $request->file('avatar')->storeAs('avatar', $imageName);
             $user->avatar = $imageName;
         }
 
@@ -116,10 +119,10 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+        $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response(['message' => 'Logged Out'], 200);
     }
 }
