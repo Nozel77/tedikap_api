@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
+use App\Http\Resources\FavoriteResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Favorite;
 use App\Models\Product;
@@ -77,7 +78,6 @@ class ProductController extends Controller
                 'regular_price' => $request->regular_price,
                 'large_price' => $request->large_price,
                 'category' => $request->category,
-                'image' => $request->image,
             ]);
         }
 
@@ -150,5 +150,16 @@ class ProductController extends Controller
         }
 
         return response()->json(['error' => 'Unable to like product'], 500);
+    }
+
+    public function getFavorite($user_id)
+    {
+        $data = Favorite::where('user_id', $user_id)->get();
+
+        if ($data->count() > 0) {
+            return FavoriteResource::collection($data);
+        } else {
+            return response()->json(['user_id' => $user_id, 'favorite' => []]);
+        }
     }
 }

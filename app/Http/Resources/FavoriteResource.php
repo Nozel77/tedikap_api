@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AuthResource extends JsonResource
+class FavoriteResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,8 +16,7 @@ class AuthResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'email' => $this->email,
-
+            'product_id' => $this->product_id,
         ];
     }
 }

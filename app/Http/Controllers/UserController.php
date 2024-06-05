@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPassword as RequestsResetPassword;
-use App\Http\Resources\AuthResource;
+use App\Http\Requests\UserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\Otp;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
-class AuthController extends Controller
+class UserController extends Controller
 {
     public function register(RegisterRequest $request)
     {
@@ -23,13 +25,20 @@ class AuthController extends Controller
         ];
 
         $user = User::create($userData);
-        $user = new AuthResource($user);
+        $user = new UserResource($user);
         $token = $user->createToken('tedikap')->plainTextToken;
 
         return response()->json([
             'user' => $user,
             'token' => $token,
         ], 201);
+    }
+
+    public function me()
+    {
+        $user = Auth::user();
+
+        return response()->json($user);
     }
 
     public function login(LoginRequest $request)
@@ -43,8 +52,8 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user = new AuthResource($user);
-        $token = $user->createToken('forumapp')->plainTextToken;
+        $user = new UserResource($user);
+        $token = $user->createToken('tedikap')->plainTextToken;
 
         return response()->json([
             'user' => $user,
@@ -85,9 +94,32 @@ class AuthController extends Controller
         ], 200);
     }
 
-    // public function logout(){
-    //     auth()->user()->tokens()->delete();
+    public function updateUser(UserRequest $request)
+    {
+        $data = $request->validated();
 
-    //     return response()->json(['message' => 'Successfully logged out']);
-    // }
+        $user = User::all()->where('id', Auth::id())->first();
+
+        $user->fill($data);
+
+        if ($request->hasFile('avatar')) {
+            $imageName = time().'.'.$request->file('avatar')->extension();
+            $request->file('avatar')->storeAs('avatar', $imageName, 'public');
+            $user->avatar = $imageName;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'User updated successfully',
+            'data' => new UserResource($user),
+        ], 200);
+    }
+
+    public function logout()
+    {
+        Auth::guard('web')->logout();
+
+        return response()->json(['message' => 'Successfully logged out']);
+    }
 }
