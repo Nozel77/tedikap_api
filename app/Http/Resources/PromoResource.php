@@ -20,6 +20,7 @@ class PromoResource extends JsonResource
             'description' => $this->description,
             'image' => $this->image,
             'discount' => $this->discount,
+            'max_discount' => $this->max_discount,
             'min_transaction' => $this->min_transaction,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
