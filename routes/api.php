@@ -40,8 +40,8 @@ Route::prefix('product')->group(function () {
     Route::get('/show/{id}', [ProductController::class, 'show']);
     Route::post('/update/{id}', [ProductController::class, 'update']);
     Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
-    Route::post('/favorite/{id}', [ProductController::class, 'likeProduct']);
-    Route::get('/favorite/{user_id}', [ProductController::class, 'getFavorite']);
+    Route::post('/favorite/{product_id}', [ProductController::class, 'likeProduct'])->middleware('auth:sanctum');
+    Route::get('/favorite', [ProductController::class, 'getFavorite'])->middleware('auth:sanctum');
 });
 
 Route::prefix('promo')->group(function () {

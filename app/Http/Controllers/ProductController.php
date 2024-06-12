@@ -8,6 +8,7 @@ use App\Http\Resources\ProductResource;
 use App\Models\Favorite;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -122,44 +123,46 @@ class ProductController extends Controller
     }
 
     public function likeProduct(Request $request, $product_id)
-    {
-        $user_id = $request->input('user_id');
+{
+    $user_id = Auth::id();
 
-        if (! $user_id) {
-            return response()->json(['error' => 'User ID is required'], 400);
-        }
-
-        $product = Product::whereId($product_id)->first();
-
-        if (! $product) {
-            return response()->json(['error' => 'Product not found'], 404);
-        }
-
-        $unlike_post = Favorite::where('user_id', $user_id)->where('product_id', $product_id)->delete();
-        if ($unlike_post) {
-            return response()->json(['message' => 'Unliked'], 200);
-        }
-
-        $like_post = Favorite::create([
-            'user_id' => $user_id,
-            'product_id' => $product_id,
-        ]);
-
-        if ($like_post) {
-            return response()->json(['message' => 'Liked'], 200);
-        }
-
-        return response()->json(['error' => 'Unable to like product'], 500);
+    if (!$user_id) {
+        return response()->json(['error' => 'User not authenticated'], 401);
     }
 
-    public function getFavorite($user_id)
-    {
-        $data = Favorite::where('user_id', $user_id)->get();
+    $product = Product::whereId($product_id)->first();
 
-        if ($data->count() > 0) {
-            return FavoriteResource::collection($data);
-        } else {
-            return response()->json(['user_id' => $user_id, 'favorite' => []]);
-        }
+    if (!$product) {
+        return response()->json(['error' => 'Product not found'], 404);
     }
+
+    $unlike_post = Favorite::where('user_id', $user_id)->where('product_id', $product_id)->delete();
+    if ($unlike_post) {
+        return response()->json(['message' => 'Unliked'], 200);
+    }
+
+    $like_post = Favorite::create([
+        'user_id' => $user_id,
+        'product_id' => $product_id,
+    ]);
+
+    if ($like_post) {
+        return response()->json(['message' => 'Liked'], 200);
+    }
+
+    return response()->json(['error' => 'Unable to like product'], 500);
+}
+
+    public function getFavorite()
+{
+    $user_id = Auth::id();
+
+    $data = Favorite::where('user_id', $user_id)->get();
+
+    if ($data->count() > 0) {
+        return FavoriteResource::collection($data);
+    } else {
+        return response()->json(['user_id' => $user_id, 'favorite' => []]);
+    }
+}
 }

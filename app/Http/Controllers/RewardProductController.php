@@ -21,7 +21,7 @@ class RewardProductController extends Controller
         $request->validated();
 
         $imageName = time().'.'.$request->file('image')->extension();
-        $request->file('image')->storeAs('rewardproduct', $imageName, 'public');
+        $request->file('image')->storeAs('reward-product', $imageName, 'public');
 
         $data = new RewardProduct([
             'name' => $request->name,
@@ -62,10 +62,10 @@ class RewardProductController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            Storage::delete('public/rewardproduct/'.$data->image);
+            Storage::delete('public/reward-product/'.$data->image);
 
             $imageName = time().'.'.$request->image->extension();
-            $request->file('image')->storeAs('rewardproduct', $imageName, 'public');
+            $request->file('image')->storeAs('reward-product', $imageName, 'public');
 
             $data->update([
                 'name' => $request->name,
@@ -93,7 +93,7 @@ class RewardProductController extends Controller
             return response()->json(['error' => 'reward product not found'], 404);
         }
 
-        Storage::delete('public/images/'.$data->image);
+        Storage::delete('public/reward-product/'.$data->image);
         $data->delete();
 
         return $this->resDataDeleted();
