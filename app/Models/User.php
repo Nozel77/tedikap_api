@@ -46,4 +46,10 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected $attributes = [
+        'avatar' => 'profile/avatar.jpeg',
+        'role' => 'user',
+        'gender' => 'male'
+    ];
 }
