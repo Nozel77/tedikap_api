@@ -107,7 +107,7 @@ class UserController extends Controller
             }
 
             $imageName = time().'.'.$request->file('avatar')->extension();
-            $request->file('avatar')->storeAs('avatar', $imageName);
+            $request->file('avatar')->storeAs('avatar', $imageName, 'public');
             $user->avatar = $imageName;
         }
 
