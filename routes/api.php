@@ -58,12 +58,9 @@ Route::prefix('profile')->group(function () {
 });
 
 Route::prefix('cart')->group(function () {
-    Route::get('/', [CartController::class, 'index']);
-    Route::get('/getById/{id}', [CartController::class, 'indexById']);
-    Route::post('/store', [CartController::class, 'store']);
-    Route::get('/show/{id}', [CartController::class, 'show']);
-    Route::put('/update/{id}', [CartController::class, 'update']);
-    Route::delete('/delete/{id}', [CartController::class, 'destroy']);
+    Route::get('/', [CartController::class, 'showCartByUser'])->middleware('auth:sanctum');
+    Route::post('/store', [CartController::class, 'storeCart'])->middleware('auth:sanctum');
+    Route::delete('/delete', [CartController::class, 'deleteCartItem'])->middleware('auth:sanctum');
 });
 
 Route::prefix('point')->group(function () {
