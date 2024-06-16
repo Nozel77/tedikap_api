@@ -3,93 +3,132 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CartRequest;
+use App\Http\Resources\CartItemResource;
+use App\Http\Resources\CartResource;
 use App\Models\Cart;
+use App\Models\CartItem;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    public function index()
+    public function showCartByUser()
     {
-        $data = Cart::all();
+        $user_id = Auth::id();
 
-        return $this->resShowData($data);
-    }
+        $cart = Cart::all()->where('user_id', $user_id)->first();
 
-    public function indexById($id)
-    {
-        $data = Cart::where('user_id', $id)->get();
+        if (! $cart) {
+            return response()->json([
+                'message' => 'Cart not found for this user.',
+            ], 404);
+        }
+        $cart_items = CartItem::with('product')->where('cart_id', $cart->id)->get();
 
-        if (! $data) {
-            return $this->resDataNotFound('Cart');
+        $total_price = 0;
+        $cart_items_array = $cart_items->map(function ($cart_items) {
+            return new CartItemResource($cart_items);
+        });
+
+        foreach ($cart_items as $cart_item) {
+            $total_price += $cart_item->quantity * $cart_item->price;
         }
 
-        return $this->resShowData($data);
-    }
+        $cart->cartItems = $cart_items_array;
+        $cart->total_price = $total_price;
 
-    public function store(CartRequest $request)
-    {
-        $request->validated();
-
-        $data = new Cart([
-            'user_id' => $request->user_id,
-            'product_id' => $request->product_id,
-            'promo_id' => $request->promo_id,
-            'temperatur' => $request->temperatur,
-            'size' => $request->size,
-            'ice' => $request->ice,
-            'sugar' => $request->sugar,
-            'note' => $request->note,
-            'quantity' => $request->quantity,
-            'total' => $request->total,
+        return response()->json([
+            'cart' => new CartResource($cart),
         ]);
-        $data->save();
-
-        return $this->resShowData($data);
-
     }
 
-    public function show($id)
+    public function storeCart(CartRequest $request)
     {
-        $data = Cart::find($id);
-        if (! $data) {
-            return $this->resDataNotFound('Cart');
-        }
+        $userId = Auth::id();
 
-        return $this->resShowData($data);
+        $cart = Cart::all()->where('user_id', $userId)->first();
+
+        if ($cart != null) {
+            return $this->addCartItem($cart->id, $request);
+        } else {
+            $cart = new Cart();
+            $cart->user_id = $userId;
+            $cart->save();
+
+            return $this->addCartItem($cart->id, $request);
+        }
     }
 
-    public function update(CartRequest $request, $id)
+    public function addCartItem($cartId, CartRequest $request)
     {
-        $request->validated();
+        $data = $request->validated();
 
-        $data = Cart::find($id);
-        if (! $data) {
-            return $this->resDataNotFound('Cart');
+        $existingCartItem = CartItem::where('cart_id', $cartId)
+            ->where('product_id', $data['product_id'])
+            ->first();
+
+        if ($existingCartItem) {
+            $existingCartItem->quantity += $data['quantity'];
+            $existingCartItem->save();
+
+            return response()->json(
+                [
+                    'message' => 'Cart item updated successfully.',
+                    'cart' => new CartItemResource($existingCartItem),
+                ],
+                200
+            );
+        } else {
+            $cartItem = new CartItem();
+            $cartItem->cart_id = $cartId;
+            $cartItem->fill($data);
+            $cartItem->note = $data['note'] ?? null;
+            $cartItem->save();
+
+            return response()->json(
+                [
+                    'message' => 'Cart item added successfully.',
+                    'cart' => new CartItemResource($cartItem),
+                ],
+                201
+            );
         }
-
-        $data->update([
-            'user_id' => $request->user_id,
-            'product_id' => $request->product_id,
-            'promo_id' => $request->promo_id,
-            'temperatur' => $request->temperatur,
-            'size' => $request->size,
-            'ice' => $request->ice,
-            'sugar' => $request->sugar,
-            'note' => $request->note,
-            'quantity' => $request->quantity,
-            'total' => $request->total,
-        ]);
-
-        return $this->resUpdatedData($data);
     }
 
-    public function destroy($id)
+    public function deleteCartItem(Request $request)
     {
-        $data = Cart::find($id);
-        if (! $data) {
-            return $this->resDataNotFound('Cart');
-        }
-        $data->delete();
+        $userId = Auth::id();
 
-        return $this->resDataDeleted();
+        $cart = Cart::all()->where('user_id', $userId)->first();
+
+        if ($cart->cart_id) {
+            return response()->json(
+                [
+                    'message' => 'Cart not found.',
+                ],
+                404
+            );
+        }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('id', $request->cart_item_id)
+            ->first();
+
+        if (! $cartItem) {
+            return response()->json(
+                [
+                    'message' => 'Item keranjang tidak ditemukan.',
+                ],
+                404
+            );
+        }
+
+        $cartItem->delete();
+
+        return response()->json(
+            [
+                'message' => 'Cart item deleted successfully.',
+            ]
+        );
     }
 }

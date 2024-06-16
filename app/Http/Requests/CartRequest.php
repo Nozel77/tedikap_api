@@ -22,16 +22,14 @@ class CartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|numeric',
-            'product_id' => 'required|numeric',
-            'promo_id' => 'nullable|numeric',
-            'temperatur' => 'required',
-            'size' => 'required',
-            'ice' => 'required',
-            'sugar' => 'required',
-            'note' => 'required',
-            'quantity' => 'required|numeric',
-            'total' => 'required|numeric',
+            'product_id' => 'required|integer',
+            'temperatur' => 'required|string',
+            'size' => 'required|string',
+            'ice' => 'required|string',
+            'sugar' => 'required|string',
+            'note' => 'nullable|string',
+            'quantity' => 'required|integer',
+            'price' => 'required|numeric',
         ];
     }
 }
