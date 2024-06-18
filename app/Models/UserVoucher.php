@@ -5,40 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Order extends Model
+class UserVoucher extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'cart_id',
         'voucher_id',
-        'total_price',
-        'discount_amount',
-        'status',
+        'used',
     ];
 
-    protected $casts = [
-        'order_items' => 'array',
-    ];
-
+    /**
+     * Get the user that owns the UserVoucher.
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function cart()
-    {
-        return $this->belongsTo(Cart::class);
-    }
-
+    /**
+     * Get the voucher that owns the UserVoucher.
+     */
     public function voucher()
     {
         return $this->belongsTo(Voucher::class);
-    }
-
-    public function orderItems()
-    {
-        return $this->hasMany(OrderItem::class);
     }
 }

@@ -45,7 +45,8 @@ Route::prefix('product')->group(function () {
 
 Route::prefix('voucher')->group(function () {
     Route::get('/', [VoucherController::class, 'index']);
-    Route::get('/active', [VoucherController::class, 'indexActive']);
+    Route::get('/active', [VoucherController::class, 'activeVouchers'])->middleware('auth:sanctum');
+    Route::post('/redeem', [VoucherController::class, 'redeemVoucher'])->middleware('auth:sanctum');
     Route::post('/store', [VoucherController::class, 'store']);
     Route::get('/show/{id}', [VoucherController::class, 'show']);
     Route::post('/update/{id}', [VoucherController::class, 'update']);
@@ -89,5 +90,5 @@ Route::prefix('filter')->group(function () {
 
 Route::prefix('order')->group(function () {
     Route::get('/', [OrderController::class, 'index']);
-    Route::post('/store', [OrderController::class, 'store']);
+    Route::post('/store', [OrderController::class, 'store'])->middleware('auth:sanctum');
 });

@@ -15,6 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
+            $table->unsignedBigInteger('cart_id');
+            $table->foreign('cart_id')->references('id')->on('carts');
+            $table->unsignedBigInteger('voucher_id')->nullable();
+            $table->foreign('voucher_id')->references('id')->on('vouchers');
+            $table->integer('total_price');
+            $table->integer('discount_amount')->default(0);
             $table->string('status')->default('ongoing');
             $table->timestamps();
         });
