@@ -6,11 +6,10 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PromoController;
 use App\Http\Controllers\RewardItemController;
 use App\Http\Controllers\RewardProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,22 +43,19 @@ Route::prefix('product')->group(function () {
     Route::get('/favorite', [ProductController::class, 'getFavorite'])->middleware('auth:sanctum');
 });
 
-Route::prefix('promo')->group(function () {
-    Route::get('/', [PromoController::class, 'index'])->middleware('auth:sanctum');
-    Route::get('/active', [PromoController::class, 'indexActive']);
-    Route::post('/store', [PromoController::class, 'store']);
-    Route::get('/show/{id}', [PromoController::class, 'show']);
-    Route::post('/update/{id}', [PromoController::class, 'update']);
-    Route::delete('/delete/{id}', [PromoController::class, 'destroy']);
-});
-
-Route::prefix('profile')->group(function () {
-    Route::get('/{id}', [ProfileController::class, 'index']);
+Route::prefix('voucher')->group(function () {
+    Route::get('/', [VoucherController::class, 'index']);
+    Route::get('/active', [VoucherController::class, 'indexActive']);
+    Route::post('/store', [VoucherController::class, 'store']);
+    Route::get('/show/{id}', [VoucherController::class, 'show']);
+    Route::post('/update/{id}', [VoucherController::class, 'update']);
+    Route::delete('/delete/{id}', [VoucherController::class, 'destroy']);
 });
 
 Route::prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'showCartByUser'])->middleware('auth:sanctum');
     Route::post('/store', [CartController::class, 'storeCart'])->middleware('auth:sanctum');
+    Route::put('/update/{id}', [CartController::class, 'updateCartItem'])->middleware('auth:sanctum');
     Route::delete('/delete', [CartController::class, 'deleteCartItem'])->middleware('auth:sanctum');
 });
 

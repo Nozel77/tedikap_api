@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Promo extends Model
+class Voucher extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,6 @@ class Promo extends Model
         'description',
         'image',
         'discount',
-        'max_discount',
         'min_transaction',
         'start_date',
         'end_date',

@@ -2,85 +2,83 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\PromoRequest;
-use App\Http\Resources\PromoResource;
-use App\Models\Promo;
+use App\Http\Requests\VoucherRequest;
+use App\Http\Resources\VoucherResource;
+use App\Models\Voucher;
 use Illuminate\Support\Facades\Storage;
 
-class PromoController extends Controller
+class VoucherController extends Controller
 {
     public function index()
     {
-        $data = Promo::all();
+        $data = Voucher::all();
 
-        return PromoResource::collection($data);
+        return VoucherResource::collection($data);
     }
 
     public function indexActive()
     {
-        $promo = Promo::query()->where('start_date', '<=', now())->where('end_date', '>=', now())->get();
+        $promo = Voucher::query()->where('start_date', '<=', now())->where('end_date', '>=', now())->get();
 
         return response()->json(
             [
-                'data' => PromoResource::collection($promo),
+                'data' => VoucherResource::collection($promo),
             ]
         );
     }
 
-    public function store(PromoRequest $request)
+    public function store(VoucherRequest $request)
     {
         $request->validated();
 
         $imageName = time().'.'.$request->file('image')->extension();
-        $request->image->storeAs('promo', $imageName, 'public');
+        $request->image->storeAs('voucher', $imageName, 'public');
 
-        $data = new Promo([
+        $data = new Voucher([
             'title' => $request->title,
             'description' => $request->description,
             'image' => $imageName,
             'discount' => $request->discount,
-            'max_discount' => $request->max_discount,
             'min_transaction' => $request->min_transaction,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
         ]);
         $data->save();
 
-        return new PromoResource($data);
+        return new VoucherResource($data);
     }
 
     public function show($id)
     {
-        $data = Promo::find($id);
+        $data = Voucher::find($id);
         if (! $data) {
-            return $this->resDataNotFound('Promo');
+            return $this->resDataNotFound('Voucher');
         }
 
-        return new PromoResource($data);
+        return new VoucherResource($data);
     }
 
-    public function update(PromoRequest $request, $id)
+    public function update(VoucherRequest $request, $id)
     {
         $request->validated();
 
-        $data = Promo::find($id);
+        $data = Voucher::find($id);
 
         if (! $data) {
             return $this->resDataNotFound('Promo');
         }
 
         if ($request->hasFile('image')) {
-            Storage::delete('public/promo/'.$data->image);
+            Storage::delete('public/voucher/'.$data->image);
 
             $imageName = time().'.'.$request->image->extension();
-            $request->file('image')->storeAs('promo', $imageName, 'public');
+            $request->file('image')->storeAs('voucher', $imageName, 'public');
 
             $data->update([
                 'title' => $request->title,
                 'description' => $request->description,
                 'image' => $imageName,
                 'discount' => $request->discount,
-                'max_discount' => $request->max_discount,
                 'min_transaction' => $request->min_transaction,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
@@ -90,7 +88,6 @@ class PromoController extends Controller
                 'title' => $request->title,
                 'description' => $request->description,
                 'discount' => $request->discount,
-                'max_discount' => $request->max_discount,
                 'min_transaction' => $request->min_transaction,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
@@ -102,13 +99,13 @@ class PromoController extends Controller
 
     public function destroy($id)
     {
-        $data = Promo::find($id);
+        $data = Voucher::find($id);
 
         if (! $data) {
-            return $this->resDataNotFound('Promo');
+            return $this->resDataNotFound('Voucher');
         }
 
-        Storage::delete('public/images/'.$data->image);
+        Storage::delete('public/voucher/'.$data->image);
         $data->delete();
 
         return $this->resDataDeleted();
