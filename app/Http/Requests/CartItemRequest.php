@@ -29,7 +29,6 @@ class CartItemRequest extends FormRequest
             'note' => 'nullable|string',
             'quantity' => 'integer',
             'price' => 'integer',
-
         ];
     }
 }
