@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('voucher_id')->nullable();
+            $table->foreign('voucher_id')->references('id')->on('vouchers')->onDelete('cascade');
             $table->timestamps();
         });
     }
