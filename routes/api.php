@@ -56,7 +56,10 @@ Route::prefix('voucher')->group(function () {
 Route::prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'showCartByUser'])->middleware('auth:sanctum');
     Route::post('/store', [CartController::class, 'storeCart'])->middleware('auth:sanctum');
+    Route::post('/apply-voucher', [CartController::class, 'applyVoucher'])->middleware('auth:sanctum');
+    Route::post('/remove-voucher', [CartController::class, 'removeVoucher'])->middleware('auth:sanctum');
     Route::put('/update/{id}', [CartController::class, 'updateCartItem'])->middleware('auth:sanctum');
+    Route::patch('/update-quantity/{id}', [CartController::class, 'updateCartItemQuantity'])->middleware('auth:sanctum');
     Route::delete('/delete', [CartController::class, 'deleteCartItem'])->middleware('auth:sanctum');
 });
 
@@ -89,6 +92,6 @@ Route::prefix('filter')->group(function () {
 });
 
 Route::prefix('order')->group(function () {
-    Route::get('/', [OrderController::class, 'index']);
+    Route::get('/', [OrderController::class, 'index'])->middleware('auth:sanctum');
     Route::post('/store', [OrderController::class, 'store'])->middleware('auth:sanctum');
 });

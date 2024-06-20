@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ApplyVoucherRequest;
 use App\Http\Requests\CartItemRequest;
 use App\Http\Requests\CartRequest;
 use App\Http\Resources\CartItemResource;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,16 +29,27 @@ class CartController extends Controller
 
         $cart_items = CartItem::with('product')->where('cart_id', $cart->id)->get();
 
-        $total_price = 0;
-        foreach ($cart_items as $cart_item) {
-            $total_price += $cart_item->quantity * $cart_item->price;
+        $total_price = $cart_items->sum(function ($cart_item) {
+            return $cart_item->quantity * $cart_item->price;
+        });
+
+        $discount_amount = 0;
+        if ($cart->voucher_id) {
+            $voucher = Voucher::find($cart->voucher_id);
+            if ($voucher) {
+                $discount_percentage = $voucher->discount;
+                $discount_amount = ($discount_percentage / 100) * $total_price;
+                $total_price -= $discount_amount;
+            }
         }
 
         $cart_items_array = $cart_items->map(function ($cart_item) {
             return new CartItemResource($cart_item);
         });
+
         $cart->cartItems = $cart_items_array;
-        $cart->total_price = $total_price;
+        $cart->total_price = max(0, $total_price);
+        $cart->discount_amount = $discount_amount;
 
         return response()->json([
             'cart' => new CartResource($cart),
@@ -47,9 +60,9 @@ class CartController extends Controller
     {
         $userId = Auth::id();
 
-        $cart = Cart::all()->where('user_id', $userId)->first();
+        $cart = Cart::where('user_id', $userId)->first();
 
-        if ($cart != null) {
+        if ($cart) {
             return $this->addCartItem($cart->id, $request);
         } else {
             $cart = new Cart();
@@ -73,13 +86,10 @@ class CartController extends Controller
             $existingCartItem->quantity += $data['quantity'];
             $existingCartItem->save();
 
-            return response()->json(
-                [
-                    'message' => 'Cart item updated successfully.',
-                    'cart' => new CartItemResource($existingCartItem),
-                ],
-                200
-            );
+            return response()->json([
+                'message' => 'Cart item updated successfully.',
+                'cart' => new CartItemResource($existingCartItem),
+            ], 200);
         } else {
             $cartItem = new CartItem();
             $cartItem->cart_id = $cartId;
@@ -87,13 +97,10 @@ class CartController extends Controller
             $cartItem->note = $data['note'] ?? null;
             $cartItem->save();
 
-            return response()->json(
-                [
-                    'message' => 'Cart item added successfully.',
-                    'cart' => new CartItemResource($cartItem),
-                ],
-                201
-            );
+            return response()->json([
+                'message' => 'Cart item added successfully.',
+                'cart' => new CartItemResource($cartItem),
+            ], 201);
         }
     }
 
@@ -134,6 +141,90 @@ class CartController extends Controller
             ],
             200
         );
+    }
+
+    public function applyVoucher(ApplyVoucherRequest $request)
+    {
+        $userId = Auth::id();
+        $data = $request->validated();
+
+        $cart = Cart::where('user_id', $userId)->first();
+
+        if (! $cart) {
+            return response()->json([
+                'message' => 'Cart not found for this user.',
+            ], 404);
+        }
+
+        $voucher = Voucher::find($data['voucher_id']);
+        if (! $voucher) {
+            return response()->json([
+                'message' => 'Voucher not found.',
+            ], 404);
+        }
+
+        $cart->voucher_id = $data['voucher_id'];
+        $cart->save();
+
+        return response()->json([
+            'message' => 'Voucher applied successfully.',
+        ], 200);
+    }
+
+    public function removeVoucher(Request $request)
+    {
+        $userId = Auth::id();
+
+        $cart = Cart::where('user_id', $userId)->first();
+
+        if (! $cart) {
+            return response()->json([
+                'message' => 'Cart not found for this user.',
+            ], 404);
+        }
+
+        $cart->voucher_id = null;
+        $cart->save();
+
+        return response()->json([
+            'message' => 'Voucher removed successfully.',
+        ], 200);
+    }
+
+    public function updateCartItemQuantity($cartItemId, Request $request)
+    {
+        $cartItem = CartItem::findOrFail($cartItemId);
+
+        if (! $request->has('action')) {
+            return response()->json([
+                'message' => 'Action parameter is required.',
+            ], 400);
+        }
+
+        $action = $request->input('action');
+
+        if ($action === 'increment') {
+            $cartItem->quantity++;
+        } elseif ($action === 'decrement') {
+            if ($cartItem->quantity > 1) {
+                $cartItem->quantity--;
+            } else {
+                return response()->json([
+                    'message' => 'Minimum quantity reached.',
+                ], 400);
+            }
+        } else {
+            return response()->json([
+                'message' => 'Invalid action parameter.',
+            ], 400);
+        }
+
+        $cartItem->save();
+
+        return response()->json([
+            'message' => 'Cart item quantity updated successfully.',
+            'cart_item' => new CartItemResource($cartItem),
+        ]);
     }
 
     public function deleteCartItem(Request $request)
