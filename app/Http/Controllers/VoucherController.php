@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RedeemVoucherRequest;
 use App\Http\Requests\VoucherRequest;
 use App\Http\Resources\VoucherResource;
-use App\Models\UserVoucher;
 use App\Models\Voucher;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -35,49 +33,6 @@ class VoucherController extends Controller
 
         return response()->json([
             'active_vouchers' => VoucherResource::collection($activeVouchers),
-        ], 200);
-    }
-
-    public function redeemVoucher(RedeemVoucherRequest $request)
-    {
-        $userId = Auth::id();
-        $data = $request->validated();
-
-        $voucher = Voucher::find($data['voucher_id']);
-
-        if (! $voucher) {
-            return response()->json([
-                'message' => 'Voucher not found.',
-            ], 404);
-        }
-
-        $currentDate = now();
-        if ($voucher->start_date > $currentDate || $voucher->end_date < $currentDate) {
-            return response()->json([
-                'message' => 'Voucher is not active.',
-            ], 400);
-        }
-
-        $userVoucher = UserVoucher::where('user_id', $userId)
-            ->where('voucher_id', $data['voucher_id'])
-            ->first();
-
-        if ($userVoucher && $userVoucher->used) {
-            return response()->json([
-                'message' => 'Voucher has already been used.',
-            ], 400);
-        }
-
-        if (! $userVoucher) {
-            $userVoucher = new UserVoucher();
-            $userVoucher->user_id = $userId;
-            $userVoucher->voucher_id = $data['voucher_id'];
-        }
-        $userVoucher->used = true;
-        $userVoucher->save();
-
-        return response()->json([
-            'message' => 'Voucher redeemed successfully.',
         ], 200);
     }
 

@@ -7,6 +7,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\UserVoucher;
 use App\Models\Voucher;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,9 +15,14 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $data = Order::all();
+        $user = Auth::user();
 
-        return $this->resShowData($data);
+        $orders = Order::where('user_id', $user->id)->get();
+
+        return response()->json([
+            'message' => 'Orders retrieved successfully.',
+            'orders' => OrderResource::collection($orders),
+        ]);
     }
 
     public function store(OrderRequest $request)
@@ -40,28 +46,32 @@ class OrderController extends Controller
         });
 
         $discountAmount = 0;
-        if (isset($data['voucher_id'])) {
-            $voucher = Voucher::find($data['voucher_id']);
+        if ($cart->voucher_id) {
+            $voucher = Voucher::find($cart->voucher_id);
             if ($voucher) {
                 $discountPercentage = $voucher->discount;
                 $discountAmount = ($discountPercentage / 100) * $totalPrice;
                 $totalPrice -= $discountAmount;
+                $userVoucher = UserVoucher::firstOrNew([
+                    'user_id' => $userId,
+                    'voucher_id' => $cart->voucher_id,
+                ]);
+                $userVoucher->used = true;
+                $userVoucher->save();
             }
-        }
-
-        if ($totalPrice < 0) {
-            $totalPrice = 0;
         }
 
         $order = new Order();
         $order->user_id = $userId;
         $order->cart_id = $cart->id;
-        $order->voucher_id = $data['voucher_id'] ?? null;
+        $order->voucher_id = $cart->voucher_id;
         $order->total_price = $totalPrice;
         $order->discount_amount = $discountAmount;
         $order->status = 'ongoing';
-
         $order->save();
+
+        $cart->voucher_id = null;
+        $cart->save();
 
         foreach ($cart->cartItems as $cartItem) {
             $orderItem = new OrderItem();
