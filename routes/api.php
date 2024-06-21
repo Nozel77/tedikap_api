@@ -89,7 +89,7 @@ Route::prefix('payment')->group(function () {
 });
 
 Route::prefix('filter')->group(function () {
-    Route::get('/product', [ProductController::class, 'filter']);   
+    Route::get('/product', [ProductController::class, 'filter']);
 });
 
 Route::prefix('order')->group(function () {
@@ -97,7 +97,7 @@ Route::prefix('order')->group(function () {
     Route::post('/store', [OrderController::class, 'store'])->middleware('auth:sanctum');
 });
 
-Route::prefix('status-store')->group(function(){
+Route::prefix('status-store')->group(function () {
     Route::get('/', [StatusStoreController::class, 'storeStatus']);
     Route::put('/update', [StatusStoreController::class, 'updateStoreStatus']);
 });

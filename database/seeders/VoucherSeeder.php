@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Voucher;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class VoucherSeeder extends Seeder
@@ -21,7 +20,7 @@ class VoucherSeeder extends Seeder
                 'discount' => 30,
                 'min_transaction' => 20000,
                 'start_date' => '2024-06-21',
-                'end_date' => '2024-07-21'
+                'end_date' => '2024-07-21',
             ],
             [
                 'title' => 'Nikmati promo sebesar 10% Sekarang !!!',
@@ -30,11 +29,11 @@ class VoucherSeeder extends Seeder
                 'discount' => 10,
                 'min_transaction' => 10000,
                 'start_date' => '2024-06-21',
-                'end_date' => '2024-07-21'
-            ]
+                'end_date' => '2024-07-21',
+            ],
         ];
 
-        foreach($vouchers as $voucher){
+        foreach ($vouchers as $voucher) {
             $voucherData = new Voucher();
             $voucherData->fill($voucher);
             $voucherData->save();
