@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Product;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -136,7 +135,7 @@ class ProductSeeder extends Seeder
             ],
         ];
 
-        foreach($products as $product){
+        foreach ($products as $product) {
             $productData = new Product();
             $productData->fill($product);
             $productData->save();

@@ -79,12 +79,12 @@ class CartController extends Controller
         $data = $request->validated();
 
         $existingCartItem = CartItem::where('cart_id', $cartId)
-        ->where('product_id', $data['product_id'])
-        ->where('size', $data['size'])
-        ->where('temperatur', $data['temperatur'])
-        ->where('sugar', $data['sugar'])
-        ->where('ice', $data['ice'])
-        ->first();
+            ->where('product_id', $data['product_id'])
+            ->where('size', $data['size'])
+            ->where('temperatur', $data['temperatur'])
+            ->where('sugar', $data['sugar'])
+            ->where('ice', $data['ice'])
+            ->first();
 
         if ($existingCartItem) {
             $existingCartItem->quantity += $data['quantity'];
@@ -148,45 +148,43 @@ class CartController extends Controller
     }
 
     public function applyVoucher(ApplyVoucherRequest $request)
-{
-    $userId = Auth::id();
-    $data = $request->validated();
+    {
+        $userId = Auth::id();
+        $data = $request->validated();
 
-    // Temukan keranjang belanja pengguna
-    $cart = Cart::where('user_id', $userId)->first();
+        $cart = Cart::where('user_id', $userId)->first();
 
-    if (! $cart) {
+        if (! $cart) {
+            return response()->json([
+                'message' => 'Cart not found for this user.',
+            ], 404);
+        }
+
+        $voucher = Voucher::find($data['voucher_id']);
+
+        if (! $voucher) {
+            return response()->json([
+                'message' => 'Voucher not found.',
+            ], 404);
+        }
+
+        $userVoucher = UserVoucher::where('user_id', $userId)
+            ->where('voucher_id', $voucher->id)
+            ->first();
+
+        if ($userVoucher && $userVoucher->used) {
+            return response()->json([
+                'message' => 'Voucher has already been used.',
+            ], 400);
+        }
+
+        $cart->voucher_id = $voucher->id;
+        $cart->save();
+
         return response()->json([
-            'message' => 'Cart not found for this user.',
-        ], 404);
+            'message' => 'Voucher applied successfully.',
+        ], 200);
     }
-
-    $voucher = Voucher::find($data['voucher_id']);
-
-    if (! $voucher) {
-        return response()->json([
-            'message' => 'Voucher not found.',
-        ], 404);
-    }
-
-    $userVoucher = UserVoucher::where('user_id', $userId)
-        ->where('voucher_id', $voucher->id)
-        ->first();
-
-    if ($userVoucher && $userVoucher->used) {
-        return response()->json([
-            'message' => 'Voucher has already been used.',
-        ], 400);
-    }
-
-    $cart->voucher_id = $voucher->id;
-    $cart->save();
-
-    return response()->json([
-        'message' => 'Voucher applied successfully.',
-    ], 200);
-}
-
 
     public function removeVoucher(Request $request)
     {
