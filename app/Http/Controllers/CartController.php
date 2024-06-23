@@ -40,20 +40,44 @@ class CartController extends Controller
             if ($voucher) {
                 $discount_percentage = $voucher->discount;
                 $discount_amount = ($discount_percentage / 100) * $total_price;
-                $total_price -= $discount_amount;
             }
         }
+
+        $total_price_after_discount = $total_price - $discount_amount;
+        $original_price = $total_price;
 
         $cart_items_array = $cart_items->map(function ($cart_item) {
             return new CartItemResource($cart_item);
         });
 
         $cart->cartItems = $cart_items_array;
-        $cart->total_price = max(0, $total_price);
+        $cart->total_price = max(0, $total_price_after_discount);
         $cart->discount_amount = $discount_amount;
+        $cart->original_price = $original_price;
 
         return response()->json([
             'cart' => new CartResource($cart),
+        ]);
+    }
+
+    public function showCartItemById($cartItemId)
+    {
+        $user_id = Auth::id();
+
+        $cartItem = CartItem::whereHas('cart', function ($query) use ($user_id) {
+            $query->where('user_id', $user_id);
+        })->where('id', $cartItemId)->with('product')->first();
+
+        if (! $cartItem) {
+            return response()->json([
+                'message' => 'Cart item not found for this user.',
+            ], 404);
+        }
+
+        $cart_item_resource = new CartItemResource($cartItem);
+
+        return response()->json([
+            'cart_item' => $cart_item_resource,
         ]);
     }
 

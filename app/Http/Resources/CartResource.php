@@ -20,6 +20,7 @@ class CartResource extends JsonResource
             'voucher_id' => $this->voucher_id,
             'total_price' => $this->total_price,
             'discount_amount' => $this->discount_amount,
+            'original_price' => $this->original_price,
             'cart_items' => $this->cartItems,
         ];
     }

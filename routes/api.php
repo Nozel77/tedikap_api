@@ -56,6 +56,7 @@ Route::prefix('voucher')->group(function () {
 
 Route::prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'showCartByUser'])->middleware('auth:sanctum');
+    Route::get('/item/{cartItemId}', [CartController::class, 'showCartItemById'])->middleware('auth:sanctum');
     Route::post('/store', [CartController::class, 'storeCart'])->middleware('auth:sanctum');
     Route::post('/apply-voucher', [CartController::class, 'applyVoucher'])->middleware('auth:sanctum');
     Route::post('/remove-voucher', [CartController::class, 'removeVoucher'])->middleware('auth:sanctum');
@@ -65,7 +66,7 @@ Route::prefix('cart')->group(function () {
 });
 
 Route::prefix('point')->group(function () {
-    Route::get('/{user_id}', [PointController::class, 'index']);
+    Route::get('/', [PointController::class, 'index'])->middleware('auth:sanctum');
 });
 
 Route::prefix('reward-product')->group(function () {
@@ -83,7 +84,7 @@ Route::prefix('reward-item')->group(function () {
 });
 
 Route::prefix('payment')->group(function () {
-    Route::post('/', [PaymentController::class, 'store']);
+    Route::post('/', [PaymentController::class, 'store'])->middleware('auth:sanctum');
     Route::post('/notification', [PaymentController::class, 'notification']);
     Route::post('/callback', [PaymentController::class, 'paymentCallback']);
 });
