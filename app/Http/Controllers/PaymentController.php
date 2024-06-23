@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Point;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Xendit\Configuration;
 use Xendit\Invoice\CreateInvoiceRequest;
@@ -21,19 +22,26 @@ class PaymentController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'cart_id' => 'required|exists:carts,id',
-            'payer_email' => 'required|email',
-            'user_id' => 'required|exists:users,id',
-        ]);
+        $user = Auth::user();
 
-        $cart = Cart::findOrFail($request->cart_id);
+        $order = Order::where('user_id', $user->id)
+            ->where('status', 'ongoing')
+            ->latest()
+            ->first();
+
+        if (! $order) {
+            return response()->json([
+                'error' => 'Order not found or no pending orders for the authenticated user.',
+            ], 404);
+        }
+
+        $payer_email = $user->email;
 
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
             'description' => 'checkout demo',
-            'amount' => $cart->total,
-            'payer_email' => $request->payer_email,
+            'amount' => $order->total_price,
+            'payer_email' => $payer_email,
         ]);
 
         $result = $this->apiInstance->createInvoice($create_invoice_request);
@@ -42,8 +50,8 @@ class PaymentController extends Controller
         $payment->status = 'PENDING';
         $payment->checkout_link = $result['invoice_url'];
         $payment->external_id = $create_invoice_request['external_id'];
-        $payment->user_id = $request->user_id;
-        $payment->amount = $cart->total;
+        $payment->user_id = $user->id;
+        $payment->amount = $order->total_price;
         $payment->save();
 
         return response()->json($payment);
@@ -62,7 +70,7 @@ class PaymentController extends Controller
         $payment->status = strtolower($result[0]['status']);
         $payment->save();
 
-        return response()->json(['message' => 'success']);
+        return response()->json(['message' => 'SUCCESS']);
     }
 
     public function paymentCallback(Request $request)

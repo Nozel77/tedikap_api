@@ -14,6 +14,9 @@ class OrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
+        $original_price = $this->total_price + $this->discount_amount;
+
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
@@ -21,6 +24,7 @@ class OrderResource extends JsonResource
             'voucher_id' => $this->voucher_id,
             'total_price' => $this->total_price,
             'discount_amount' => $this->discount_amount,
+            'original_price' => $original_price,
             'status' => $this->status,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),

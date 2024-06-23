@@ -30,14 +30,13 @@ class OrderController extends Controller
         $userId = Auth::id();
         $data = $request->validated();
 
-        $cart = Cart::where('id', $data['cart_id'])
-            ->where('user_id', $userId)
+        $cart = Cart::where('user_id', $userId)
             ->with('cartItems')
             ->first();
 
         if (! $cart) {
             return response()->json([
-                'message' => 'Cart not found or does not belong to the authenticated user.',
+                'message' => 'Cart not found for the authenticated user.',
             ], 404);
         }
 
