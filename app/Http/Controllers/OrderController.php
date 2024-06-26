@@ -13,11 +13,42 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+    public function generateCustomUUID()
+    {
+        $now = now()->setTimezone('Asia/Jakarta');
+        $date = $now->format('d');
+        $month = $now->format('m');
+        $year = $now->format('Y');
+        $hour = $now->format('H');
+        $minute = $now->format('i');
+        $second = $now->format('s');
+        $customUUID = strtoupper("ORD{$date}{$month}{$year}{$hour}{$minute}{$second}");
+
+        return $customUUID;
+    }
+
     public function index()
     {
         $user = Auth::user();
 
         $orders = Order::where('user_id', $user->id)->get();
+
+        $orders = $orders->map(function ($order) {
+            $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
+            $time = $createdAt->format('H:i');
+
+            if ($time <= '09:20') {
+                $pickupTime = '09:40-10:00';
+            } elseif ($time > '09:20' && $time <= '11:40') {
+                $pickupTime = '12:00-12:30';
+            } else {
+                $pickupTime = 'CLOSED'; 
+            }
+
+            $order->schedule_pickup = $pickupTime;
+
+            return $order;
+        });
 
         return response()->json([
             'message' => 'Orders retrieved successfully.',
@@ -61,6 +92,7 @@ class OrderController extends Controller
         }
 
         $order = new Order();
+        $order->id = $this->generateCustomUUID();
         $order->user_id = $userId;
         $order->cart_id = $cart->id;
         $order->voucher_id = $cart->voucher_id;
@@ -69,12 +101,25 @@ class OrderController extends Controller
         $order->status = 'ongoing';
         $order->save();
 
+        $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
+        $time = $createdAt->format('H:i');
+
+        if ($time <= '09:20') {
+            $order->schedule_pickup = '09:40-10:00';
+        } elseif ($time > '09:20' && $time <= '11:40') {
+            $order->schedule_pickup = '12:00-12:30';
+        } else {
+            $pickupTime = 'CLOSED'; 
+        }
+
+        $order->schedule_pickup = $pickupTime;
+
         $cart->voucher_id = null;
         $cart->save();
 
         foreach ($cart->cartItems as $cartItem) {
             $orderItem = new OrderItem();
-            $orderItem->order_id = $order->id;
+            $orderItem->order_id = $order->id; 
             $orderItem->product_id = $cartItem->product_id;
             $orderItem->temperatur = $cartItem->temperatur;
             $orderItem->size = $cartItem->size;
@@ -95,21 +140,35 @@ class OrderController extends Controller
     }
 
     public function show($id)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $order = Order::where('id', $id)->where('user_id', $user->id)->first();
+        $order = Order::where('id', $id)->where('user_id', $user->id)->first();
 
-    if (! $order) {
+        if (! $order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if (! $order->schedule_pickup) {
+            $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
+            $time = $createdAt->format('H:i');
+
+            if ($time <= '09:20') {
+                $order->schedule_pickup = '09:40-10:00';
+            } elseif ($time > '09:20' && $time <= '11:40') {
+                $order->schedule_pickup = '12:00-12:30';
+            } else {
+                $pickupTime = 'CLOSED'; 
+            }
+
+            $order->schedule_pickup = $pickupTime;
+        }
+
         return response()->json([
-            'message' => 'Order not found.',
-        ], 404);
+            'message' => 'Order retrieved successfully.',
+            'order' => new OrderResource($order),
+        ]);
     }
-
-    return response()->json([
-        'message' => 'Order retrieved successfully.',
-        'order' => new OrderResource($order),
-    ]);
-}
-
 }
