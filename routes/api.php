@@ -91,6 +91,7 @@ Route::prefix('payment')->group(function () {
 
 Route::prefix('filter')->group(function () {
     Route::get('/product', [ProductController::class, 'filter']);
+    Route::get('/reward-product', [RewardProductController::class, 'filter']);
 });
 
 Route::prefix('order')->group(function () {

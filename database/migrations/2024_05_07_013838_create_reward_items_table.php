@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('reward_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('reward_product_id');
-            $table->foreign('reward_product_id')->references('id')->on('reward_products');
+            $table->foreign('reward_product_id')->references('id')->on('reward_products')->onDelete('cascade');
             $table->timestamps();
         });
     }

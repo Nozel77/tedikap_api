@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RewardProductRequest;
 use App\Http\Resources\RewardProductResource;
 use App\Models\RewardProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class RewardProductController extends Controller
@@ -16,6 +17,28 @@ class RewardProductController extends Controller
         return RewardProductResource::collection($data);
     }
 
+    public function filter(Request $request){
+        $category = $request->input('category');
+        $search = $request->input('search');
+
+        $query = RewardProduct::query();
+
+        if ($category) {
+            $query->where('category', $category);
+        }
+        if ($search) {
+            $query->where('name', 'like', '%'.$search.'%');
+        }
+
+        $result = $query->get();
+
+        if ($result->count() > 0) {
+            return RewardProductResource::collection($result);
+        } else {
+            return $this->resDataNotFound('Product');
+        }
+    }
+
     public function store(RewardProductRequest $request)
     {
         $request->validated();
@@ -25,7 +48,9 @@ class RewardProductController extends Controller
 
         $data = new RewardProduct([
             'name' => $request->name,
-            'point_price' => $request->point_price,
+            'description' => $request->description,
+            'regular_price' => $request->regular_price,
+            'large_price' => $request->large_price,
             'category' => $request->category,
             'image' => $imageName,
         ]);
@@ -68,17 +93,20 @@ class RewardProductController extends Controller
             $request->file('image')->storeAs('reward-product', $imageName, 'public');
 
             $data->update([
-                'name' => $request->name,
-                'point_price' => $request->point_price,
+               'name' => $request->name,
+                'description' => $request->description,
+                'regular_price' => $request->regular_price,
+                'large_price' => $request->large_price,
                 'category' => $request->category,
                 'image' => $imageName,
             ]);
         } else {
             $data->update([
                 'name' => $request->name,
-                'point_price' => $request->point_price,
+                'description' => $request->description,
+                'regular_price' => $request->regular_price,
+                'large_price' => $request->large_price,
                 'category' => $request->category,
-                'image' => $request->image,
             ]);
         }
 
