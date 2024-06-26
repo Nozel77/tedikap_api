@@ -88,4 +88,23 @@ class OrderController extends Controller
             'order' => new OrderResource($order),
         ], 201);
     }
+
+    public function show($id)
+{
+    $user = Auth::user();
+
+    $order = Order::where('id', $id)->where('user_id', $user->id)->first();
+
+    if (! $order) {
+        return response()->json([
+            'message' => 'Order not found.',
+        ], 404);
+    }
+
+    return response()->json([
+        'message' => 'Order retrieved successfully.',
+        'order' => new OrderResource($order),
+    ]);
+}
+
 }

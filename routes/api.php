@@ -96,6 +96,7 @@ Route::prefix('filter')->group(function () {
 
 Route::prefix('order')->group(function () {
     Route::get('/', [OrderController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/{id}', [OrderController::class, 'show'])->middleware('auth:sanctum');
     Route::post('/store', [OrderController::class, 'store'])->middleware('auth:sanctum');
 });
 
