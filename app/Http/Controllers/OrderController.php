@@ -42,7 +42,7 @@ class OrderController extends Controller
             } elseif ($time > '09:20' && $time <= '11:40') {
                 $pickupTime = '12:00-12:30';
             } else {
-                $pickupTime = 'CLOSED'; 
+                $pickupTime = 'CLOSED';
             }
 
             $order->schedule_pickup = $pickupTime;
@@ -91,6 +91,9 @@ class OrderController extends Controller
             }
         }
 
+        $additionalPoints = floor($totalPrice / 3000);
+        $additionalPoints += ($totalPrice % 3000 == 0) ? 0 : 1;
+
         $order = new Order();
         $order->id = $this->generateCustomUUID();
         $order->user_id = $userId;
@@ -98,6 +101,7 @@ class OrderController extends Controller
         $order->voucher_id = $cart->voucher_id;
         $order->total_price = $totalPrice;
         $order->discount_amount = $discountAmount;
+        $order->reward_point = $additionalPoints;
         $order->status = 'ongoing';
         $order->save();
 
@@ -109,7 +113,7 @@ class OrderController extends Controller
         } elseif ($time > '09:20' && $time <= '11:40') {
             $order->schedule_pickup = '12:00-12:30';
         } else {
-            $pickupTime = 'CLOSED'; 
+            $pickupTime = 'CLOSED';
         }
 
         $order->schedule_pickup = $pickupTime;
@@ -119,7 +123,7 @@ class OrderController extends Controller
 
         foreach ($cart->cartItems as $cartItem) {
             $orderItem = new OrderItem();
-            $orderItem->order_id = $order->id; 
+            $orderItem->order_id = $order->id;
             $orderItem->product_id = $cartItem->product_id;
             $orderItem->temperatur = $cartItem->temperatur;
             $orderItem->size = $cartItem->size;
@@ -160,7 +164,7 @@ class OrderController extends Controller
             } elseif ($time > '09:20' && $time <= '11:40') {
                 $order->schedule_pickup = '12:00-12:30';
             } else {
-                $pickupTime = 'CLOSED'; 
+                $pickupTime = 'CLOSED';
             }
 
             $order->schedule_pickup = $pickupTime;

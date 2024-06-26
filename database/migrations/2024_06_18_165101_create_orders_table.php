@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreign('voucher_id')->references('id')->on('vouchers')->onDelete('cascade');
             $table->integer('total_price');
             $table->integer('discount_amount')->default(0);
+            $table->integer('reward_point')->default(0);
             $table->string('status')->default('ongoing');
             $table->timestamps();
         });
