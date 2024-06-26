@@ -11,8 +11,10 @@ class RewardProduct extends Model
 
     protected $fillable = [
         'name',
+        'description',
         'image',
-        'point_price',
+        'regular_price',
+        'large_price',
         'category',
     ];
 }

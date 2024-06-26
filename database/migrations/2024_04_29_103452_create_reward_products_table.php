@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('reward_products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->text('description');
             $table->string('image');
-            $table->integer('point_price');
+            $table->integer('regular_price');
+            $table->integer('large_price');
             $table->enum('category', ['tea', 'nontea', 'snack']);
             $table->timestamps();
         });

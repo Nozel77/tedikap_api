@@ -17,7 +17,9 @@ class RewardProductResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'point_price' => $this->point_price,
+            'description' => $this->description,
+            'regular_price' => $this->regular_price,
+            'large_price' => $this->large_price,
             'category' => $this->category,
             'image' => $this->image,
         ];
