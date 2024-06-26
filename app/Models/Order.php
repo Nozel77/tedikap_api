@@ -18,6 +18,8 @@ class Order extends Model
         'status',
     ];
 
+    public $incrementing = false;
+
     protected $casts = [
         'order_items' => 'array',
     ];

@@ -17,7 +17,8 @@ class RewardProductController extends Controller
         return RewardProductResource::collection($data);
     }
 
-    public function filter(Request $request){
+    public function filter(Request $request)
+    {
         $category = $request->input('category');
         $search = $request->input('search');
 
@@ -93,7 +94,7 @@ class RewardProductController extends Controller
             $request->file('image')->storeAs('reward-product', $imageName, 'public');
 
             $data->update([
-               'name' => $request->name,
+                'name' => $request->name,
                 'description' => $request->description,
                 'regular_price' => $request->regular_price,
                 'large_price' => $request->large_price,
