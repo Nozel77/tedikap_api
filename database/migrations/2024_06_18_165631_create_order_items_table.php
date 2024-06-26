@@ -17,6 +17,11 @@ return new class extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->unsignedBigInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->enum('temperatur', ['hot', 'ice']);
+            $table->enum('size', ['regular', 'large']);
+            $table->enum('ice', ['less', 'normal']);
+            $table->enum('sugar', ['less', 'normal']);
+            $table->text('note')->nullable();
             $table->integer('quantity');
             $table->integer('price');
             $table->timestamps();

@@ -76,6 +76,11 @@ class OrderController extends Controller
             $orderItem = new OrderItem();
             $orderItem->order_id = $order->id;
             $orderItem->product_id = $cartItem->product_id;
+            $orderItem->temperatur = $cartItem->temperatur;
+            $orderItem->size = $cartItem->size;
+            $orderItem->ice = $cartItem->ice;
+            $orderItem->sugar = $cartItem->sugar;
+            $orderItem->note = $cartItem->note;
             $orderItem->quantity = $cartItem->quantity;
             $orderItem->price = $cartItem->price;
             $orderItem->save();
