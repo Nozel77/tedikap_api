@@ -24,6 +24,7 @@ class OrderResource extends JsonResource
             'voucher_id' => $this->voucher_id,
             'total_price' => $this->total_price,
             'discount_amount' => $this->discount_amount,
+            'reward_point' => $this->reward_point,
             'original_price' => $original_price,
             'status' => $this->status,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
