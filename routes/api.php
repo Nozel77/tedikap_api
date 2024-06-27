@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CartRewardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
@@ -62,7 +63,16 @@ Route::prefix('cart')->group(function () {
     Route::post('/remove-voucher', [CartController::class, 'removeVoucher'])->middleware('auth:sanctum');
     Route::put('/update/{id}', [CartController::class, 'updateCartItem'])->middleware('auth:sanctum');
     Route::patch('/update-quantity/{id}', [CartController::class, 'updateCartItemQuantity'])->middleware('auth:sanctum');
-    Route::delete('/delete', [CartController::class, 'deleteCartItem'])->middleware('auth:sanctum');
+    Route::delete('/delete/{cartItemID}', [CartController::class, 'deleteCartItem'])->middleware('auth:sanctum');
+});
+
+Route::prefix('cart-reward')->group(function () {
+    Route::get('/', [CartRewardController::class, 'showCartByUser'])->middleware('auth:sanctum');
+    Route::get('/item/{cartItemId}', [CartRewardController::class, 'showCartItemById'])->middleware('auth:sanctum');
+    Route::post('/store', [CartRewardController::class, 'storeCart'])->middleware('auth:sanctum');
+    Route::put('/update/{id}', [CartRewardController::class, 'updateCartItem'])->middleware('auth:sanctum');
+    Route::patch('/update-quantity/{id}', [CartRewardController::class, 'updateCartItemQuantity'])->middleware('auth:sanctum');
+    Route::delete('/delete/{cartItemId}', [CartRewardController::class, 'deleteCartItem'])->middleware('auth:sanctum');
 });
 
 Route::prefix('point')->group(function () {
@@ -77,11 +87,6 @@ Route::prefix('reward-product')->group(function () {
     Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
 });
 
-Route::prefix('reward-item')->group(function () {
-    Route::get('/', [RewardItemController::class, 'index']);
-    Route::post('/store', [RewardItemController::class, 'store']);
-    Route::delete('/delete/{id}', [RewardItemController::class, 'destroy']);
-});
 
 Route::prefix('payment')->group(function () {
     Route::post('/', [PaymentController::class, 'store'])->middleware('auth:sanctum');

@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RewardItem extends Model
+class CartReward extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'reward_product_id',
-    ];
+    public function cartItems(){
+        return $this->hasMany(CartRewardItem::class);
+    }
 }
