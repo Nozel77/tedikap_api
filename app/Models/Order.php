@@ -15,6 +15,7 @@ class Order extends Model
         'voucher_id',
         'total_price',
         'discount_amount',
+        'reward_point',
         'status',
     ];
 

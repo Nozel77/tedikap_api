@@ -15,15 +15,19 @@ return new class extends Migration
             $table->id();
             $table->string('order_id');
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-            $table->unsignedBigInteger('product_id');
+            $table->unsignedBigInteger('product_id')->nullable();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->unsignedBigInteger('reward_product_id')->nullable();
+            $table->foreign('reward_product_id')->references('id')->on('reward_products')->onDelete('cascade');
+            $table->enum('item_type', ['product', 'reward'])->default('product');
             $table->enum('temperatur', ['hot', 'ice']);
             $table->enum('size', ['regular', 'large']);
             $table->enum('ice', ['less', 'normal']);
             $table->enum('sugar', ['less', 'normal']);
             $table->text('note')->nullable();
             $table->integer('quantity');
-            $table->integer('price');
+            $table->integer('price')->nullable();
+            $table->integer('points')->nullable();
             $table->timestamps();
         });
     }

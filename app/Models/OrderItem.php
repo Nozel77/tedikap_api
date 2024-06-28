@@ -12,8 +12,16 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
+        'reward_item_id',
+        'item_type',
+        'temperatur',
+        'size',
+        'ice',
+        'sugar',
+        'note',
         'quantity',
         'price',
+        'points',
     ];
 
     public function order()
@@ -26,8 +34,8 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function cartItems()
+    public function rewardItem()
     {
-        return $this->hasMany(CartItem::class);
+        return $this->belongsTo(CartRewardItem::class);
     }
 }
