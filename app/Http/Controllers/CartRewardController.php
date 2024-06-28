@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CartRequest;
-use App\Http\Resources\CartItemResource;
+use App\Http\Requests\CartRewardRequest;
+use App\Http\Resources\CartRewardItemResource;
 use App\Http\Resources\CartRewardResource;
 use App\Models\CartReward;
 use App\Models\CartRewardItem;
@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Auth;
 
 class CartRewardController extends Controller
 {
-
-    public function showCartByUser(){
+    public function showCartByUser()
+    {
         $user_id = Auth::id();
 
         $cart = CartReward::where('user_id', $user_id)->first();
@@ -23,24 +23,25 @@ class CartRewardController extends Controller
             ], 404);
         }
 
-        $cart_items = CartRewardItem::where('cart_id', $cart->id)->get();
-        $total_price = $cart_items->sum(function ($cart_item) {
-            return $cart_item->quantity * $cart_item->price;
+        $cart_items = CartRewardItem::where('cart_reward_id', $cart->id)->get();
+        $total_points = $cart_items->sum(function ($cart_item) {
+            return $cart_item->quantity * $cart_item->points;
         });
 
         $cart_items_array = $cart_items->map(function ($cart_item) {
-            return new CartItemResource($cart_item);
+            return new CartRewardItemResource($cart_item);
         });
 
         $cart->cartItems = $cart_items_array;
-        $cart->total_price = $total_price;
+        $cart->total_points = $total_points;
 
         return response()->json([
             'cart' => new CartRewardResource($cart),
         ]);
     }
 
-    public function showCartItemById($cartItemId){
+    public function showCartItemById($cartItemId)
+    {
         $user_id = Auth::id();
 
         $cartItem = CartRewardItem::whereHas('cart', function ($query) use ($user_id) {
@@ -53,14 +54,12 @@ class CartRewardController extends Controller
             ], 404);
         }
 
-       
         return response()->json([
-            'cart_item' =>  new CartItemResource($cartItem)
+            'cart_item' => new CartRewardItemResource($cartItem),
         ]);
     }
 
-
-    public function storeCart(CartRequest $request)
+    public function storeCart(CartRewardRequest $request)
     {
         $userId = Auth::id();
 
@@ -77,40 +76,42 @@ class CartRewardController extends Controller
         }
     }
 
-    public function addCartItem($cartId, CartRequest $request){
+    public function addCartItem($cartId, CartRewardRequest $request)
+    {
         $data = $request->validated();
 
-        $existingCartRewardItem = CartRewardItem::where('cart_id', $cartId)
-        ->where('product_id', $data['product_id'])
-        ->where('size', $data['size'])
-        ->where('temperatur', $data['temperatur'])
-        ->where('sugar', $data['sugar'])
-        ->where('ice', $data['ice'])
-        ->first();
+        $existingCartRewardItem = CartRewardItem::where('cart_reward_id', $cartId)
+            ->where('reward_product_id', $data['reward_product_id'])
+            ->where('size', $data['size'])
+            ->where('temperatur', $data['temperatur'])
+            ->where('sugar', $data['sugar'])
+            ->where('ice', $data['ice'])
+            ->first();
 
         if ($existingCartRewardItem) {
             $existingCartRewardItem->quantity += $data['quantity'];
             $existingCartRewardItem->save();
 
             return response()->json([
-                'message' => 'Cart item updated successfully.',
-                'cart' => new CartItemResource($existingCartRewardItem),
+                'message' => 'Reward Cart item updated successfully.',
+                'cart' => new CartRewardItemResource($existingCartRewardItem),
             ], 200);
         } else {
             $cartRewardItem = new CartRewardItem();
-            $cartRewardItem->cart_id = $cartId;
+            $cartRewardItem->cart_reward_id = $cartId;
             $cartRewardItem->fill($data);
             $cartRewardItem->note = $data['note'] ?? null;
             $cartRewardItem->save();
 
             return response()->json([
-                'message' => 'Cart item added successfully.',
-                'cart' => new CartItemResource($cartRewardItem),
+                'message' => 'Reward Cart item added successfully.',
+                'cart' => new CartRewardItemResource($cartRewardItem),
             ], 201);
         }
     }
 
-    public function updateCartItem($cartItemId, CartRequest $request){
+    public function updateCartItem($cartItemId, CartRewardRequest $request)
+    {
         $user_id = Auth::id();
 
         $cartItem = CartRewardItem::whereHas('cart', function ($query) use ($user_id) {
@@ -130,8 +131,8 @@ class CartRewardController extends Controller
         $cartItem->save();
 
         return response()->json([
-            'message' => 'Cart item updated successfully.',
-            'cart' => new CartItemResource($cartItem),
+            'message' => 'Reward Cart item updated successfully.',
+            'cart' => new CartRewardItemResource($cartItem),
         ]);
     }
 
@@ -166,30 +167,29 @@ class CartRewardController extends Controller
         $cartItem->save();
 
         return response()->json([
-            'message' => 'Cart item quantity updated successfully.',
-            'cart_item' => new CartItemResource($cartItem),
+            'message' => 'Reward Cart item quantity updated successfully.',
+            'cart_item' => new CartRewardItemResource($cartItem),
         ]);
     }
 
     public function deleteCartItem($cartItemId)
-{
-    $userId = Auth::id();
+    {
+        $userId = Auth::id();
 
-    $cartItem = CartRewardItem::whereHas('cart', function ($query) use ($userId) {
-        $query->where('user_id', $userId);
-    })->where('id', $cartItemId)->first();
+        $cartItem = CartRewardItem::whereHas('cart', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->where('id', $cartItemId)->first();
 
-    if (!$cartItem) {
+        if (! $cartItem) {
+            return response()->json([
+                'message' => 'Cart item not found for this user.',
+            ], 404);
+        }
+
+        $cartItem->delete();
+
         return response()->json([
-            'message' => 'Cart item not found for this user.',
-        ], 404);
+            'message' => 'Cart item deleted successfully.',
+        ]);
     }
-
-    $cartItem->delete();
-
-    return response()->json([
-        'message' => 'Cart item deleted successfully.',
-    ]);
-}
-
 }

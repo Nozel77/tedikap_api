@@ -9,7 +9,8 @@ class CartReward extends Model
 {
     use HasFactory;
 
-    public function cartItems(){
+    public function rewardCartItems()
+    {
         return $this->hasMany(CartRewardItem::class);
     }
 }

@@ -17,7 +17,7 @@ class CartRewardResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'total_price' => $this->total_price,
+            'total_points' => $this->total_points,
             'cartItems' => $this->cartItems,
         ];
     }

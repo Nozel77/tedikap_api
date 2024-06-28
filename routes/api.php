@@ -7,7 +7,6 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\RewardItemController;
 use App\Http\Controllers\RewardProductController;
 use App\Http\Controllers\StatusStoreController;
 use App\Http\Controllers\UserController;
@@ -86,7 +85,6 @@ Route::prefix('reward-product')->group(function () {
     Route::post('/update/{id}', [RewardProductController::class, 'update']);
     Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
 });
-
 
 Route::prefix('payment')->group(function () {
     Route::post('/', [PaymentController::class, 'store'])->middleware('auth:sanctum');

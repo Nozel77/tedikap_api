@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\RewardProduct;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class RewardProductSeeder extends Seeder

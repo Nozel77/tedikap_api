@@ -29,6 +29,7 @@ class OrderResource extends JsonResource
             'status' => $this->status,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'schedule_pickup' => $this->schedule_pickup,
             'order_items' => OrderItemsResource::collection($this->orderItems),
         ];
     }

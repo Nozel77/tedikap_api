@@ -10,22 +10,19 @@ class CartRewardItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'cart_id',
-        'product_id',
+        'cart_reward_id',
+        'reward_product_id',
         'quantity',
         'temperatur',
         'size',
         'ice',
         'sugar',
         'note',
-        'price',
+        'points',
     ];
 
-    public function cart(){
-        return $this->belongsTo(CartReward::class);
-    }
-
-    public function rewardProduct(){
-        return $this->belongsTo(RewardProduct::class);
+    public function cart()
+    {
+        return $this->belongsTo(CartReward::class, 'cart_reward_id');
     }
 }

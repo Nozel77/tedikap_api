@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('cart_reward_items', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('cart_id');
-            $table->foreign('cart_id')->references('id')->on('cart_rewards')->onDelete('cascade');
-            $table->unsignedBigInteger('product_id');
-            $table->foreign('product_id')->references('id')->on('reward_products')->onDelete('cascade');
+            $table->unsignedBigInteger('cart_reward_id');
+            $table->foreign('cart_reward_id')->references('id')->on('cart_rewards')->onDelete('cascade');
+            $table->unsignedBigInteger('reward_product_id');
+            $table->foreign('reward_product_id')->references('id')->on('reward_products')->onDelete('cascade');
             $table->enum('temperatur', ['hot', 'ice']);
             $table->enum('size', ['regular', 'large']);
             $table->enum('ice', ['less', 'normal']);
             $table->enum('sugar', ['less', 'normal']);
             $table->text('note')->nullable();
             $table->integer('quantity');
-            $table->integer('price');
+            $table->integer('points');
             $table->timestamps();
         });
     }

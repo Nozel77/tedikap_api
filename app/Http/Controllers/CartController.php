@@ -267,40 +267,39 @@ class CartController extends Controller
     }
 
     public function deleteCartItem($cartItemId)
-{
-    $userId = Auth::id();
+    {
+        $userId = Auth::id();
 
-    $cart = Cart::where('user_id', $userId)->first();
+        $cart = Cart::where('user_id', $userId)->first();
 
-    if (!$cart) {
+        if (! $cart) {
+            return response()->json(
+                [
+                    'message' => 'Cart not found.',
+                ],
+                404
+            );
+        }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)
+            ->where('id', $cartItemId)
+            ->first();
+
+        if (! $cartItem) {
+            return response()->json(
+                [
+                    'message' => 'Item keranjang tidak ditemukan.',
+                ],
+                404
+            );
+        }
+
+        $cartItem->delete();
+
         return response()->json(
             [
-                'message' => 'Cart not found.',
-            ],
-            404
+                'message' => 'Cart item deleted successfully.',
+            ]
         );
     }
-
-    $cartItem = CartItem::where('cart_id', $cart->id)
-        ->where('id', $cartItemId)
-        ->first();
-
-    if (!$cartItem) {
-        return response()->json(
-            [
-                'message' => 'Item keranjang tidak ditemukan.',
-            ],
-            404
-        );
-    }
-
-    $cartItem->delete();
-
-    return response()->json(
-        [
-            'message' => 'Cart item deleted successfully.',
-        ]
-    );
-}
-
 }
