@@ -25,4 +25,9 @@ class CartRewardItem extends Model
     {
         return $this->belongsTo(CartReward::class, 'cart_reward_id');
     }
+
+    public function rewardProduct()
+    {
+        return $this->belongsTo(RewardProduct::class, 'reward_product_id');
+    }
 }

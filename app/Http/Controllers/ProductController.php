@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
+use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\FavoriteResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Favorite;
@@ -48,7 +49,7 @@ class ProductController extends Controller
         return new ProductResource($data);
     }
 
-    public function update(ProductRequest $request, $id)
+    public function update(ProductUpdateRequest $request, $id)
     {
         $request->validated();
 
