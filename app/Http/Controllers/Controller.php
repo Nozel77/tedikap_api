@@ -25,7 +25,7 @@ class Controller extends BaseController
         return response([
             'message' => 'Data Updated',
             'data' => $data,
-        ], 409);
+        ], 200);
     }
 
     public function resAddData($data)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CartRewardItemRequest;
 use App\Http\Requests\CartRewardRequest;
 use App\Http\Resources\CartRewardItemResource;
 use App\Http\Resources\CartRewardResource;
@@ -110,7 +111,7 @@ class CartRewardController extends Controller
         }
     }
 
-    public function updateCartItem($cartItemId, CartRewardRequest $request)
+    public function updateCartItem($cartItemId, CartRewardItemRequest $request)
     {
         $user_id = Auth::id();
 

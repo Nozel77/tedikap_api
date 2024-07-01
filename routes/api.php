@@ -76,6 +76,7 @@ Route::prefix('cart-reward')->group(function () {
 
 Route::prefix('point')->group(function () {
     Route::get('/', [PointController::class, 'index'])->middleware('auth:sanctum');
+    Route::post('/add', [PointController::class, 'addPoints'])->middleware('auth:sanctum');
 });
 
 Route::prefix('reward-product')->group(function () {
