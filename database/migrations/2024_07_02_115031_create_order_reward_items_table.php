@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('order_items', function (Blueprint $table) {
+        Schema::create('order_reward_items', function (Blueprint $table) {
             $table->id();
-            $table->string('order_id');
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-            $table->unsignedBigInteger('product_id')->nullable();
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->string('order_reward_id');
+            $table->foreign('order_reward_id')->references('id')->on('order_rewards')->onDelete('cascade');
+            $table->unsignedBigInteger('reward_product_id');
+            $table->foreign('reward_product_id')->references('id')->on('reward_products')->onDelete('cascade');
             $table->enum('item_type', ['product', 'reward'])->default('product');
             $table->enum('temperatur', ['hot', 'ice']);
             $table->enum('size', ['regular', 'large']);
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->enum('sugar', ['less', 'normal']);
             $table->text('note')->nullable();
             $table->integer('quantity');
-            $table->integer('price')->nullable();
+            $table->integer('points')->nullable();
             $table->timestamps();
         });
     }
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('order_items');
+        Schema::dropIfExists('order_reward_items');
     }
 };

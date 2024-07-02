@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRewardController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderRewardController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointController;
@@ -101,7 +102,13 @@ Route::prefix('filter')->group(function () {
 Route::prefix('order')->group(function () {
     Route::get('/', [OrderController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/{id}', [OrderController::class, 'show'])->middleware('auth:sanctum');
-    Route::post('/store', [OrderController::class, 'store'])->middleware('auth:sanctum');
+    Route::post('/store', [OrderController::class, 'storeRegularOrder'])->middleware('auth:sanctum');
+});
+
+Route::prefix('order-reward')->group(function () {
+    Route::get('/', [OrderRewardController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/{id}', [OrderRewardController::class, 'show'])->middleware('auth:sanctum');
+    Route::post('/store', [OrderRewardController::class, 'store'])->middleware('auth:sanctum');
 });
 
 Route::prefix('status-store')->group(function () {
