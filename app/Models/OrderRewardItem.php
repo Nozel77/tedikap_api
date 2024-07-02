@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OrderItem extends Model
+class OrderRewardItem extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'order_id',
-        'product_id',
+        'order_reward_id',
+        'reward_product_id',
         'item_type',
         'temperatur',
         'size',
@@ -19,16 +19,11 @@ class OrderItem extends Model
         'sugar',
         'note',
         'quantity',
-        'price',
+        'points',
     ];
 
-    public function order()
+    public function orderReward()
     {
-        return $this->belongsTo(Order::class);
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(OrderReward::class, 'order_reward_id');
     }
 }

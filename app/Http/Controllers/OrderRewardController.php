@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
-use App\Http\Resources\OrderResource;
-use App\Models\Cart;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\UserVoucher;
-use App\Models\Voucher;
+use App\Http\Resources\OrderRewardResource;
+use App\Models\CartReward;
+use App\Models\OrderReward;
+use App\Models\OrderRewardItem;
+use App\Models\Point;
 use Illuminate\Support\Facades\Auth;
 
-class OrderController extends Controller
+class OrderRewardController extends Controller
 {
     public function generateCustomUUID()
     {
@@ -31,7 +30,7 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        $orders = Order::where('user_id', $user->id)->get();
+        $orders = OrderReward::where('user_id', $user->id)->get();
 
         $orders = $orders->map(function ($order) {
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -52,55 +51,43 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Orders retrieved successfully.',
-            'orders' => OrderResource::collection($orders),
+            'orders' => OrderRewardResource::collection($orders),
         ]);
     }
 
-    public function storeRegularOrder(OrderRequest $request)
+    public function store(OrderRequest $request)
     {
         $userId = Auth::id();
         $data = $request->validated();
-        $cart = Cart::where('user_id', $userId)
-            ->with('cartItems')
+        $rewardCart = CartReward::where('user_id', $userId)
+            ->with('rewardCartItems')
             ->first();
 
-        if (! $cart) {
+        if (! $rewardCart) {
             return response()->json([
-                'message' => 'Cart not found for the authenticated user.',
+                'message' => 'Reward cart not found for the authenticated user.',
             ], 404);
         }
 
-        $totalPrice = $cart->cartItems->sum(function ($cartItem) {
-            return $cartItem->quantity * $cartItem->price;
+        $totalPoints = $rewardCart->rewardCartItems->sum(function ($rewardCartItem) {
+            return $rewardCartItem->quantity * $rewardCartItem->points;
         });
 
-        $discountAmount = 0;
-        if ($cart->voucher_id) {
-            $voucher = Voucher::find($cart->voucher_id);
-            if ($voucher) {
-                $discountPercentage = $voucher->discount;
-                $discountAmount = ($discountPercentage / 100) * $totalPrice;
-                $totalPrice -= $discountAmount;
-                $userVoucher = UserVoucher::firstOrNew([
-                    'user_id' => $userId,
-                    'voucher_id' => $cart->voucher_id,
-                ]);
-                $userVoucher->used = true;
-                $userVoucher->save();
-            }
+        $userPoints = Point::where('user_id', $userId)->sum('point');
+        if ($userPoints < $totalPoints) {
+            return response()->json([
+                'message' => 'Points not enough.',
+            ], 400);
         }
 
-        $additionalPoints = floor($totalPrice / 3000);
-        $additionalPoints += ($totalPrice % 3000 == 0) ? 0 : 1;
+        $remainingPoints = $userPoints - $totalPoints;
+        Point::where('user_id', $userId)->update(['point' => $remainingPoints]);
 
-        $order = new Order();
+        $order = new OrderReward();
         $order->id = $this->generateCustomUUID();
         $order->user_id = $userId;
-        $order->cart_id = $cart->id;
-        $order->voucher_id = $cart->voucher_id;
-        $order->total_price = $totalPrice;
-        $order->discount_amount = $discountAmount;
-        $order->reward_point = $additionalPoints;
+        $order->cart_reward_id = $rewardCart->id;
+        $order->total_point = $totalPoints;
         $order->status = 'ongoing';
         $order->save();
 
@@ -117,28 +104,21 @@ class OrderController extends Controller
 
         $order->schedule_pickup = $pickupTime;
 
-        foreach ($cart->cartItems as $cartItem) {
-            $orderItem = new OrderItem();
-            $orderItem->order_id = $order->id;
-            $orderItem->product_id = $cartItem->product_id;
-            $orderItem->item_type = 'product';
-            $orderItem->temperatur = $cartItem->temperatur;
-            $orderItem->size = $cartItem->size;
-            $orderItem->ice = $cartItem->ice;
-            $orderItem->sugar = $cartItem->sugar;
-            $orderItem->note = $cartItem->note;
-            $orderItem->quantity = $cartItem->quantity;
-            $orderItem->price = $cartItem->price;
+        foreach ($rewardCart->rewardCartItems as $rewardCartItem) {
+            $orderItem = new OrderRewardItem();
+            $orderItem->order_reward_id = $order->id;
+            $orderItem->reward_product_id = $rewardCartItem->reward_product_id;
+            $orderItem->item_type = 'reward';
+            $orderItem->quantity = $rewardCartItem->quantity;
+            $orderItem->points = $rewardCartItem->points;
             $orderItem->save();
         }
-        $cart->cartItems()->delete();
 
-        $cart->voucher_id = null;
-        $cart->save();
+        $rewardCart->rewardCartItems()->delete();
 
         return response()->json([
-            'message' => 'Order placed successfully.',
-            'order' => new OrderResource($order),
+            'message' => 'Reward order placed successfully.',
+            'order' => new OrderRewardResource($order),
         ], 201);
     }
 
@@ -146,11 +126,11 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        $order = Order::where('id', $id)->where('user_id', $user->id)->first();
+        $order = OrderReward::where('id', $id)->where('user_id', $user->id)->first();
 
         if (! $order) {
             return response()->json([
-                'message' => 'Order not found.',
+                'message' => 'Order Reward not found.',
             ], 404);
         }
 
@@ -171,7 +151,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order retrieved successfully.',
-            'order' => new OrderResource($order),
+            'order' => new OrderRewardResource($order),
         ]);
     }
 }

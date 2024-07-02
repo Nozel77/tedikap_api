@@ -11,17 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('order_rewards', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->unsignedBigInteger('cart_id')->nullable();
-            $table->foreign('cart_id')->references('id')->on('carts')->onDelete('cascade');
-            $table->unsignedBigInteger('voucher_id')->nullable();
-            $table->foreign('voucher_id')->references('id')->on('vouchers')->onDelete('cascade');
-            $table->integer('total_price');
-            $table->integer('discount_amount')->default(0);
-            $table->integer('reward_point')->default(0);
+            $table->unsignedBigInteger('cart_reward_id');
+            $table->foreign('cart_reward_id')->references('id')->on('cart_rewards')->onDelete('cascade');
+            $table->integer('total_point')->default(0);
             $table->string('status')->default('ongoing');
             $table->timestamps();
         });
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('order_rewards');
     }
 };

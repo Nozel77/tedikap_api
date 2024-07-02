@@ -45,13 +45,13 @@ class CartRewardController extends Controller
     {
         $user_id = Auth::id();
 
-        $cartItem = CartRewardItem::whereHas('cart', function ($query) use ($user_id) {
+        $cartItem = CartRewardItem::whereHas('cartReward', function ($query) use ($user_id) {
             $query->where('user_id', $user_id);
         })->where('id', $cartItemId)->with('rewardProduct')->first();
 
         if (! $cartItem) {
             return response()->json([
-                'message' => 'Cart item not found for this user.',
+                'message' => 'CartReward item not found for this user.',
             ], 404);
         }
 

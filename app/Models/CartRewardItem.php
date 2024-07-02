@@ -21,7 +21,7 @@ class CartRewardItem extends Model
         'points',
     ];
 
-    public function cart()
+    public function cartReward()
     {
         return $this->belongsTo(CartReward::class, 'cart_reward_id');
     }
