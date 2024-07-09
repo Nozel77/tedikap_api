@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRewardController;
+use App\Http\Controllers\FirebasePushController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderRewardController;
 use App\Http\Controllers\OtpController;
@@ -33,6 +34,8 @@ Route::prefix('user')->group(function () {
     Route::get('get-user', [UserController::class, 'me'])->middleware('auth:sanctum');
     Route::post('update-profile', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
     Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
+    Route::put('/update-fcm-token', [FirebasePushController::class, 'setToken'])->middleware('auth:sanctum');
+    Route::post('send-notification/{id}',[FirebasePushController::class,'notification'])->middleware('auth:sanctum');
 });
 
 Route::prefix('product')->group(function () {
