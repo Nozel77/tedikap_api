@@ -25,8 +25,8 @@ class RewardProductRequest extends FormRequest
             'name' => 'required|string',
             'description' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'regular_price' => 'required|integer',
-            'large_price' => 'required|integer',
+            'regular_point' => 'required|integer',
+            'large_point' => 'required|integer',
             'category' => 'required|string',
         ];
     }

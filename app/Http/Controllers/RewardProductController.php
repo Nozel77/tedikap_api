@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RewardProductRequest;
+use App\Http\Requests\RewardProductUpdateRequest;
 use App\Http\Resources\RewardProductResource;
 use App\Models\RewardProduct;
 use Illuminate\Http\Request;
@@ -50,8 +51,8 @@ class RewardProductController extends Controller
         $data = new RewardProduct([
             'name' => $request->name,
             'description' => $request->description,
-            'regular_price' => $request->regular_price,
-            'large_price' => $request->large_price,
+            'regular_point' => $request->regular_point,
+            'large_point' => $request->large_point,
             'category' => $request->category,
             'image' => $imageName,
         ]);
@@ -77,7 +78,7 @@ class RewardProductController extends Controller
         ]);
     }
 
-    public function update(RewardProductRequest $request, $id)
+    public function update(RewardProductUpdateRequest $request, $id)
     {
         $request->validated();
 

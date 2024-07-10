@@ -35,27 +35,33 @@ Route::prefix('user')->group(function () {
     Route::post('update-profile', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
     Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
     Route::put('/update-fcm-token', [FirebasePushController::class, 'setToken'])->middleware('auth:sanctum');
-    Route::post('send-notification/{id}',[FirebasePushController::class,'notification'])->middleware('auth:sanctum');
+    Route::post('send-notification/{id}', [FirebasePushController::class, 'notification'])->middleware('auth:sanctum');
 });
 
 Route::prefix('product')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
-    Route::post('/store', [ProductController::class, 'store']);
-    Route::get('/show/{id}', [ProductController::class, 'show']);
-    Route::post('/update/{id}', [ProductController::class, 'update']);
-    Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
     Route::post('/favorite/{product_id}', [ProductController::class, 'likeProduct'])->middleware('auth:sanctum');
     Route::get('/favorite', [ProductController::class, 'getFavorite'])->middleware('auth:sanctum');
+
+    Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+        Route::post('/store', [ProductController::class, 'store']);
+        Route::get('/show/{id}', [ProductController::class, 'show']);
+        Route::post('/update/{id}', [ProductController::class, 'update']);
+        Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
+    });
 });
 
 Route::prefix('voucher')->group(function () {
     Route::get('/', [VoucherController::class, 'index']);
+    Route::get('/show/{id}', [VoucherController::class, 'show']);
     Route::get('/active', [VoucherController::class, 'activeVouchers'])->middleware('auth:sanctum');
     Route::post('/redeem', [VoucherController::class, 'redeemVoucher'])->middleware('auth:sanctum');
-    Route::post('/store', [VoucherController::class, 'store']);
-    Route::get('/show/{id}', [VoucherController::class, 'show']);
-    Route::post('/update/{id}', [VoucherController::class, 'update']);
-    Route::delete('/delete/{id}', [VoucherController::class, 'destroy']);
+
+    Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+        Route::post('/store', [VoucherController::class, 'store']);
+        Route::post('/update/{id}', [VoucherController::class, 'update']);
+        Route::delete('/delete/{id}', [VoucherController::class, 'destroy']);
+    });
 });
 
 Route::prefix('cart')->group(function () {
@@ -85,10 +91,13 @@ Route::prefix('point')->group(function () {
 
 Route::prefix('reward-product')->group(function () {
     Route::get('/', [RewardProductController::class, 'index']);
-    Route::post('/store', [RewardProductController::class, 'store']);
     Route::get('/show/{id}', [RewardProductController::class, 'show']);
-    Route::post('/update/{id}', [RewardProductController::class, 'update']);
-    Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
+
+    Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+        Route::post('/store', [RewardProductController::class, 'store']);
+        Route::post('/update/{id}', [RewardProductController::class, 'update']);
+        Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
+    });
 });
 
 Route::prefix('payment')->group(function () {
@@ -103,7 +112,8 @@ Route::prefix('filter')->group(function () {
 });
 
 Route::prefix('order')->group(function () {
-    Route::get('/', [OrderController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/get-order', [OrderController::class, 'getOrderAdmin']);
+    Route::get('/history', [OrderController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/{id}', [OrderController::class, 'show'])->middleware('auth:sanctum');
     Route::post('/store', [OrderController::class, 'storeRegularOrder'])->middleware('auth:sanctum');
 });
@@ -115,6 +125,6 @@ Route::prefix('order-reward')->group(function () {
 });
 
 Route::prefix('status-store')->group(function () {
-    Route::get('/', [StatusStoreController::class, 'storeStatus']);
-    Route::put('/update', [StatusStoreController::class, 'updateStoreStatus']);
+    Route::get('/', [StatusStoreController::class, 'storeStatus'])->middleware(['auth:sanctum', 'admin']);
+    Route::put('/update', [StatusStoreController::class, 'updateStoreStatus'])->middleware(['auth:sanctum', 'admin']);
 });
