@@ -10,6 +10,7 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 class FirebasePushController extends Controller
 {
     protected $notification;
+
     public function __construct()
     {
         $this->notification = Firebase::messaging();
@@ -19,10 +20,11 @@ class FirebasePushController extends Controller
     {
         $token = $request->input('fcm_token');
         $request->user()->update([
-            'fcm_token' => $token
+            'fcm_token' => $token,
         ]);
+
         return response()->json([
-            'message' => 'Successfully Updated FCM Token'
+            'message' => 'Successfully Updated FCM Token',
         ]);
     }
 
@@ -38,6 +40,7 @@ class FirebasePushController extends Controller
         ]);
 
         $this->notification->send($message);
+
         return response()->json(['message' => 'Notification sent'], 200);
     }
 }

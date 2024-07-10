@@ -13,8 +13,8 @@ class RewardProduct extends Model
         'name',
         'description',
         'image',
-        'regular_price',
-        'large_price',
+        'regular_point',
+        'large_point',
         'category',
     ];
 }

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             StatusStoreSeeder::class,
             VoucherSeeder::class,
             RewardProductSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }

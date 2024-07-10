@@ -18,8 +18,8 @@ class RewardProductResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'regular_price' => $this->regular_price,
-            'large_price' => $this->large_price,
+            'regular_point' => $this->regular_point,
+            'large_point' => $this->large_point,
             'category' => $this->category,
             'image' => $this->image,
         ];

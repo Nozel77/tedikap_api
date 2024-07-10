@@ -174,4 +174,14 @@ class OrderController extends Controller
             'order' => new OrderResource($order),
         ]);
     }
+
+    public function getOrderAdmin()
+    {
+        $orders = Order::where('status', 'ongoing')->orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'message' => 'Ongoing orders retrieved successfully.',
+            'orders' => OrderResource::collection($orders),
+        ], 200);
+    }
 }
