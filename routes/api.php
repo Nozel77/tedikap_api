@@ -40,12 +40,12 @@ Route::prefix('user')->group(function () {
 
 Route::prefix('product')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
+    Route::get('/show/{id}', [ProductController::class, 'show']);
     Route::post('/favorite/{product_id}', [ProductController::class, 'likeProduct'])->middleware('auth:sanctum');
     Route::get('/favorite', [ProductController::class, 'getFavorite'])->middleware('auth:sanctum');
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [ProductController::class, 'store']);
-        Route::get('/show/{id}', [ProductController::class, 'show']);
         Route::post('/update/{id}', [ProductController::class, 'update']);
         Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
     });
@@ -116,6 +116,11 @@ Route::prefix('order')->group(function () {
     Route::get('/history', [OrderController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/{id}', [OrderController::class, 'show'])->middleware('auth:sanctum');
     Route::post('/store', [OrderController::class, 'storeRegularOrder'])->middleware('auth:sanctum');
+
+    Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+        Route::get('/get-order', [OrderController::class, 'getOrderAdmin']);
+        Route::put('/update-status/{id}', [OrderController::class, 'updateStatusOrder']);
+    });
 });
 
 Route::prefix('order-reward')->group(function () {

@@ -17,6 +17,7 @@ class Order extends Model
         'discount_amount',
         'reward_point',
         'status',
+        'schedule_pickup'
     ];
 
     public $incrementing = false;

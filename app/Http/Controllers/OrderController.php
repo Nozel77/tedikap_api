@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
@@ -116,6 +117,7 @@ class OrderController extends Controller
         }
 
         $order->schedule_pickup = $pickupTime;
+        $order->save();
 
         foreach ($cart->cartItems as $cartItem) {
             $orderItem = new OrderItem();
@@ -177,11 +179,42 @@ class OrderController extends Controller
 
     public function getOrderAdmin()
     {
-        $orders = Order::where('status', 'ongoing')->orderBy('created_at', 'desc')->get();
+        $order = Order::where('status', 'ongoing')->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'message' => 'Ongoing orders retrieved successfully.',
-            'orders' => OrderResource::collection($orders),
+            'orders' => OrderResource::collection($order),
+        ], 200);
+    }
+
+    public function updateStatusOrder(Request $request, $id){
+        $action = $request->query('action');
+
+        if (!$action || !in_array($action, ['accepted', 'rejected', ])) {
+            return response()->json([
+                'message' => 'Invalid action.',
+            ], 400);
+        }
+
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if ($action == 'accepted') {
+            $order->status = 'process';
+        } elseif ($action == 'rejected') {
+            $order->status = 'canceled';
+        }
+
+        $order->save();
+
+        return response()->json([
+            'message' => 'Order status updated successfully.',
+            'order' => new OrderResource($order),
         ], 200);
     }
 }

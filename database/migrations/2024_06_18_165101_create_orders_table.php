@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('discount_amount')->default(0);
             $table->integer('reward_point')->default(0);
             $table->string('status')->default('ongoing');
+            $table->string('schedule_pickup')->nullable();
             $table->timestamps();
         });
     }
