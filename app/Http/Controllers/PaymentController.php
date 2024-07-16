@@ -47,48 +47,38 @@ class PaymentController extends Controller
         $result = $this->apiInstance->createInvoice($create_invoice_request);
 
         $payment = new Payment();
-        $payment->status = 'PENDING';
+        $payment->status = 'menunggu pembayaran';
         $payment->checkout_link = $result['invoice_url'];
         $payment->external_id = $create_invoice_request['external_id'];
         $payment->user_id = $user->id;
         $payment->amount = $order->total_price;
+        $payment->payment_channel = null;
+        $payment->order_id = $order->id;
         $payment->save();
 
         return response()->json($payment);
     }
 
-    public function notification(Request $request)
-    {
-        $result = $this->apiInstance->getInvoices(null, $request->external_id);
-
-        $payment = Payment::where('external_id', $request->external_id)->firstOrFail();
-
-        if ($payment->status == 'SETTLED') {
-            return response()->json('payment anda telah diproses');
-        }
-
-        $payment->status = strtolower($result[0]['status']);
-        $payment->save();
-
-        return response()->json(['message' => 'SUCCESS']);
-    }
-
-    public function paymentCallback(Request $request)
+    public function webhook(Request $request)
     {
         $request->validate([
             'external_id' => 'required|exists:payments,external_id',
             'status' => 'required|string',
+            'payment_channel' => 'required|string',
         ]);
 
         $payment = Payment::where('external_id', $request->external_id)->firstOrFail();
 
-        $payment->status = $request->status;
+        if (strtolower($payment->status) === 'paid') {
+            return response()->json('Payment has already been processed', 200);
+        }
+
+        $payment->status = strtolower($request->status);
+        $payment->payment_channel = $request->payment_channel;
         $payment->save();
 
-        if ($request->status == 'SUCCESS') {
-
+        if (strtolower($request->status) === 'paid') {
             $additionalPoints = floor($payment->amount / 3000);
-
             $additionalPoints += ($payment->amount % 3000 == 0) ? 0 : 1;
 
             if ($additionalPoints > 0) {
@@ -96,8 +86,14 @@ class PaymentController extends Controller
                 $point->point += $additionalPoints;
                 $point->save();
             }
+
+            $order = $payment->order;
+            if ($order) {
+                $order->payment_channel = $payment->payment_channel;
+                $order->save();
+            }
         }
 
-        return response()->json(['message' => 'Payment status updated successfully']);
+        return response()->json(['message' => 'Payment status updated successfully'], 200);
     }
 }

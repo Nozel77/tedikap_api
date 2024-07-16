@@ -19,6 +19,7 @@ class OrderRewardItemsResource extends JsonResource
         return [
             'id' => $this->id,
             'product_id' => $this->reward_product_id,
+            'product_name' => $this->rewardProduct->name,
             'item_type' => $this->item_type,
             'temperatur' => $this->temperatur,
             'size' => $this->size,

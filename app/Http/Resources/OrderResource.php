@@ -27,6 +27,7 @@ class OrderResource extends JsonResource
             'reward_point' => $this->reward_point,
             'original_price' => $original_price,
             'status' => $this->status,
+            'payment_channel' => $this->payment ? $this->payment->payment_channel : null,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'schedule_pickup' => $this->schedule_pickup,

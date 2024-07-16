@@ -26,4 +26,9 @@ class OrderRewardItem extends Model
     {
         return $this->belongsTo(OrderReward::class, 'order_reward_id');
     }
+
+    public function rewardProduct()
+    {
+        return $this->belongsTo(RewardProduct::class);
+    }
 }

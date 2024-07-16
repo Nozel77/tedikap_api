@@ -115,7 +115,7 @@ class CartRewardController extends Controller
     {
         $user_id = Auth::id();
 
-        $cartItem = CartRewardItem::whereHas('cart', function ($query) use ($user_id) {
+        $cartItem = CartRewardItem::whereHas('cartReward', function ($query) use ($user_id) {
             $query->where('user_id', $user_id);
         })->where('id', $cartItemId)->first();
 
@@ -177,7 +177,7 @@ class CartRewardController extends Controller
     {
         $userId = Auth::id();
 
-        $cartItem = CartRewardItem::whereHas('cart', function ($query) use ($userId) {
+        $cartItem = CartRewardItem::whereHas('cartReward', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })->where('id', $cartItemId)->first();
 

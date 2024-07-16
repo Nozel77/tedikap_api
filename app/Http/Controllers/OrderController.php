@@ -32,7 +32,7 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        $orders = Order::where('user_id', $user->id)->get();
+        $orders = Order::where('user_id', $user->id)->with('payment')->get();
 
         $orders = $orders->map(function ($order) {
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -47,6 +47,12 @@ class OrderController extends Controller
             }
 
             $order->schedule_pickup = $pickupTime;
+
+            if ($order->payment) {
+                $order->payment_channel = $order->payment->payment_channel;
+            } else {
+                $order->payment_channel = null;
+            }
 
             return $order;
         });
@@ -187,10 +193,11 @@ class OrderController extends Controller
         ], 200);
     }
 
-    public function updateStatusOrder(Request $request, $id){
+    public function updateStatusOrder(Request $request, $id)
+    {
         $action = $request->query('action');
 
-        if (!$action || !in_array($action, ['accepted', 'rejected', ])) {
+        if (! $action || ! in_array($action, ['accepted', 'rejected'])) {
             return response()->json([
                 'message' => 'Invalid action.',
             ], 400);
@@ -198,7 +205,7 @@ class OrderController extends Controller
 
         $order = Order::find($id);
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'message' => 'Order not found.',
             ], 404);

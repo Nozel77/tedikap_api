@@ -17,7 +17,7 @@ class Order extends Model
         'discount_amount',
         'reward_point',
         'status',
-        'schedule_pickup'
+        'schedule_pickup',
     ];
 
     public $incrementing = false;
@@ -44,5 +44,10 @@ class Order extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class, 'order_id', 'id');
     }
 }
