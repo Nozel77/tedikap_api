@@ -102,8 +102,7 @@ Route::prefix('reward-product')->group(function () {
 
 Route::prefix('payment')->group(function () {
     Route::post('/', [PaymentController::class, 'store'])->middleware('auth:sanctum');
-    Route::post('/notification', [PaymentController::class, 'notification']);
-    Route::post('/callback', [PaymentController::class, 'paymentCallback']);
+    Route::post('/webhook', [PaymentController::class, 'webhook']);
 });
 
 Route::prefix('filter')->group(function () {
