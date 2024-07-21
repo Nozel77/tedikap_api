@@ -32,7 +32,7 @@ Route::prefix('user')->group(function () {
     Route::post('otp', [OtpController::class, 'sendOtp']);
     Route::post('reset-pw', [UserController::class, 'resetPassword']);
     Route::get('get-user', [UserController::class, 'me'])->middleware('auth:sanctum');
-    Route::post('update-profile', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
+    Route::put('update-profile', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
     Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
     Route::put('/update-fcm-token', [FirebasePushController::class, 'setToken'])->middleware('auth:sanctum');
     Route::post('send-notification/{id}', [FirebasePushController::class, 'notification'])->middleware('auth:sanctum');
@@ -119,6 +119,8 @@ Route::prefix('order')->group(function () {
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::get('/get-order', [OrderController::class, 'getOrderAdmin']);
         Route::put('/update-status/{id}', [OrderController::class, 'updateStatusOrder']);
+        Route::put('/update-status-siap/{id}', [OrderController::class, 'updateStatusOrderSiap']);
+        Route::put('/update-status-selesai/{id}', [OrderController::class, 'updateStatusOrderSelesai']);
     });
 });
 

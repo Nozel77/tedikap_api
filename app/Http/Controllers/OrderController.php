@@ -28,11 +28,24 @@ class OrderController extends Controller
         return $customUUID;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        $orders = Order::where('user_id', $user->id)->with('payment')->get();
+        $filterType = $request->query('type');
+
+        $ongoingStatuses = ['menunggu pembayaran', 'menunggu konfirmasi', 'pesanan diproses', 'pesanan siap diambil'];
+        $historyStatuses = ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'];
+
+        $query = Order::where('user_id', $user->id)->with('payment');
+
+        if ($filterType === 'ongoing') {
+            $query->whereIn('status', $ongoingStatuses);
+        } elseif ($filterType === 'history') {
+            $query->whereIn('status', $historyStatuses);
+        }
+
+        $orders = $query->get();
 
         $orders = $orders->map(function ($order) {
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -108,7 +121,7 @@ class OrderController extends Controller
         $order->total_price = $totalPrice;
         $order->discount_amount = $discountAmount;
         $order->reward_point = $additionalPoints;
-        $order->status = 'ongoing';
+        $order->status = 'menunggu pembayaran';
         $order->save();
 
         $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -185,7 +198,7 @@ class OrderController extends Controller
 
     public function getOrderAdmin()
     {
-        $order = Order::where('status', 'ongoing')->orderBy('created_at', 'desc')->get();
+        $order = Order::where('status', 'menunggu konfirmasi')->orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'message' => 'Ongoing orders retrieved successfully.',
@@ -212,9 +225,73 @@ class OrderController extends Controller
         }
 
         if ($action == 'accepted') {
-            $order->status = 'process';
+            $order->status = 'pesanan diproses';
         } elseif ($action == 'rejected') {
-            $order->status = 'canceled';
+            $order->status = 'pesanan ditolak';
+        }
+
+        $order->save();
+
+        return response()->json([
+            'message' => 'Order status updated successfully.',
+            'order' => new OrderResource($order),
+        ], 200);
+    }
+
+    public function updateStatusOrderSiap(Request $request, $id)
+    {
+        $action = $request->query('action');
+
+        if (! $action || ! in_array($action, ['accepted', 'rejected'])) {
+            return response()->json([
+                'message' => 'Invalid action.',
+            ], 400);
+        }
+
+        $order = Order::find($id);
+
+        if (! $order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if ($action == 'accepted') {
+            $order->status = 'pesanan siap diambil';
+        } elseif ($action == 'rejected') {
+            $order->status = 'pesanan dibatalkan';
+        }
+
+        $order->save();
+
+        return response()->json([
+            'message' => 'Order status updated successfully.',
+            'order' => new OrderResource($order),
+        ], 200);
+    }
+
+    public function updateStatusOrderSelesai(Request $request, $id)
+    {
+        $action = $request->query('action');
+
+        if (! $action || ! in_array($action, ['accepted', 'rejected'])) {
+            return response()->json([
+                'message' => 'Invalid action.',
+            ], 400);
+        }
+
+        $order = Order::find($id);
+
+        if (! $order) {
+            return response()->json([
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if ($action == 'accepted') {
+            $order->status = 'pesanan selesai';
+        } elseif ($action == 'rejected') {
+            $order->status = 'pesanan dibatalkan';
         }
 
         $order->save();

@@ -22,8 +22,9 @@ return new class extends Migration
             $table->integer('total_price');
             $table->integer('discount_amount')->default(0);
             $table->integer('reward_point')->default(0);
-            $table->string('status')->default('ongoing');
+            $table->string('status')->default('menunggu pembayaran');
             $table->string('schedule_pickup')->nullable();
+            $table->string('payment_channel')->nullable();
             $table->timestamps();
         });
     }

@@ -18,12 +18,17 @@ class Order extends Model
         'reward_point',
         'status',
         'schedule_pickup',
+        'payment_channel',
     ];
 
     public $incrementing = false;
 
     protected $casts = [
         'order_items' => 'array',
+    ];
+
+    protected $attributes = [
+        'payment_channel' => null,
     ];
 
     public function user()

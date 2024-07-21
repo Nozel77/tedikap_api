@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('checkout_link');
             $table->decimal('amount', 15, 2);
             $table->string('payment_channel')->nullable();
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
         });
     }
