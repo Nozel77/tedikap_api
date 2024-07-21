@@ -12,7 +12,7 @@ class Payment extends Model
     protected $fillable = ['external_id', 'status', 'checkout_link', 'payment_channel'];
 
     protected $attributes = [
-        'payment_channel' => null, // Nilai default
+        'payment_channel' => null,
     ];
 
     public function order()

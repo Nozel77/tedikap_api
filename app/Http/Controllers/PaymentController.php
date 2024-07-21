@@ -25,7 +25,7 @@ class PaymentController extends Controller
         $user = Auth::user();
 
         $order = Order::where('user_id', $user->id)
-            ->where('status', 'ongoing')
+            ->where('status', 'menunggu pembayaran')
             ->latest()
             ->first();
 
@@ -37,11 +37,16 @@ class PaymentController extends Controller
 
         $payer_email = $user->email;
 
+        $localTime = now()->addMinutes(2);
+        $utcTime = $localTime->utc();
+        $expiryDate = $utcTime->toIso8601String();
+
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
-            'description' => 'checkout demo',
+            'description' => 'kenapa gabisa ',
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
+            'expiry_date' => $expiryDate,
         ]);
 
         $result = $this->apiInstance->createInvoice($create_invoice_request);
@@ -54,6 +59,7 @@ class PaymentController extends Controller
         $payment->amount = $order->total_price;
         $payment->payment_channel = null;
         $payment->order_id = $order->id;
+        $payment->expires_at = $utcTime;
         $payment->save();
 
         return response()->json($payment);
@@ -90,6 +96,7 @@ class PaymentController extends Controller
             $order = $payment->order;
             if ($order) {
                 $order->payment_channel = $payment->payment_channel;
+                $order->status = 'menunggu konfirmasi';
                 $order->save();
             }
         }
