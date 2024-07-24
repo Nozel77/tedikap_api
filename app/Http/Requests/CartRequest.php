@@ -23,10 +23,10 @@ class CartRequest extends FormRequest
     {
         return [
             'product_id' => 'required|integer',
-            'temperatur' => 'required|string',
-            'size' => 'required|string',
-            'ice' => 'required|string',
-            'sugar' => 'required|string',
+            'temperatur' => 'nullable|string',
+            'size' => 'nullable|string',
+            'ice' => 'nullable|string',
+            'sugar' => 'nullable|string',
             'note' => 'nullable|string',
             'quantity' => 'required|integer',
             'price' => 'required|numeric',

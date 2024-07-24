@@ -8,6 +8,7 @@ use App\Http\Resources\CartRewardItemResource;
 use App\Http\Resources\CartRewardResource;
 use App\Models\CartReward;
 use App\Models\CartRewardItem;
+use App\Models\RewardProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -81,12 +82,38 @@ class CartRewardController extends Controller
     {
         $data = $request->validated();
 
+        $rewardProduct = RewardProduct::find($data['reward_product_id']);
+        if (! $rewardProduct) {
+            return response()->json([
+                'message' => 'Reward product not found.',
+            ], 404);
+        }
+
+        $isSnackCategory = $rewardProduct->category === 'snack';
+
+        if ($isSnackCategory) {
+            $data['temperatur'] = null;
+            $data['size'] = null;
+            $data['sugar'] = null;
+            $data['ice'] = null;
+        } elseif ($data['temperatur'] === 'hot') {
+            $data['ice'] = null;
+        }
+
         $existingCartRewardItem = CartRewardItem::where('cart_reward_id', $cartId)
             ->where('reward_product_id', $data['reward_product_id'])
-            ->where('size', $data['size'])
-            ->where('temperatur', $data['temperatur'])
-            ->where('sugar', $data['sugar'])
-            ->where('ice', $data['ice'])
+            ->where(function ($query) use ($data, $isSnackCategory) {
+                $query->where('temperatur', $data['temperatur'])
+                    ->where('size', $data['size'])
+                    ->where('sugar', $data['sugar'])
+                    ->where(function ($subQuery) use ($data, $isSnackCategory) {
+                        if ($isSnackCategory) {
+                            $subQuery->whereNull('ice');
+                        } else {
+                            $subQuery->where('ice', $data['ice']);
+                        }
+                    });
+            })
             ->first();
 
         if ($existingCartRewardItem) {

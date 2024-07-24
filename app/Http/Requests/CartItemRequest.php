@@ -22,10 +22,10 @@ class CartItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'temperature' => 'string',
-            'size' => 'string',
-            'ice' => 'string',
-            'sugar' => 'string',
+            'temperature' => 'nullable|string',
+            'size' => 'nullable|string',
+            'ice' => 'nullable|string',
+            'sugar' => 'nullable|string',
             'note' => 'nullable|string',
             'quantity' => 'integer',
             'price' => 'integer',
