@@ -22,7 +22,7 @@ class BannerUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+            'image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
     }
 }
