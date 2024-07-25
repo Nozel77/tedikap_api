@@ -26,4 +26,9 @@ class OrderReward extends Model
     {
         return $this->hasMany(OrderRewardItem::class, 'order_reward_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\OrderReward;
 use App\Models\OrderRewardItem;
 use App\Models\Point;
 use App\Models\RewardProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderRewardController extends Controller
@@ -27,11 +28,24 @@ class OrderRewardController extends Controller
         return $customUUID;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        $orders = OrderReward::where('user_id', $user->id)->get();
+        $filterType = $request->query('type');
+
+        $ongoingStatuses = ['menunggu konfirmasi', 'pesanan diproses', 'pesanan siap diambil'];
+        $historyStatuses = ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'];
+
+        $query = OrderReward::where('user_id', $user->id)->orderBy('created_at', 'desc');
+
+        if ($filterType === 'ongoing') {
+            $query->whereIn('status', $ongoingStatuses);
+        } elseif ($filterType === 'history') {
+            $query->whereIn('status', $historyStatuses);
+        }
+
+        $orders = $query->get();
 
         $orders = $orders->map(function ($order) {
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');

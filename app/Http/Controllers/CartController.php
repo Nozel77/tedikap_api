@@ -163,42 +163,71 @@ class CartController extends Controller
 
     public function updateCartItem($id, CartItemRequest $request)
     {
-        $data = $request->validated();
+    $data = $request->validated();
 
-        $cartItem = CartItem::find($id);
+    $cartItem = CartItem::find($id);
 
-        if (! $cartItem) {
-            return response()->json(
-                [
-                    'message' => 'Cart item not found.',
-                ],
-                404
-            );
-        }
-
-        $userId = Auth::id();
-        $cart = Cart::where('id', $cartItem->cart_id)->where('user_id', $userId)->first();
-        if (! $cart) {
-            return response()->json(
-                [
-                    'message' => 'Unauthorized action.',
-                ],
-                403
-            );
-        }
-
-        $cartItem->fill($data);
-        $cartItem->note = $data['note'] ?? $cartItem->note;
-        $cartItem->save();
-
+    if (!$cartItem) {
         return response()->json(
             [
-                'message' => 'Cart item updated successfully.',
-                'cart' => new CartItemResource($cartItem),
+                'message' => 'Cart item not found.',
             ],
-            200
+            404
         );
     }
+
+    $userId = Auth::id();
+    $cart = Cart::where('id', $cartItem->cart_id)->where('user_id', $userId)->first();
+    if (!$cart) {
+        return response()->json(
+            [
+                'message' => 'Unauthorized action.',
+            ],
+            403
+        );
+    }
+
+    $product = Product::find($cartItem->product_id);
+    if (!$product) {
+        return response()->json(
+            [
+                'message' => 'Product not found.',
+            ],
+            404
+        );
+    }
+
+    $isSnackCategory = $product->category === 'snack';
+
+    if ($isSnackCategory) {
+        $cartItem->temperatur = null;
+        $cartItem->size = null;
+        $cartItem->sugar = null;
+        $cartItem->ice = null;
+    } else {
+        if ($data['temperatur'] === 'hot') {
+            $cartItem->ice = null;
+        } else {
+            $cartItem->ice = $data['ice'];
+        }
+        $cartItem->temperatur = $data['temperatur'];
+        $cartItem->size = $data['size'];
+        $cartItem->sugar = $data['sugar'];
+    }
+
+    $cartItem->quantity = $data['quantity'];
+    $cartItem->note = $data['note'] ?? $cartItem->note;
+
+    $cartItem->save();
+
+    return response()->json(
+        [
+            'message' => 'Cart item updated successfully.',
+            'cart' => new CartItemResource($cartItem),
+        ],
+        200
+    );
+}
 
     public function applyVoucher(ApplyVoucherRequest $request)
     {

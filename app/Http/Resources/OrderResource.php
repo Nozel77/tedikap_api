@@ -21,6 +21,8 @@ class OrderResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'cart_id' => $this->cart_id,
+            'name' => $this->user->name,
+            'avatar' => $this->user->avatar,
             'voucher_id' => $this->voucher_id,
             'total_price' => $this->total_price,
             'discount_amount' => $this->discount_amount,

@@ -17,6 +17,8 @@ class OrderRewardResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'name' => $this->user->name,
+            'avatar' => $this->user->avatar,
             'cart_reward_id' => $this->cart_reward_id,
             'total_point' => $this->total_point,
             'status' => $this->status,
