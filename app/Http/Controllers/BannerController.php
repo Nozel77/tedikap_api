@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\BannerRequest;
 use App\Http\Requests\BannerUpdateRequest;
-use App\Http\Requests\ProductRequest;
 use App\Http\Resources\BannerResource;
-use App\Http\Resources\ProductResource;
 use App\Models\Banner;
-use Illuminate\Http\Request;
 
 class BannerController extends Controller
 {

@@ -94,7 +94,7 @@ class ProductController extends Controller
             return $this->resDataNotFound('Product');
         }
 
-        Storage::delete('public/images/'.$data->image);
+        Storage::delete('public/product/'.$data->image);
         $data->delete();
 
         return $this->resDataDeleted();

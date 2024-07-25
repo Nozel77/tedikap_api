@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BannerController;
+use App\Http\Controllers\BoxPromoController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRewardController;
 use App\Http\Controllers\FirebasePushController;
@@ -136,7 +137,7 @@ Route::prefix('status-store')->group(function () {
     Route::put('/update', [StatusStoreController::class, 'updateStoreStatus'])->middleware(['auth:sanctum', 'admin']);
 });
 
-Route::prefix('banner')->group(function(){
+Route::prefix('banner')->group(function () {
     Route::get('/', [BannerController::class, 'index']);
     Route::get('/show/{id}', [BannerController::class, 'show']);
 
@@ -144,5 +145,16 @@ Route::prefix('banner')->group(function(){
         Route::post('/store', [BannerController::class, 'store']);
         Route::post('/update/{id}', [BannerController::class, 'update']);
         Route::delete('/delete/{id}', [BannerController::class, 'destroy']);
+    });
+});
+
+Route::prefix('box-promo')->group(function () {
+    Route::get('/', [BoxPromoController::class, 'index']);
+    Route::get('/show/{id}', [BoxPromoController::class, 'show']);
+
+    Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+        Route::post('/store', [BoxPromoController::class, 'store']);
+        Route::post('/update/{id}', [BoxPromoController::class, 'update']);
+        Route::delete('/delete/{id}', [BoxPromoController::class, 'destroy']);
     });
 });
