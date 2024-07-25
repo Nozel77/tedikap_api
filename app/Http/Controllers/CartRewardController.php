@@ -8,6 +8,7 @@ use App\Http\Resources\CartRewardItemResource;
 use App\Http\Resources\CartRewardResource;
 use App\Models\CartReward;
 use App\Models\CartRewardItem;
+use App\Models\RewardProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -81,12 +82,38 @@ class CartRewardController extends Controller
     {
         $data = $request->validated();
 
+        $rewardProduct = RewardProduct::find($data['reward_product_id']);
+        if (! $rewardProduct) {
+            return response()->json([
+                'message' => 'Reward product not found.',
+            ], 404);
+        }
+
+        $isSnackCategory = $rewardProduct->category === 'snack';
+
+        if ($isSnackCategory) {
+            $data['temperatur'] = null;
+            $data['size'] = null;
+            $data['sugar'] = null;
+            $data['ice'] = null;
+        } elseif ($data['temperatur'] === 'hot') {
+            $data['ice'] = null;
+        }
+
         $existingCartRewardItem = CartRewardItem::where('cart_reward_id', $cartId)
             ->where('reward_product_id', $data['reward_product_id'])
-            ->where('size', $data['size'])
-            ->where('temperatur', $data['temperatur'])
-            ->where('sugar', $data['sugar'])
-            ->where('ice', $data['ice'])
+            ->where(function ($query) use ($data, $isSnackCategory) {
+                $query->where('temperatur', $data['temperatur'])
+                    ->where('size', $data['size'])
+                    ->where('sugar', $data['sugar'])
+                    ->where(function ($subQuery) use ($data, $isSnackCategory) {
+                        if ($isSnackCategory) {
+                            $subQuery->whereNull('ice');
+                        } else {
+                            $subQuery->where('ice', $data['ice']);
+                        }
+                    });
+            })
             ->first();
 
         if ($existingCartRewardItem) {
@@ -113,29 +140,56 @@ class CartRewardController extends Controller
 
     public function updateCartItem($cartItemId, CartRewardItemRequest $request)
     {
-        $user_id = Auth::id();
+    $user_id = Auth::id();
 
-        $cartItem = CartRewardItem::whereHas('cartReward', function ($query) use ($user_id) {
-            $query->where('user_id', $user_id);
-        })->where('id', $cartItemId)->first();
+    $cartItem = CartRewardItem::whereHas('cartReward', function ($query) use ($user_id) {
+        $query->where('user_id', $user_id);
+    })->where('id', $cartItemId)->first();
 
-        if (! $cartItem) {
-            return response()->json([
-                'message' => 'Cart item not found for this user.',
-            ], 404);
-        }
-
-        $data = $request->validated();
-
-        $cartItem->fill($data);
-        $cartItem->note = $data['note'] ?? $cartItem->note;
-        $cartItem->save();
-
+    if (!$cartItem) {
         return response()->json([
-            'message' => 'Reward Cart item updated successfully.',
-            'cart' => new CartRewardItemResource($cartItem),
-        ]);
+            'message' => 'Cart item not found for this user.',
+        ], 404);
     }
+
+    $data = $request->validated();
+
+    $rewardProduct = RewardProduct::find($cartItem->reward_product_id);
+    if (!$rewardProduct) {
+        return response()->json([
+            'message' => 'Reward product not found.',
+        ], 404);
+    }
+
+    $isSnackCategory = $rewardProduct->category === 'snack';
+
+    if ($isSnackCategory) {
+        $cartItem->temperatur = null;
+        $cartItem->size = null;
+        $cartItem->sugar = null;
+        $cartItem->ice = null;
+    } else {
+        if (isset($data['temperatur']) && $data['temperatur'] === 'hot') {
+            $cartItem->ice = null;
+        } else {
+            $cartItem->ice = $data['ice'] ?? $cartItem->ice;
+        }
+        $cartItem->temperatur = $data['temperatur'] ?? $cartItem->temperatur;
+        $cartItem->size = $data['size'] ?? $cartItem->size;
+        $cartItem->sugar = $data['sugar'] ?? $cartItem->sugar;
+    }
+
+    $cartItem->quantity = $data['quantity'] ?? $cartItem->quantity;
+    $cartItem->note = $data['note'] ?? $cartItem->note;
+
+    $cartItem->save();
+
+    return response()->json([
+        'message' => 'Reward Cart item updated successfully.',
+        'cart' => new CartRewardItemResource($cartItem),
+    ]);
+}
+
 
     public function updateCartItemQuantity($cartItemId, Request $request)
     {

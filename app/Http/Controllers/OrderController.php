@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Http\Resources\OrderRewardResource;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderReward;
+use App\Models\Product;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
@@ -37,7 +40,7 @@ class OrderController extends Controller
         $ongoingStatuses = ['menunggu pembayaran', 'menunggu konfirmasi', 'pesanan diproses', 'pesanan siap diambil'];
         $historyStatuses = ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'];
 
-        $query = Order::where('user_id', $user->id)->with('payment');
+        $query = Order::where('user_id', $user->id)->with('payment')->orderBy('created_at', 'desc');
 
         if ($filterType === 'ongoing') {
             $query->whereIn('status', $ongoingStatuses);
@@ -122,6 +125,7 @@ class OrderController extends Controller
         $order->discount_amount = $discountAmount;
         $order->reward_point = $additionalPoints;
         $order->status = 'menunggu pembayaran';
+        $order->order_type = 'order';
         $order->save();
 
         $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -139,19 +143,30 @@ class OrderController extends Controller
         $order->save();
 
         foreach ($cart->cartItems as $cartItem) {
+            $product = Product::find($cartItem->product_id);
+            if ($product && $product->category === 'snack') {
+                $cartItem->temperatur = null;
+                $cartItem->size = null;
+                $cartItem->sugar = null;
+                $cartItem->ice = null;
+            } elseif ($cartItem->temperatur === 'hot') {
+                $cartItem->ice = null;
+            }
+
             $orderItem = new OrderItem();
             $orderItem->order_id = $order->id;
             $orderItem->product_id = $cartItem->product_id;
             $orderItem->item_type = 'product';
             $orderItem->temperatur = $cartItem->temperatur;
-            $orderItem->size = $cartItem->size;
             $orderItem->ice = $cartItem->ice;
+            $orderItem->size = $cartItem->size;
             $orderItem->sugar = $cartItem->sugar;
             $orderItem->note = $cartItem->note;
             $orderItem->quantity = $cartItem->quantity;
             $orderItem->price = $cartItem->price;
             $orderItem->save();
         }
+
         $cart->cartItems()->delete();
 
         $cart->voucher_id = null;
@@ -198,12 +213,41 @@ class OrderController extends Controller
 
     public function getOrderAdmin()
     {
-        $order = Order::where('status', 'menunggu konfirmasi')->orderBy('created_at', 'desc')->get();
+        $filterStatus = request()->query('status');
+        $validStatuses = ['new order' => 'menunggu konfirmasi', 'proccess' => 'pesanan diproses', 'taken' => 'pesanan siap diambil'];
+
+        $orderQuery = Order::query();
+        $orderRewardQuery = OrderReward::query();
+
+        if (array_key_exists($filterStatus, $validStatuses)) {
+            $orderQuery->where('status', $validStatuses[$filterStatus]);
+            $orderRewardQuery->where('status', $validStatuses[$filterStatus]);
+        } else {
+            $orderQuery->whereIn('status', array_values($validStatuses));
+            $orderRewardQuery->whereIn('status', array_values($validStatuses));
+        }
+
+        $orders = $orderQuery->orderBy('created_at', 'desc')->get();
+        $orderRewards = $orderRewardQuery->orderBy('created_at', 'desc')->get();
+
+        $combinedOrders = $orders->map(function ($order) {
+            if ($order->order_type === 'reward order') {
+                return new OrderRewardResource($order);
+            } else {
+                return new OrderResource($order);
+            }
+        });
+
+        $combinedOrderRewards = $orderRewards->map(function ($orderReward) {
+            return new OrderRewardResource($orderReward);
+        });
+
+        $allOrders = $combinedOrders->concat($combinedOrderRewards)->sortByDesc('created_at');
 
         return response()->json([
-            'message' => 'Ongoing orders retrieved successfully.',
-            'orders' => OrderResource::collection($order),
-        ], 200);
+            'message' => 'Orders retrieved successfully.',
+            'orders' => $allOrders,
+        ]);
     }
 
     public function updateStatusOrder(Request $request, $id)
@@ -216,11 +260,11 @@ class OrderController extends Controller
             ], 400);
         }
 
-        $order = Order::find($id);
+        $order = Order::where('id', $id)->where('status', 'menunggu konfirmasi')->first();
 
         if (! $order) {
             return response()->json([
-                'message' => 'Order not found.',
+                'message' => 'Order not found or not in the "menunggu konfirmasi" status.',
             ], 404);
         }
 
@@ -248,11 +292,11 @@ class OrderController extends Controller
             ], 400);
         }
 
-        $order = Order::find($id);
+        $order = Order::where('id', $id)->where('status', 'pesanan diproses')->first();
 
         if (! $order) {
             return response()->json([
-                'message' => 'Order not found.',
+                'message' => 'Order not found or not in the "pesanan diproses" status.',
             ], 404);
         }
 
@@ -280,11 +324,11 @@ class OrderController extends Controller
             ], 400);
         }
 
-        $order = Order::find($id);
+        $order = Order::where('id', $id)->where('status', 'pesanan siap diambil')->first();
 
         if (! $order) {
             return response()->json([
-                'message' => 'Order not found.',
+                'message' => 'Order not found or not in the "pesanan siap diambil" status.',
             ], 404);
         }
 

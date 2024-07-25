@@ -8,6 +8,8 @@ use App\Models\CartReward;
 use App\Models\OrderReward;
 use App\Models\OrderRewardItem;
 use App\Models\Point;
+use App\Models\RewardProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderRewardController extends Controller
@@ -26,11 +28,24 @@ class OrderRewardController extends Controller
         return $customUUID;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
-        $orders = OrderReward::where('user_id', $user->id)->get();
+        $filterType = $request->query('type');
+
+        $ongoingStatuses = ['menunggu konfirmasi', 'pesanan diproses', 'pesanan siap diambil'];
+        $historyStatuses = ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'];
+
+        $query = OrderReward::where('user_id', $user->id)->orderBy('created_at', 'desc');
+
+        if ($filterType === 'ongoing') {
+            $query->whereIn('status', $ongoingStatuses);
+        } elseif ($filterType === 'history') {
+            $query->whereIn('status', $historyStatuses);
+        }
+
+        $orders = $query->get();
 
         $orders = $orders->map(function ($order) {
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -59,6 +74,8 @@ class OrderRewardController extends Controller
     {
         $userId = Auth::id();
         $data = $request->validated();
+
+        // Ambil CartReward untuk pengguna yang terautentikasi
         $rewardCart = CartReward::where('user_id', $userId)
             ->with('rewardCartItems')
             ->first();
@@ -69,10 +86,12 @@ class OrderRewardController extends Controller
             ], 404);
         }
 
+        // Hitung total poin yang dibutuhkan
         $totalPoints = $rewardCart->rewardCartItems->sum(function ($rewardCartItem) {
             return $rewardCartItem->quantity * $rewardCartItem->points;
         });
 
+        // Periksa apakah pengguna memiliki cukup poin
         $userPoints = Point::where('user_id', $userId)->sum('point');
         if ($userPoints < $totalPoints) {
             return response()->json([
@@ -88,7 +107,8 @@ class OrderRewardController extends Controller
         $order->user_id = $userId;
         $order->cart_reward_id = $rewardCart->id;
         $order->total_point = $totalPoints;
-        $order->status = 'ongoing';
+        $order->status = 'menunggu konfirmasi';
+        $order->order_type = 'reward order';
         $order->save();
 
         $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -103,15 +123,36 @@ class OrderRewardController extends Controller
         }
 
         $order->schedule_pickup = $pickupTime;
+        $order->save();
 
         foreach ($rewardCart->rewardCartItems as $rewardCartItem) {
-            $orderItem = new OrderRewardItem();
-            $orderItem->order_reward_id = $order->id;
-            $orderItem->reward_product_id = $rewardCartItem->reward_product_id;
-            $orderItem->item_type = 'reward';
-            $orderItem->quantity = $rewardCartItem->quantity;
-            $orderItem->points = $rewardCartItem->points;
-            $orderItem->save();
+            $rewardProduct = RewardProduct::find($rewardCartItem->reward_product_id);
+
+            if ($rewardProduct) {
+                if ($rewardProduct->category === 'snack') {
+                    $temperatur = null;
+                    $size = null;
+                    $sugar = null;
+                    $ice = null;
+                } else {
+                    $temperatur = $rewardCartItem->temperatur;
+                    $size = $rewardCartItem->size;
+                    $sugar = $rewardCartItem->sugar;
+                    $ice = ($rewardCartItem->temperatur === 'hot') ? null : $rewardCartItem->ice;
+                }
+
+                $orderItem = new OrderRewardItem();
+                $orderItem->order_reward_id = $order->id;
+                $orderItem->reward_product_id = $rewardCartItem->reward_product_id;
+                $orderItem->item_type = 'reward';
+                $orderItem->quantity = $rewardCartItem->quantity;
+                $orderItem->points = $rewardCartItem->points;
+                $orderItem->temperatur = $temperatur;
+                $orderItem->size = $size;
+                $orderItem->sugar = $sugar;
+                $orderItem->ice = $ice;
+                $orderItem->save();
+            }
         }
 
         $rewardCart->rewardCartItems()->delete();

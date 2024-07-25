@@ -19,6 +19,8 @@ return new class extends Migration
             $table->foreign('cart_reward_id')->references('id')->on('cart_rewards')->onDelete('cascade');
             $table->integer('total_point')->default(0);
             $table->string('status')->default('ongoing');
+            $table->string('schedule_pickup')->nullable();
+            $table->string('order_type');
             $table->timestamps();
         });
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRewardController;
 use App\Http\Controllers\FirebasePushController;
@@ -125,7 +126,7 @@ Route::prefix('order')->group(function () {
 });
 
 Route::prefix('order-reward')->group(function () {
-    Route::get('/', [OrderRewardController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/history', [OrderRewardController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/{id}', [OrderRewardController::class, 'show'])->middleware('auth:sanctum');
     Route::post('/store', [OrderRewardController::class, 'store'])->middleware('auth:sanctum');
 });
@@ -133,4 +134,15 @@ Route::prefix('order-reward')->group(function () {
 Route::prefix('status-store')->group(function () {
     Route::get('/', [StatusStoreController::class, 'storeStatus'])->middleware(['auth:sanctum', 'admin']);
     Route::put('/update', [StatusStoreController::class, 'updateStoreStatus'])->middleware(['auth:sanctum', 'admin']);
+});
+
+Route::prefix('banner')->group(function(){
+    Route::get('/', [BannerController::class, 'index']);
+    Route::get('/show/{id}', [BannerController::class, 'show']);
+
+    Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+        Route::post('/store', [BannerController::class, 'store']);
+        Route::post('/update/{id}', [BannerController::class, 'update']);
+        Route::delete('/delete/{id}', [BannerController::class, 'destroy']);
+    });
 });

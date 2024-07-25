@@ -18,10 +18,10 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id')->nullable();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->enum('item_type', ['product', 'reward'])->default('product');
-            $table->enum('temperatur', ['hot', 'ice']);
-            $table->enum('size', ['regular', 'large']);
-            $table->enum('ice', ['less', 'normal']);
-            $table->enum('sugar', ['less', 'normal']);
+            $table->enum('temperatur', ['hot', 'ice'])->nullable();
+            $table->enum('size', ['regular', 'large'])->nullable();
+            $table->enum('ice', ['less', 'normal'])->nullable();
+            $table->enum('sugar', ['less', 'normal'])->nullable();
             $table->text('note')->nullable();
             $table->integer('quantity');
             $table->integer('price')->nullable();
