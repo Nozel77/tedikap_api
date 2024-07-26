@@ -17,4 +17,9 @@ class Product extends Model
         'category',
         'image',
     ];
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
 }
