@@ -165,12 +165,19 @@ class ProductController extends Controller
     {
         $user_id = Auth::id();
 
-        $data = Favorite::where('user_id', $user_id)->get();
+        $favorites = Favorite::where('user_id', $user_id)->with('product')->get();
 
-        if ($data->count() > 0) {
-            return FavoriteResource::collection($data);
+        if ($favorites->count() > 0) {
+            return FavoriteResource::collection($favorites);
         } else {
             return response()->json(['user_id' => $user_id, 'favorite' => []]);
         }
+    }
+
+    public function mostPopularProduct()
+    {
+        $product = Product::withCount('favorites')->orderBy('favorites_count', 'desc')->take(10)->get();
+
+        return ProductResource::collection($product);
     }
 }
