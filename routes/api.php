@@ -42,7 +42,7 @@ Route::prefix('user')->group(function () {
 
 Route::prefix('product')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
-    Route::get('/show/{id}', [ProductController::class, 'show']);
+    Route::get('/show/{id}', [ProductController::class, 'show'])->middleware('auth:sanctum');
     Route::post('/favorite/{product_id}', [ProductController::class, 'likeProduct'])->middleware('auth:sanctum');
     Route::get('/favorite', [ProductController::class, 'getFavorite'])->middleware('auth:sanctum');
 

@@ -131,27 +131,34 @@ class ProductController extends Controller
             return response()->json(['error' => 'User not authenticated'], 401);
         }
 
-        $product = Product::whereId($product_id)->first();
+        $product = Product::find($product_id);
 
         if (! $product) {
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        $unlike_post = Favorite::where('user_id', $user_id)->where('product_id', $product_id)->delete();
-        if ($unlike_post) {
-            return response()->json(['message' => 'Unliked'], 200);
+        $favorite = Favorite::where('user_id', $user_id)->where('product_id', $product_id)->first();
+
+        if ($favorite) {
+            $favorite->delete();
+            $isLiked = false;
+            $message = 'Unliked';
+        } else {
+            Favorite::create([
+                'user_id' => $user_id,
+                'product_id' => $product_id,
+            ]);
+            $isLiked = true;
+            $message = 'Liked';
         }
 
-        $like_post = Favorite::create([
-            'user_id' => $user_id,
-            'product_id' => $product_id,
-        ]);
+        $productResource = new ProductResource($product);
 
-        if ($like_post) {
-            return response()->json(['message' => 'Liked'], 200);
-        }
-
-        return response()->json(['error' => 'Unable to like product'], 500);
+        return response()->json([
+            'message' => $message,
+            'status' => $isLiked ? 'liked' : 'unliked',
+            'product' => $productResource,
+        ], 200);
     }
 
     public function getFavorite()
