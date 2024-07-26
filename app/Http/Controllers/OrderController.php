@@ -232,17 +232,17 @@ class OrderController extends Controller
 
         $combinedOrders = $orders->map(function ($order) {
             if ($order->order_type === 'reward order') {
-                return new OrderRewardResource($order);
+                return (new OrderRewardResource($order))->toArray(request());
             } else {
-                return new OrderResource($order);
+                return (new OrderResource($order))->toArray(request());
             }
         });
 
         $combinedOrderRewards = $orderRewards->map(function ($orderReward) {
-            return new OrderRewardResource($orderReward);
+            return (new OrderRewardResource($orderReward))->toArray(request());
         });
 
-        $allOrders = $combinedOrders->concat($combinedOrderRewards)->sortByDesc('created_at');
+        $allOrders = $combinedOrders->concat($combinedOrderRewards)->sortByDesc('created_at')->values()->all();
 
         return response()->json([
             'message' => 'Orders retrieved successfully.',
@@ -262,24 +262,39 @@ class OrderController extends Controller
 
         $order = Order::where('id', $id)->where('status', 'menunggu konfirmasi')->first();
 
-        if (! $order) {
+        if ($order) {
+            if ($action == 'accepted') {
+                $order->status = 'pesanan diproses';
+            } elseif ($action == 'rejected') {
+                $order->status = 'pesanan ditolak';
+            }
+            $order->save();
+
             return response()->json([
-                'message' => 'Order not found or not in the "menunggu konfirmasi" status.',
-            ], 404);
+                'message' => 'Order status updated successfully.',
+                'order' => new OrderResource($order),
+            ], 200);
         }
 
-        if ($action == 'accepted') {
-            $order->status = 'pesanan diproses';
-        } elseif ($action == 'rejected') {
-            $order->status = 'pesanan ditolak';
-        }
+        $orderReward = OrderReward::where('id', $id)->where('status', 'menunggu konfirmasi')->first();
 
-        $order->save();
+        if ($orderReward) {
+            if ($action == 'accepted') {
+                $orderReward->status = 'pesanan diproses';
+            } elseif ($action == 'rejected') {
+                $orderReward->status = 'pesanan ditolak';
+            }
+            $orderReward->save();
+
+            return response()->json([
+                'message' => 'Order status updated successfully.',
+                'order' => new OrderRewardResource($orderReward),
+            ], 200);
+        }
 
         return response()->json([
-            'message' => 'Order status updated successfully.',
-            'order' => new OrderResource($order),
-        ], 200);
+            'message' => 'Order not found or not in the "menunggu konfirmasi" status.',
+        ], 404);
     }
 
     public function updateStatusOrderSiap(Request $request, $id)
@@ -294,24 +309,39 @@ class OrderController extends Controller
 
         $order = Order::where('id', $id)->where('status', 'pesanan diproses')->first();
 
-        if (! $order) {
+        if ($order) {
+            if ($action == 'accepted') {
+                $order->status = 'pesanan siap diambil';
+            } elseif ($action == 'rejected') {
+                $order->status = 'pesanan dibatalkan';
+            }
+            $order->save();
+
             return response()->json([
-                'message' => 'Order not found or not in the "pesanan diproses" status.',
-            ], 404);
+                'message' => 'Order status updated successfully.',
+                'order' => new OrderResource($order),
+            ], 200);
         }
 
-        if ($action == 'accepted') {
-            $order->status = 'pesanan siap diambil';
-        } elseif ($action == 'rejected') {
-            $order->status = 'pesanan dibatalkan';
-        }
+        $orderReward = OrderReward::where('id', $id)->where('status', 'pesanan diproses')->first();
 
-        $order->save();
+        if ($orderReward) {
+            if ($action == 'accepted') {
+                $orderReward->status = 'pesanan siap diambil';
+            } elseif ($action == 'rejected') {
+                $orderReward->status = 'pesanan dibatalkan';
+            }
+            $orderReward->save();
+
+            return response()->json([
+                'message' => 'Order status updated successfully.',
+                'order' => new OrderRewardResource($orderReward),
+            ], 200);
+        }
 
         return response()->json([
-            'message' => 'Order status updated successfully.',
-            'order' => new OrderResource($order),
-        ], 200);
+            'message' => 'Order not found or not in the "pesanan diproses" status.',
+        ], 404);
     }
 
     public function updateStatusOrderSelesai(Request $request, $id)
@@ -326,23 +356,38 @@ class OrderController extends Controller
 
         $order = Order::where('id', $id)->where('status', 'pesanan siap diambil')->first();
 
-        if (! $order) {
+        if ($order) {
+            if ($action == 'accepted') {
+                $order->status = 'pesanan selesai';
+            } elseif ($action == 'rejected') {
+                $order->status = 'pesanan dibatalkan';
+            }
+            $order->save();
+
             return response()->json([
-                'message' => 'Order not found or not in the "pesanan siap diambil" status.',
-            ], 404);
+                'message' => 'Order status updated successfully.',
+                'order' => new OrderResource($order),
+            ], 200);
         }
 
-        if ($action == 'accepted') {
-            $order->status = 'pesanan selesai';
-        } elseif ($action == 'rejected') {
-            $order->status = 'pesanan dibatalkan';
-        }
+        $orderReward = OrderReward::where('id', $id)->where('status', 'pesanan siap diambil')->first();
 
-        $order->save();
+        if ($orderReward) {
+            if ($action == 'accepted') {
+                $orderReward->status = 'pesanan selesai';
+            } elseif ($action == 'rejected') {
+                $orderReward->status = 'pesanan dibatalkan';
+            }
+            $orderReward->save();
+
+            return response()->json([
+                'message' => 'Order status updated successfully.',
+                'order' => new OrderRewardResource($orderReward),
+            ], 200);
+        }
 
         return response()->json([
-            'message' => 'Order status updated successfully.',
-            'order' => new OrderResource($order),
-        ], 200);
+            'message' => 'Order not found or not in the "pesanan siap diambil" status.',
+        ], 404);
     }
 }
