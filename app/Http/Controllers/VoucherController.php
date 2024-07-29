@@ -22,7 +22,6 @@ class VoucherController extends Controller
         $userId = Auth::id();
         $currentDate = now();
 
-        // Dapatkan voucher yang aktif dan belum digunakan oleh pengguna ini
         $activeVouchers = Voucher::where('start_date', '<=', $currentDate)
             ->where('end_date', '>=', $currentDate)
             ->whereDoesntHave('userVouchers', function ($query) use ($userId) {
