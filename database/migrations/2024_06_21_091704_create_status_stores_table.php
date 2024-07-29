@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('status_stores', function (Blueprint $table) {
             $table->id();
             $table->boolean('open')->default(false);
+            $table->string('session')->nullable();
+            $table->string('time')->nullable();
             $table->timestamps();
         });
     }

@@ -12,6 +12,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RewardProductController;
+use App\Http\Controllers\ScheduleOrderController;
 use App\Http\Controllers\StatusStoreController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherController;
@@ -159,3 +160,5 @@ Route::prefix('box-promo')->group(function () {
         Route::delete('/delete/{id}', [BoxPromoController::class, 'destroy']);
     });
 });
+
+
