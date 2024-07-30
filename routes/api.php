@@ -5,6 +5,7 @@ use App\Http\Controllers\BoxPromoController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartRewardController;
 use App\Http\Controllers\FirebasePushController;
+use App\Http\Controllers\HelpCenterController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderRewardController;
 use App\Http\Controllers\OtpController;
@@ -157,5 +158,15 @@ Route::prefix('box-promo')->group(function () {
         Route::post('/store', [BoxPromoController::class, 'store']);
         Route::post('/update/{id}', [BoxPromoController::class, 'update']);
         Route::delete('/delete/{id}', [BoxPromoController::class, 'destroy']);
+    });
+});
+
+Route::prefix('help-center')->group(function () {
+    Route::get('/', [HelpCenterController::class, 'index']);
+
+    Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
+        Route::post('store', [HelpCenterController::class, 'store']);
+        Route::put('update/{id}', [HelpCenterController::class, 'update']);
+        Route::delete('delete/{id}', [HelpCenterController::class, 'destroy']);
     });
 });
