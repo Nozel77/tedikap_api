@@ -15,6 +15,7 @@ class Voucher extends Model
         'image',
         'discount',
         'min_transaction',
+        'max_discount',
         'start_date',
         'end_date',
     ];

@@ -19,8 +19,9 @@ class VoucherSeeder extends Seeder
                 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNM3i81AVOBzNyWUAz46EwPtbQYIpzn7EE4w&s',
                 'discount' => 30,
                 'min_transaction' => 20000,
+                'max_discount' => 30000,
                 'start_date' => '2024-06-21',
-                'end_date' => '2024-07-21',
+                'end_date' => '2024-08-21',
             ],
             [
                 'title' => 'Nikmati promo sebesar 10% Sekarang !!!',
@@ -28,8 +29,9 @@ class VoucherSeeder extends Seeder
                 'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNM3i81AVOBzNyWUAz46EwPtbQYIpzn7EE4w&s',
                 'discount' => 10,
                 'min_transaction' => 10000,
+                'max_discount' => 20000,
                 'start_date' => '2024-06-21',
-                'end_date' => '2024-07-21',
+                'end_date' => '2024-08-21',
             ],
         ];
 
