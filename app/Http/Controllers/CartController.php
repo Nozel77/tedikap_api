@@ -228,10 +228,17 @@ class CartController extends Controller
             $cartItem->temperatur = $data['temperatur'];
             $cartItem->size = $data['size'];
             $cartItem->sugar = $data['sugar'];
+
+            if ($data['size'] === 'large') {
+                $data['price'] = $product->large_price;
+            } else {
+                $data['price'] = $product->regular_price;
+            }
         }
 
         $cartItem->quantity = $data['quantity'];
         $cartItem->note = $data['note'] ?? $cartItem->note;
+        $cartItem->price = $data['price'];
 
         $cartItem->save();
 

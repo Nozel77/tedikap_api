@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('total_point')->default(0);
             $table->string('status')->default('ongoing');
             $table->string('schedule_pickup')->nullable();
+            $table->string('icon_status');
             $table->string('order_type');
             $table->timestamps();
         });

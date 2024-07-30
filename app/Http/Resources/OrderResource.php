@@ -30,10 +30,11 @@ class OrderResource extends JsonResource
             'original_price' => $original_price,
             'status' => $this->status,
             'order_type' => $this->order_type,
+            'schedule_pickup' => $this->schedule_pickup,
+            'icon_status' => $this->icon_status.'.svg',
             'payment_channel' => $this->payment ? $this->payment->payment_channel : null,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
-            'schedule_pickup' => $this->schedule_pickup,
             'order_items' => OrderItemsResource::collection($this->orderItems),
         ];
     }
