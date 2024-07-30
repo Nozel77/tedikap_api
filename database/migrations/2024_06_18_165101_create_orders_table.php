@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('order_type');
             $table->string('schedule_pickup')->nullable();
             $table->string('payment_channel')->nullable();
+            $table->string('icon_status');
             $table->timestamps();
         });
     }

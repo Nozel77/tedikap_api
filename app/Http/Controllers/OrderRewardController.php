@@ -75,7 +75,6 @@ class OrderRewardController extends Controller
         $userId = Auth::id();
         $data = $request->validated();
 
-        // Ambil CartReward untuk pengguna yang terautentikasi
         $rewardCart = CartReward::where('user_id', $userId)
             ->with('rewardCartItems')
             ->first();
@@ -86,12 +85,10 @@ class OrderRewardController extends Controller
             ], 404);
         }
 
-        // Hitung total poin yang dibutuhkan
         $totalPoints = $rewardCart->rewardCartItems->sum(function ($rewardCartItem) {
             return $rewardCartItem->quantity * $rewardCartItem->points;
         });
 
-        // Periksa apakah pengguna memiliki cukup poin
         $userPoints = Point::where('user_id', $userId)->sum('point');
         if ($userPoints < $totalPoints) {
             return response()->json([
@@ -108,6 +105,7 @@ class OrderRewardController extends Controller
         $order->cart_reward_id = $rewardCart->id;
         $order->total_point = $totalPoints;
         $order->status = 'menunggu konfirmasi';
+        $order->icon_status = 'ic_status_waiting';
         $order->order_type = 'reward order';
         $order->save();
 

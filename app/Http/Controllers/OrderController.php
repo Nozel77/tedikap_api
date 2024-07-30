@@ -126,6 +126,7 @@ class OrderController extends Controller
         $order->reward_point = $additionalPoints;
         $order->status = 'menunggu pembayaran';
         $order->order_type = 'order';
+        $order->icon_status = 'ic_status_waiting'; // Set icon_status here
         $order->save();
 
         $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -265,8 +266,10 @@ class OrderController extends Controller
         if ($order) {
             if ($action == 'accepted') {
                 $order->status = 'pesanan diproses';
+                $order->icon_status = 'ic_status_waiting';
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan ditolak';
+                $order->icon_status = 'ic_status_canceled';
             }
             $order->save();
 
@@ -281,8 +284,10 @@ class OrderController extends Controller
         if ($orderReward) {
             if ($action == 'accepted') {
                 $orderReward->status = 'pesanan diproses';
+                $orderReward->icon_status = 'ic_status_waiting';
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan ditolak';
+                $orderReward->icon_status = 'ic_status_canceled';
             }
             $orderReward->save();
 
@@ -312,8 +317,10 @@ class OrderController extends Controller
         if ($order) {
             if ($action == 'accepted') {
                 $order->status = 'pesanan siap diambil';
+                $order->icon_status = 'ic_status_ready';
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan dibatalkan';
+                $order->icon_status = 'ic_status_canceled';
             }
             $order->save();
 
@@ -328,8 +335,10 @@ class OrderController extends Controller
         if ($orderReward) {
             if ($action == 'accepted') {
                 $orderReward->status = 'pesanan siap diambil';
+                $orderReward->icon_status = 'ic_status_ready';
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan dibatalkan';
+                $orderReward->icon_status = 'ic_status_canceled';
             }
             $orderReward->save();
 
@@ -359,8 +368,10 @@ class OrderController extends Controller
         if ($order) {
             if ($action == 'accepted') {
                 $order->status = 'pesanan selesai';
+                $order->icon_status = 'ic_status_done';
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan dibatalkan';
+                $order->icon_status = 'ic_status_canceled';
             }
             $order->save();
 
@@ -375,8 +386,10 @@ class OrderController extends Controller
         if ($orderReward) {
             if ($action == 'accepted') {
                 $orderReward->status = 'pesanan selesai';
+                $orderReward->icon_status = 'ic_status_done';
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan dibatalkan';
+                $orderReward->icon_status = 'ic_status_canceled';
             }
             $orderReward->save();
 
