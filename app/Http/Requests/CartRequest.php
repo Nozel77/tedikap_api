@@ -29,7 +29,7 @@ class CartRequest extends FormRequest
             'sugar' => 'nullable|string',
             'note' => 'nullable|string',
             'quantity' => 'required|integer',
-            'price' => 'required|numeric',
+            'price' => 'numeric',
         ];
     }
 }

@@ -117,9 +117,16 @@ class CartController extends Controller
             $data['size'] = null;
             $data['sugar'] = null;
             $data['ice'] = null;
+            $data['price'] = $product->regular_price;
         } else {
             if ($data['temperatur'] === 'hot') {
                 $data['ice'] = null;
+            }
+
+            if ($data['size'] === 'large') {
+                $data['price'] = $product->large_price;
+            } else {
+                $data['price'] = $product->regular_price;
             }
         }
 

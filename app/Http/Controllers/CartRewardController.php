@@ -96,8 +96,17 @@ class CartRewardController extends Controller
             $data['size'] = null;
             $data['sugar'] = null;
             $data['ice'] = null;
-        } elseif ($data['temperatur'] === 'hot') {
-            $data['ice'] = null;
+            $data['points'] = $rewardProduct->regular_point;
+        } else {
+            if ($data['temperatur'] === 'hot') {
+                $data['ice'] = null;
+            }
+
+            if ($data['size'] === 'large') {
+                $data['points'] = $rewardProduct->large_point;
+            } else {
+                $data['points'] = $rewardProduct->regular_point;
+            }
         }
 
         $existingCartRewardItem = CartRewardItem::where('cart_reward_id', $cartId)
@@ -168,6 +177,7 @@ class CartRewardController extends Controller
             $cartItem->size = null;
             $cartItem->sugar = null;
             $cartItem->ice = null;
+            $cartItem->points = $rewardProduct->regular_point; // Poin untuk snack
         } else {
             if (isset($data['temperatur']) && $data['temperatur'] === 'hot') {
                 $cartItem->ice = null;
@@ -177,6 +187,12 @@ class CartRewardController extends Controller
             $cartItem->temperatur = $data['temperatur'] ?? $cartItem->temperatur;
             $cartItem->size = $data['size'] ?? $cartItem->size;
             $cartItem->sugar = $data['sugar'] ?? $cartItem->sugar;
+
+            if ($cartItem->size === 'large') {
+                $cartItem->points = $rewardProduct->large_point;
+            } else {
+                $cartItem->points = $rewardProduct->regular_point;
+            }
         }
 
         $cartItem->quantity = $data['quantity'] ?? $cartItem->quantity;

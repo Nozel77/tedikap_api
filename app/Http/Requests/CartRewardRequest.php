@@ -29,7 +29,7 @@ class CartRewardRequest extends FormRequest
             'sugar' => 'required|string',
             'note' => 'nullable|string',
             'quantity' => 'required|integer',
-            'points' => 'required|numeric',
+            'points' => 'numeric',
         ];
     }
 }

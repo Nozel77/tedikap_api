@@ -12,7 +12,12 @@ class BoxPromoController extends Controller
 {
     public function index()
     {
-        return BoxPromoResource::collection(BoxPromo::all());
+        $boxPromos = BoxPromoResource::collection(BoxPromo::all());
+        $formattedData = $boxPromos->keyBy('id');
+
+        return response()->json([
+            'data' => $formattedData,
+        ]);
     }
 
     public function store(BoxPromoRequest $request)
