@@ -39,8 +39,16 @@ class CartController extends Controller
         if ($cart->voucher_id) {
             $voucher = Voucher::find($cart->voucher_id);
             if ($voucher) {
-                $discount_percentage = $voucher->discount;
-                $discount_amount = ($discount_percentage / 100) * $total_price;
+                // Cek apakah total harga memenuhi syarat min_transaction
+                if ($total_price >= $voucher->min_transaction) {
+                    $discount_percentage = $voucher->discount;
+                    $discount_amount = ($discount_percentage / 100) * $total_price;
+
+                    // Cek apakah ada max_discount dan batasi potongan harga
+                    if (isset($voucher->max_discount) && $discount_amount > $voucher->max_discount) {
+                        $discount_amount = $voucher->max_discount;
+                    }
+                }
             }
         }
 
@@ -264,6 +272,17 @@ class CartController extends Controller
         if ($userVoucher && $userVoucher->used) {
             return response()->json([
                 'message' => 'Voucher has already been used.',
+            ], 400);
+        }
+
+        $cart_items = CartItem::where('cart_id', $cart->id)->get();
+        $total_price = $cart_items->sum(function ($cart_item) {
+            return $cart_item->quantity * $cart_item->price;
+        });
+
+        if ($total_price < $voucher->min_transaction) {
+            return response()->json([
+                'message' => 'The total price does not meet the minimum transaction amount required for this voucher.',
             ], 400);
         }
 

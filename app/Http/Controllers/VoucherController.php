@@ -48,6 +48,7 @@ class VoucherController extends Controller
             'image' => $imageName,
             'discount' => $request->discount,
             'min_transaction' => $request->min_transaction,
+            'max_discount' => $request->max_discount,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
         ]);
@@ -88,6 +89,7 @@ class VoucherController extends Controller
                 'image' => $imageName,
                 'discount' => $request->discount,
                 'min_transaction' => $request->min_transaction,
+                'max_discount' => $request->max_discount,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
             ]);
@@ -97,6 +99,7 @@ class VoucherController extends Controller
                 'description' => $request->description,
                 'discount' => $request->discount,
                 'min_transaction' => $request->min_transaction,
+                'max_discount' => $request->max_discount,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
             ]);

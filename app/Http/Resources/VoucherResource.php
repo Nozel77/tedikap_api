@@ -21,6 +21,7 @@ class VoucherResource extends JsonResource
             'image' => $this->image,
             'discount' => $this->discount,
             'min_transaction' => $this->min_transaction,
+            'max_discount' => $this->max_discount,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
         ];
