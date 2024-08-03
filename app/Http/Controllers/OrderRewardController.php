@@ -9,11 +9,40 @@ use App\Models\OrderReward;
 use App\Models\OrderRewardItem;
 use App\Models\Point;
 use App\Models\RewardProduct;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class OrderRewardController extends Controller
 {
+    public function notification(Request $request, $id)
+    {
+        $FcmToken = User::find($id)->fcm_token;
+        $message = CloudMessage::fromArray([
+            'token' => $FcmToken,
+            'notification' => [
+                'title' => $request->title,
+                'body' => $request->body,
+            ],
+        ])->withData([
+            'route' => $request->route,
+        ]);
+
+        Firebase::messaging()->send($message);
+
+        return $message;
+    }
+
+    protected function notifyAdmins(Request $request)
+    {
+        $adminIds = User::where('role', 'admin')->pluck('id');
+        foreach ($adminIds as $adminId) {
+            $this->notification($request, $adminId);
+        }
+    }
+
     public function generateCustomUUID()
     {
         $now = now()->setTimezone('Asia/Jakarta');
@@ -122,6 +151,20 @@ class OrderRewardController extends Controller
 
         $order->schedule_pickup = $pickupTime;
         $order->save();
+
+        $userNotification = new Request([
+            'title' => 'Pemesanan Berhasil',
+            'body' => 'Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.',
+            'route' => '',
+        ]);
+        $this->notification($userNotification, $userId);
+
+        $adminNotification = new Request([
+            'title' => 'Pesanan Baru - Menunggu Konfirmasi',
+            'body' => "Pesanan baru dengan ID: {$order->id} telah dibuat dan menunggu konfirmasi. Silakan periksa pesanan baru di sistem admin.",
+            'route' => '',
+        ]);
+        $this->notifyAdmins($adminNotification);
 
         foreach ($rewardCart->rewardCartItems as $rewardCartItem) {
             $rewardProduct = RewardProduct::find($rewardCartItem->reward_product_id);

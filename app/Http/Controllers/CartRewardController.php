@@ -21,7 +21,12 @@ class CartRewardController extends Controller
         $cart = CartReward::where('user_id', $user_id)->first();
         if (! $cart) {
             return response()->json([
-                'message' => 'Cart not found for this user.',
+                'cart' => [
+                    'id' => null,
+                    'user_id' => $user_id,
+                    'total_points' => 0,
+                    'cartItems' => [],
+                ],
             ], 404);
         }
 
@@ -177,7 +182,7 @@ class CartRewardController extends Controller
             $cartItem->size = null;
             $cartItem->sugar = null;
             $cartItem->ice = null;
-            $cartItem->points = $rewardProduct->regular_point; // Poin untuk snack
+            $cartItem->points = $rewardProduct->regular_point;
         } else {
             if (isset($data['temperatur']) && $data['temperatur'] === 'hot') {
                 $cartItem->ice = null;

@@ -12,12 +12,13 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    public function showCartByUser()
+    public function showCartByUser(): JsonResponse
     {
         $user_id = Auth::id();
 
@@ -25,8 +26,17 @@ class CartController extends Controller
 
         if (! $cart) {
             return response()->json([
-                'message' => 'Cart not found for this user.',
-            ], 404);
+                'cart' => [
+                    'id' => null,
+                    'user_id' => $user_id,
+                    'voucher_id' => null,
+                    'total_price' => 0,
+                    'discount_amount' => 0,
+                    'original_price' => 0,
+                    'reward_point' => 0,
+                    'cart_items' => [],
+                ],
+            ]);
         }
 
         $cart_items = CartItem::with('product')->where('cart_id', $cart->id)->get();
@@ -39,12 +49,10 @@ class CartController extends Controller
         if ($cart->voucher_id) {
             $voucher = Voucher::find($cart->voucher_id);
             if ($voucher) {
-                // Cek apakah total harga memenuhi syarat min_transaction
                 if ($total_price >= $voucher->min_transaction) {
                     $discount_percentage = $voucher->discount;
                     $discount_amount = ($discount_percentage / 100) * $total_price;
 
-                    // Cek apakah ada max_discount dan batasi potongan harga
                     if (isset($voucher->max_discount) && $discount_amount > $voucher->max_discount) {
                         $discount_amount = $voucher->max_discount;
                     }
@@ -69,13 +77,16 @@ class CartController extends Controller
         ]);
     }
 
-    public function showCartItemById($cartItemId)
+    public function showCartItemById($cartItemId): JsonResponse
     {
         $user_id = Auth::id();
 
-        $cartItem = CartItem::whereHas('cart', function ($query) use ($user_id) {
-            $query->where('user_id', $user_id);
-        })->where('id', $cartItemId)->with('product')->first();
+        $cartItem = CartItem::with('product')
+            ->whereHas('cart', function ($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            })
+            ->where('id', $cartItemId)
+            ->first();
 
         if (! $cartItem) {
             return response()->json([
@@ -90,24 +101,24 @@ class CartController extends Controller
         ]);
     }
 
-    public function storeCart(CartRequest $request)
+    public function storeCart(CartRequest $request): JsonResponse
     {
         $userId = Auth::id();
 
-        $cart = Cart::where('user_id', $userId)->first();
+        $cart = Cart::all()->where('user_id', $userId)->first();
 
         if ($cart) {
             return $this->addCartItem($cart->id, $request);
         } else {
             $cart = new Cart();
-            $cart->user_id = $userId;
+            $cart['user_id'] = $userId;
             $cart->save();
 
             return $this->addCartItem($cart->id, $request);
         }
     }
 
-    public function addCartItem($cartId, CartRequest $request)
+    public function addCartItem($cartId, CartRequest $request): JsonResponse
     {
         $data = $request->validated();
         $product = Product::find($data['product_id']);
@@ -176,7 +187,7 @@ class CartController extends Controller
         }
     }
 
-    public function updateCartItem($id, CartItemRequest $request)
+    public function updateCartItem($id, CartItemRequest $request): JsonResponse
     {
         $data = $request->validated();
 
@@ -220,16 +231,16 @@ class CartController extends Controller
             $cartItem->sugar = null;
             $cartItem->ice = null;
         } else {
-            if ($data['temperatur'] === 'hot') {
+            if (isset($data['temperatur']) && $data['temperatur'] === 'hot') {
                 $cartItem->ice = null;
             } else {
-                $cartItem->ice = $data['ice'];
+                $cartItem->ice = $data['ice'] ?? $cartItem->ice;
             }
-            $cartItem->temperatur = $data['temperatur'];
-            $cartItem->size = $data['size'];
-            $cartItem->sugar = $data['sugar'];
+            $cartItem->temperatur = $data['temperatur'] ?? $cartItem->temperatur;
+            $cartItem->size = $data['size'] ?? $cartItem->size;
+            $cartItem->sugar = $data['sugar'] ?? $cartItem->sugar;
 
-            if ($data['size'] === 'large') {
+            if (isset($data['size']) && $data['size'] === 'large') {
                 $data['price'] = $product->large_price;
             } else {
                 $data['price'] = $product->regular_price;
@@ -238,7 +249,7 @@ class CartController extends Controller
 
         $cartItem->quantity = $data['quantity'];
         $cartItem->note = $data['note'] ?? $cartItem->note;
-        $cartItem->price = $data['price'];
+        $cartItem->price = $data['price'] ?? $cartItem->price;
 
         $cartItem->save();
 
@@ -251,7 +262,7 @@ class CartController extends Controller
         );
     }
 
-    public function applyVoucher(ApplyVoucherRequest $request)
+    public function applyVoucher(ApplyVoucherRequest $request): JsonResponse
     {
         $userId = Auth::id();
         $data = $request->validated();
@@ -301,7 +312,7 @@ class CartController extends Controller
         ], 200);
     }
 
-    public function removeVoucher(Request $request)
+    public function removeVoucher(Request $request): JsonResponse
     {
         $userId = Auth::id();
 
@@ -321,7 +332,7 @@ class CartController extends Controller
         ], 200);
     }
 
-    public function updateCartItemQuantity($cartItemId, Request $request)
+    public function updateCartItemQuantity($cartItemId, Request $request): JsonResponse
     {
         $cartItem = CartItem::findOrFail($cartItemId);
 
@@ -357,7 +368,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function deleteCartItem($cartItemId)
+    public function deleteCartItem($cartItemId): JsonResponse
     {
         $userId = Auth::id();
 

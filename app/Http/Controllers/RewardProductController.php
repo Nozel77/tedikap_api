@@ -97,8 +97,8 @@ class RewardProductController extends Controller
             $data->update([
                 'name' => $request->name,
                 'description' => $request->description,
-                'regular_price' => $request->regular_price,
-                'large_price' => $request->large_price,
+                'regular_point' => $request->regular_point,
+                'large_point' => $request->large_point,
                 'category' => $request->category,
                 'image' => $imageName,
             ]);
@@ -106,8 +106,8 @@ class RewardProductController extends Controller
             $data->update([
                 'name' => $request->name,
                 'description' => $request->description,
-                'regular_price' => $request->regular_price,
-                'large_price' => $request->large_price,
+                'regular_point' => $request->regular_point,
+                'large_point' => $request->large_point,
                 'category' => $request->category,
             ]);
         }

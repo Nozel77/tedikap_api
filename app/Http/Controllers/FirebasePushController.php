@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
@@ -16,7 +17,7 @@ class FirebasePushController extends Controller
         $this->notification = Firebase::messaging();
     }
 
-    public function setToken(Request $request)
+    public function setToken(Request $request): JsonResponse
     {
         $token = $request->input('fcm_token');
         $request->user()->update([
@@ -37,10 +38,12 @@ class FirebasePushController extends Controller
                 'title' => $request->title,
                 'body' => $request->body,
             ],
+        ])->withData([
+            'route' => $request->route,
         ]);
 
         $this->notification->send($message);
 
-        return response()->json(['message' => 'Notification sent'], 200);
+        return response()->json(['message' => 'Notification sent successfully', 'data' => $message]);
     }
 }

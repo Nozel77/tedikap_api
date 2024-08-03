@@ -50,7 +50,7 @@ Route::prefix('product')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [ProductController::class, 'store']);
-        Route::post('/update/{id}', [ProductController::class, 'update']);
+        Route::put('/update/{id}', [ProductController::class, 'update']);
         Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
     });
 });
@@ -63,7 +63,7 @@ Route::prefix('voucher')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [VoucherController::class, 'store']);
-        Route::post('/update/{id}', [VoucherController::class, 'update']);
+        Route::put('/update/{id}', [VoucherController::class, 'update']);
         Route::delete('/delete/{id}', [VoucherController::class, 'destroy']);
     });
 });
@@ -99,7 +99,7 @@ Route::prefix('reward-product')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [RewardProductController::class, 'store']);
-        Route::post('/update/{id}', [RewardProductController::class, 'update']);
+        Route::put('/update/{id}', [RewardProductController::class, 'update']);
         Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
     });
 });
@@ -145,7 +145,7 @@ Route::prefix('banner')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [BannerController::class, 'store']);
-        Route::post('/update/{id}', [BannerController::class, 'update']);
+        Route::put('/update/{id}', [BannerController::class, 'update']);
         Route::delete('/delete/{id}', [BannerController::class, 'destroy']);
     });
 });

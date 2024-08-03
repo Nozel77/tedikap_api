@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Point;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 use Xendit\Configuration;
 use Xendit\Invoice\CreateInvoiceRequest;
 use Xendit\Invoice\InvoiceApi;
@@ -18,6 +21,26 @@ class PaymentController extends Controller
     {
         Configuration::setXenditKey(env('XENDIT_API_KEY'));
         $this->apiInstance = new InvoiceApi();
+    }
+
+    public function notification(array $notification, $id, $orderId)
+    {
+        $FcmToken = User::find($id)->fcm_token;
+        $order = Order::find($orderId);
+
+        $message = CloudMessage::fromArray([
+            'token' => $FcmToken,
+            'notification' => [
+                'title' => $notification['title'],
+                'body' => $notification['body'],
+            ],
+        ])->withData([
+            'route' => $notification['route'],
+        ]);
+
+        Firebase::messaging()->send($message);
+
+        return $message;
     }
 
     public function store(Request $request)
@@ -43,7 +66,7 @@ class PaymentController extends Controller
 
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
-            'description' => 'kenapa gabisa ',
+            'description' => 'kenapa gabisa',
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
             'expiry_date' => $expiryDate,
@@ -73,7 +96,7 @@ class PaymentController extends Controller
             'payment_channel' => 'required|string',
         ]);
 
-        $payment = Payment::where('external_id', $request->external_id)->firstOrFail();
+        $payment = Payment::with(['user', 'order'])->where('external_id', $request->external_id)->firstOrFail();
 
         if (strtolower($payment->status) === 'paid') {
             return response()->json('Payment has already been processed', 200);
@@ -100,6 +123,15 @@ class PaymentController extends Controller
                 $order->save();
             }
         }
+
+        $notification = [
+            'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
+            'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
+            'route' => '',
+        ];
+
+        $user = $payment->user;
+        $this->notification($notification, $user->id, $payment->order->id);
 
         return response()->json(['message' => 'Payment status updated successfully'], 200);
     }
