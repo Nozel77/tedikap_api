@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('avatar')->nullable()->default('profile/avatar.jpeg');
+            $table->string('avatar')->nullable();
             $table->string('role')->default('user');
             $table->enum('gender', ['male', 'female'])->default('male');
             $table->string('fcm_token')->nullable();

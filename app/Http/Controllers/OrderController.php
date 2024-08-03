@@ -10,13 +10,34 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderReward;
 use App\Models\Product;
+use App\Models\User;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class OrderController extends Controller
 {
+    public function notification(Request $request, $id)
+    {
+        $FcmToken = User::find($id)->fcm_token;
+        $message = CloudMessage::fromArray([
+            'token' => $FcmToken,
+            'notification' => [
+                'title' => $request->title,
+                'body' => $request->body,
+            ],
+        ])->withData([
+            'route' => $request->route,
+        ]);
+
+        Firebase::messaging()->send($message);
+
+        return $message;
+    }
+
     public function generateCustomUUID()
     {
         $now = now()->setTimezone('Asia/Jakarta');
@@ -126,7 +147,7 @@ class OrderController extends Controller
         $order->reward_point = $additionalPoints;
         $order->status = 'menunggu pembayaran';
         $order->order_type = 'order';
-        $order->icon_status = 'ic_status_waiting'; // Set icon_status here
+        $order->icon_status = 'ic_status_waiting';
         $order->save();
 
         $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
@@ -142,6 +163,16 @@ class OrderController extends Controller
 
         $order->schedule_pickup = $pickupTime;
         $order->save();
+
+        $user = null;
+        $notification = new Request([
+            'title' => 'Selesaikan Pembayaran Anda',
+            'body' => 'Kami perhatikan bahwa Anda belum menyelesaikan pembayaran untuk pesanan Anda. Silakan selesaikan pembayaran secepatnya untuk memastikan pesanan Anda dapat diproses.',
+            'route' => '',
+        ]);
+
+        $user = $order->user;
+        $this->notification($notification, $user->id);
 
         foreach ($cart->cartItems as $cartItem) {
             $product = Product::find($cartItem->product_id);
@@ -262,16 +293,32 @@ class OrderController extends Controller
         }
 
         $order = Order::where('id', $id)->where('status', 'menunggu konfirmasi')->first();
+        $user = null;
 
         if ($order) {
             if ($action == 'accepted') {
                 $order->status = 'pesanan diproses';
                 $order->icon_status = 'ic_status_waiting';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Sedang Diproses',
+                    'body' => 'Terima kasih telah melakukan pemesanan! Pesanan Anda saat ini sedang diproses dan akan segera dikirimkan. Kami akan mengupdate status pesanan Anda jika ada perubahan.',
+                    'route' => '',
+                ]);
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan ditolak';
                 $order->icon_status = 'ic_status_canceled';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Ditolak',
+                    'body' => 'Maaf, pesanan Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.',
+                    'route' => '',
+                ]);
             }
             $order->save();
+            $user = $order->user;
+
+            $this->notification($notification, $user->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -285,11 +332,26 @@ class OrderController extends Controller
             if ($action == 'accepted') {
                 $orderReward->status = 'pesanan diproses';
                 $orderReward->icon_status = 'ic_status_waiting';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Sedang Diproses',
+                    'body' => 'Terima kasih telah melakukan pemesanan! Pesanan Anda saat ini sedang diproses dan akan segera dikirimkan. Kami akan mengupdate status pesanan Anda jika ada perubahan.',
+                    'route' => '',
+                ]);
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan ditolak';
                 $orderReward->icon_status = 'ic_status_canceled';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Ditolak',
+                    'body' => 'Maaf, pesanan hadiah Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.',
+                    'route' => '',
+                ]);
             }
             $orderReward->save();
+            $user = $orderReward->user;
+
+            $this->notification($notification, $user->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -313,16 +375,32 @@ class OrderController extends Controller
         }
 
         $order = Order::where('id', $id)->where('status', 'pesanan diproses')->first();
+        $user = null;
 
         if ($order) {
             if ($action == 'accepted') {
                 $order->status = 'pesanan siap diambil';
                 $order->icon_status = 'ic_status_ready';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Siap Diambil',
+                    'body' => 'Pesanan Anda saat ini siap untuk diambil. Silakan ambil pesanan Anda sesuai dengan informasi yang diberikan.',
+                    'route' => '',
+                ]);
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan dibatalkan';
                 $order->icon_status = 'ic_status_canceled';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Dibatalkan',
+                    'body' => 'Maaf, pesanan Anda telah dibatalkan. Jika Anda merasa ada kesalahan, silakan hubungi kami.',
+                    'route' => '',
+                ]);
             }
             $order->save();
+            $user = $order->user;
+
+            $this->notification($notification, $user->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -336,11 +414,26 @@ class OrderController extends Controller
             if ($action == 'accepted') {
                 $orderReward->status = 'pesanan siap diambil';
                 $orderReward->icon_status = 'ic_status_ready';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Hadiah Anda Siap Diambil',
+                    'body' => 'Pesanan hadiah Anda saat ini siap untuk diambil. Silakan ambil pesanan hadiah Anda sesuai dengan informasi yang diberikan.',
+                    'route' => '',
+                ]);
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan dibatalkan';
                 $orderReward->icon_status = 'ic_status_canceled';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Hadiah Anda Dibatalkan',
+                    'body' => 'Maaf, pesanan hadiah Anda telah dibatalkan. Jika Anda merasa ada kesalahan, silakan hubungi kami.',
+                    'route' => '',
+                ]);
             }
             $orderReward->save();
+            $user = $orderReward->user;
+
+            $this->notification($notification, $user->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -364,16 +457,32 @@ class OrderController extends Controller
         }
 
         $order = Order::where('id', $id)->where('status', 'pesanan siap diambil')->first();
+        $user = null;
 
         if ($order) {
             if ($action == 'accepted') {
                 $order->status = 'pesanan selesai';
                 $order->icon_status = 'ic_status_done';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Selesai',
+                    'body' => 'Pesanan Anda telah selesai. Terima kasih telah berbelanja dengan kami. Kami berharap Anda puas dengan layanan kami.',
+                    'route' => '',
+                ]);
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan dibatalkan';
                 $order->icon_status = 'ic_status_canceled';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Anda Dibatalkan',
+                    'body' => 'Maaf, pesanan Anda telah dibatalkan. Jika Anda merasa ada kesalahan atau ingin melakukan pemesanan ulang, silakan hubungi kami.',
+                    'route' => '',
+                ]);
             }
             $order->save();
+            $user = $order->user;
+
+            $this->notification($notification, $user->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -387,11 +496,26 @@ class OrderController extends Controller
             if ($action == 'accepted') {
                 $orderReward->status = 'pesanan selesai';
                 $orderReward->icon_status = 'ic_status_done';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Hadiah Anda Selesai',
+                    'body' => 'Pesanan hadiah Anda telah selesai. Terima kasih telah berbelanja dengan kami. Kami berharap Anda puas dengan layanan kami.',
+                    'route' => '',
+                ]);
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan dibatalkan';
                 $orderReward->icon_status = 'ic_status_canceled';
+
+                $notification = new Request([
+                    'title' => 'Pesanan Hadiah Anda Dibatalkan',
+                    'body' => 'Maaf, pesanan hadiah Anda telah dibatalkan. Jika Anda merasa ada kesalahan atau ingin melakukan pemesanan ulang, silakan hubungi kami.',
+                    'route' => '',
+                ]);
             }
             $orderReward->save();
+            $user = $orderReward->user;
+
+            $this->notification($notification, $user->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
