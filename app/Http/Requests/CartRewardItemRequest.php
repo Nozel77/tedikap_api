@@ -22,7 +22,7 @@ class CartRewardItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'temperature' => 'string',
+            'temperatur' => 'string',
             'size' => 'string',
             'ice' => 'string',
             'sugar' => 'string',
