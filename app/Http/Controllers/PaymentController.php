@@ -43,6 +43,21 @@ class PaymentController extends Controller
         return $message;
     }
 
+    protected function notifyAdminsAboutNewOrder($order)
+    {
+        $adminIds = User::where('role', 'admin')->pluck('id');
+
+        foreach ($adminIds as $adminId) {
+            $notificationData = [
+                'title' => 'Pesanan Baru - Menunggu Konfirmasi',
+                'body' => "Pesanan baru dengan ID: {$order->id} sekarang menunggu konfirmasi. Silakan periksa pesanan baru di sistem admin.",
+                'route' => 'admin/orders',
+            ];
+
+            $this->notification($notificationData, $adminId, $order->id);
+        }
+    }
+
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -121,6 +136,8 @@ class PaymentController extends Controller
                 $order->payment_channel = $payment->payment_channel;
                 $order->status = 'menunggu konfirmasi';
                 $order->save();
+
+                $this->notifyAdminsAboutNewOrder($order);
             }
         }
 

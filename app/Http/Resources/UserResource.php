@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'avatar' => $this->avatar,
             'gender' => $this->gender,
             'role' => $this->role,
+            'fcm_token' => $this->fcm_token,
         ];
     }
 }

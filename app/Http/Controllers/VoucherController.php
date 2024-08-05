@@ -4,12 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\VoucherRequest;
 use App\Http\Resources\VoucherResource;
+use App\Models\User;
 use App\Models\Voucher;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
 
 class VoucherController extends Controller
 {
+    public function notificationToAll(array $notificationData)
+    {
+        $tokens = User::whereNotNull('fcm_token')->pluck('fcm_token')->toArray();
+
+        if (empty($tokens)) {
+            return response()->json(['message' => 'No FCM tokens found'], 404);
+        }
+
+        $message = CloudMessage::new()
+            ->withNotification([
+                'title' => $notificationData['title'],
+                'body' => $notificationData['body'],
+            ])
+            ->withData([
+                'route' => $notificationData['route'] ?? '',
+            ]);
+
+        $messaging = app(Messaging::class);
+        $messaging->sendMulticast($message, $tokens);
+
+        return response()->json(['message' => 'Notification sent to all users successfully'], 200);
+    }
+
     public function index()
     {
         $data = Voucher::all();
@@ -53,6 +79,14 @@ class VoucherController extends Controller
             'end_date' => $request->end_date,
         ]);
         $data->save();
+
+        $notificationData = [
+            'title' => 'Voucher Baru Tersedia',
+            'body' => 'Voucher baru telah tersedia! Periksa voucher terbaru dan nikmati diskon menarik.',
+            'route' => '',
+        ];
+
+        $this->notificationToAll($notificationData);
 
         return new VoucherResource($data);
     }
