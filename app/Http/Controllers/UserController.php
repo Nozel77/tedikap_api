@@ -20,9 +20,17 @@ class UserController extends Controller
     {
         $data = $request->validated();
 
+        $fcmToken = $request->input('fcm_token');
+
         $user = new User($data);
         $user->password = Hash::make($data['password']);
         $user->save();
+
+        if ($fcmToken) {
+            $user->update([
+                'fcm_token' => $fcmToken,
+            ]);
+        }
 
         return response()->json([
             'message' => 'User created successfully',
@@ -42,13 +50,21 @@ class UserController extends Controller
     {
         $data = $request->validated();
 
+        $fcmToken = $request->input('fcm_token');
+
         if (! Auth::attempt($data)) {
             return response()->json([
                 'message' => 'Invalid credentials',
             ], 401);
         }
 
-        $user = User::all()->where('email', $data['email'])->first();
+        $user = User::where('email', $data['email'])->first();
+
+        if ($fcmToken) {
+            $user->update([
+                'fcm_token' => $fcmToken,
+            ]);
+        }
 
         $token = $user->createToken('tedikap')->plainTextToken;
 
@@ -57,7 +73,6 @@ class UserController extends Controller
             'data' => new UserResource($user),
             'token' => $token,
         ], 200);
-
     }
 
     public function resetPassword(RequestsResetPassword $request)
