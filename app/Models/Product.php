@@ -22,4 +22,9 @@ class Product extends Model
     {
         return $this->hasMany(Favorite::class);
     }
+
+    public function getFavoritesCountAttribute()
+    {
+        return $this->favorites()->count();
+    }
 }
