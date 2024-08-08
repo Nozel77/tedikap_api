@@ -46,4 +46,25 @@ class FirebasePushController extends Controller
 
         return response()->json(['message' => 'Notification sent successfully', 'data' => $message]);
     }
+
+    public function sendNotificationToAll(Request $request)
+    {
+        $users = User::all();
+
+        foreach ($users as $user) {
+            $message = CloudMessage::fromArray([
+                'token' => $user->fcm_token,
+                'notification' => [
+                    'title' => $request->title,
+                    'body' => $request->body,
+                ],
+            ])->withData([
+                'route' => $request->route,
+            ]);
+
+            $this->notification->send($message);
+        }
+
+        return response()->json(['message' => 'Notification sent successfully']);
+    }
 }
