@@ -80,39 +80,29 @@ class RewardProductController extends Controller
 
     public function update(RewardProductUpdateRequest $request, $id)
     {
-        $request->validated();
+        $rewardProduct = RewardProduct::find($id);
 
-        $data = RewardProduct::find($id);
-
-        if (! $data) {
-            return response()->json(['error' => 'reward product not found'], 404);
+        if (! $rewardProduct) {
+            return $this->resDataNotFound('Reward Product');
         }
 
+        $data = $request->validated();
+
+        $rewardProduct->fill($data);
+
         if ($request->hasFile('image')) {
-            Storage::delete('public/reward-product/'.$data->image);
+            Storage::delete('public/reward-product/'.$rewardProduct->image);
 
             $imageName = time().'.'.$request->image->extension();
             $request->file('image')->storeAs('reward-product', $imageName, 'public');
 
-            $data->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'regular_point' => $request->regular_point,
-                'large_point' => $request->large_point,
-                'category' => $request->category,
-                'image' => $imageName,
-            ]);
-        } else {
-            $data->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'regular_point' => $request->regular_point,
-                'large_point' => $request->large_point,
-                'category' => $request->category,
-            ]);
+            $rewardProduct->image = $imageName;
         }
 
-        return $this->resUpdatedData($data);
+        $rewardProduct->save();
+
+        return $this->resUpdatedData($rewardProduct);
+
     }
 
     public function destroy($id)

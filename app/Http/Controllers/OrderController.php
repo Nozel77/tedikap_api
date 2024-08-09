@@ -23,6 +23,12 @@ class OrderController extends Controller
     public function notification(Request $request, $id)
     {
         $FcmToken = User::find($id)->fcm_token;
+        $order = Order::find($request->order_id);
+
+        if (! $order) {
+            return response()->json(['message' => 'Order not found.'], 404);
+        }
+
         $message = CloudMessage::fromArray([
             'token' => $FcmToken,
             'notification' => [
@@ -31,6 +37,7 @@ class OrderController extends Controller
             ],
         ])->withData([
             'route' => $request->route,
+            'order_id' => $order->id,
         ]);
 
         Firebase::messaging()->send($message);
@@ -168,11 +175,12 @@ class OrderController extends Controller
         $notification = new Request([
             'title' => 'Selesaikan Pembayaran Anda',
             'body' => 'Kami perhatikan bahwa Anda belum menyelesaikan pembayaran untuk pesanan Anda. Silakan selesaikan pembayaran secepatnya untuk memastikan pesanan Anda dapat diproses.',
-            'route' => '',
+            'route' => 'detail_order_common',
+            'order_id' => $order->id,
         ]);
 
         $user = $order->user;
-        $this->notification($notification, $user->id);
+        $notif = $this->notification($notification, $user->id);
 
         foreach ($cart->cartItems as $cartItem) {
             $product = Product::find($cartItem->product_id);
@@ -207,6 +215,7 @@ class OrderController extends Controller
         return response()->json([
             'message' => 'Order placed successfully.',
             'order' => new OrderResource($order),
+            'notification' => $notif,
         ], 201);
     }
 
@@ -246,7 +255,7 @@ class OrderController extends Controller
     public function getOrderAdmin()
     {
         $filterStatus = request()->query('status');
-        $validStatuses = ['new order' => 'menunggu konfirmasi', 'proccess' => 'pesanan diproses', 'taken' => 'pesanan siap diambil'];
+        $validStatuses = ['new order' => 'menunggu konfirmasi', 'proccess' => 'pesanan diproses', 'taken' => 'pesanan siap diambil', 'done' => 'pesanan selesai'];
 
         $orderQuery = Order::query();
         $orderRewardQuery = OrderReward::query();
@@ -527,4 +536,42 @@ class OrderController extends Controller
             'message' => 'Order not found or not in the "pesanan siap diambil" status.',
         ], 404);
     }
+
+    // public function HistoryOrderAdmin(){
+    //     $filterStatus = request()->query('status');
+    //     $validStatuses = ['done' => 'pesanan selesai'];
+
+    //     $orderQuery = Order::query();
+    //     $orderRewardQuery = OrderReward::query();
+
+    //     if (array_key_exists($filterStatus, $validStatuses)) {
+    //         $orderQuery->where('status', $validStatuses[$filterStatus]);
+    //         $orderRewardQuery->where('status', $validStatuses[$filterStatus]);
+    //     } else {
+    //         $orderQuery->whereIn('status', array_values($validStatuses));
+    //         $orderRewardQuery->whereIn('status', array_values($validStatuses));
+    //     }
+
+    //     $orders = $orderQuery->orderBy('created_at', 'desc')->get();
+    //     $orderRewards = $orderRewardQuery->orderBy('created_at', 'desc')->get();
+
+    //     $combinedOrders = $orders->map(function ($order) {
+    //         if ($order->order_type === 'reward order') {
+    //             return (new OrderRewardResource($order))->toArray(request());
+    //         } else {
+    //             return (new OrderResource($order))->toArray(request());
+    //         }
+    //     });
+
+    //     $combinedOrderRewards = $orderRewards->map(function ($orderReward) {
+    //         return (new OrderRewardResource($orderReward))->toArray(request());
+    //     });
+
+    //     $allOrders = $combinedOrders->concat($combinedOrderRewards)->sortByDesc('created_at')->values()->all();
+
+    //     return response()->json([
+    //         'message' => 'Orders retrieved successfully.',
+    //         'orders' => $allOrders,
+    //     ]);
+    // }
 }

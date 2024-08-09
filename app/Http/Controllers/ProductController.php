@@ -51,39 +51,28 @@ class ProductController extends Controller
 
     public function update(ProductUpdateRequest $request, $id)
     {
-        $request->validated();
+        $product = Product::find($id);
 
-        $data = Product::find($id);
-
-        if (! $data) {
+        if (! $product) {
             return $this->resDataNotFound('Product');
         }
 
+        $data = $request->validated();
+
+        $product->fill($data);
+
         if ($request->hasFile('image')) {
-            Storage::delete('public/product/'.$data->image);
+            Storage::delete('public/product/'.$product->image);
 
             $imageName = time().'.'.$request->image->extension();
             $request->file('image')->storeAs('product', $imageName, 'public');
 
-            $data->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'regular_price' => $request->regular_price,
-                'large_price' => $request->large_price,
-                'category' => $request->category,
-                'image' => $imageName,
-            ]);
-        } else {
-            $data->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'regular_price' => $request->regular_price,
-                'large_price' => $request->large_price,
-                'category' => $request->category,
-            ]);
+            $product->image = $imageName;
         }
 
-        return $this->resUpdatedData($data);
+        $product->save();
+
+        return $this->resUpdatedData($product);
     }
 
     public function destroy($id)
