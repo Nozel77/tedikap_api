@@ -20,6 +20,12 @@ class OrderRewardController extends Controller
     public function notification(Request $request, $id)
     {
         $FcmToken = User::find($id)->fcm_token;
+        $order = OrderReward::find($request->order_reward_id);
+
+        if (! $order) {
+            return response()->json(['message' => 'OrderReward not found.'], 404);
+        }
+
         $message = CloudMessage::fromArray([
             'token' => $FcmToken,
             'notification' => [
@@ -28,6 +34,7 @@ class OrderRewardController extends Controller
             ],
         ])->withData([
             'route' => $request->route,
+            'order_id' => $order->id,
         ]);
 
         Firebase::messaging()->send($message);
@@ -155,9 +162,10 @@ class OrderRewardController extends Controller
         $userNotification = new Request([
             'title' => 'Pemesanan Berhasil',
             'body' => 'Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.',
-            'route' => '',
+            'route' => 'detail_order_reward',
+            'order_id' => $order->id,
         ]);
-        $this->notification($userNotification, $userId);
+        $notif = $this->notification($userNotification, $userId);
 
         $adminNotification = new Request([
             'title' => 'Pesanan Baru - Menunggu Konfirmasi',
@@ -201,6 +209,7 @@ class OrderRewardController extends Controller
         return response()->json([
             'message' => 'Reward order placed successfully.',
             'order' => new OrderRewardResource($order),
+            'notification' => $notif,
         ], 201);
     }
 

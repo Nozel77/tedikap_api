@@ -27,6 +27,7 @@ class VoucherRequest extends FormRequest
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'discount' => 'required|numeric',
             'min_transaction' => 'required|numeric',
+            'max_discount' => 'required|numeric',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
         ];

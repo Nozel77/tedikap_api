@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 
@@ -49,22 +50,24 @@ class FirebasePushController extends Controller
 
     public function sendNotificationToAll(Request $request)
     {
-        $users = User::all();
+        $tokens = User::where('role', 'user')->whereNotNull('fcm_token')->pluck('fcm_token')->toArray();
 
-        foreach ($users as $user) {
-            $message = CloudMessage::fromArray([
-                'token' => $user->fcm_token,
-                'notification' => [
-                    'title' => $request->title,
-                    'body' => $request->body,
-                ],
-            ])->withData([
+        if (empty($tokens)) {
+            return response()->json(['message' => 'No FCM tokens found'], 404);
+        }
+
+        $message = CloudMessage::new()
+            ->withNotification([
+                'title' => $request->title,
+                'body' => $request->body,
+            ])
+            ->withData([
                 'route' => $request->route,
             ]);
 
-            $this->notification->send($message);
-        }
+        $messaging = app(Messaging::class);
+        $messaging->sendMulticast($message, $tokens);
 
-        return response()->json(['message' => 'Notification sent successfully']);
+        return response()->json(['message' => 'Notification sent to all users successfully'], 200);
     }
 }

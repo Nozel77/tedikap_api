@@ -6,6 +6,7 @@ use App\Http\Requests\BannerRequest;
 use App\Http\Requests\BannerUpdateRequest;
 use App\Http\Resources\BannerResource;
 use App\Models\Banner;
+use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
@@ -41,21 +42,28 @@ class BannerController extends Controller
 
     public function update(BannerUpdateRequest $request, $id)
     {
-        $request->validated();
+        $banner = Banner::find($id);
 
-        $data = Banner::find($id);
-
-        if (! $data) {
-            return $this->resDataNotFound('Banner');
+        if (! $banner) {
+            return $this->resDataNotFound('banner');
         }
 
-        $imageName = time().'.'.$request->file('image')->extension();
-        $request->file('image')->storeAs('banner', $imageName, 'public');
+        $data = $request->validated();
 
-        $data->image = $imageName;
-        $data->save();
+        $banner->fill($data);
 
-        return $this->resUpdatedData($data);
+        if ($request->hasFile('image')) {
+            Storage::delete('public/banner/'.$banner->image);
+
+            $imageName = time().'.'.$request->image->extension();
+            $request->file('image')->storeAs('banner', $imageName, 'public');
+
+            $banner->image = $imageName;
+        }
+
+        $banner->save();
+
+        return $this->resUpdatedData($banner);
     }
 
     public function destroy($id)

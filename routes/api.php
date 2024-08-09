@@ -13,6 +13,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RewardProductController;
+use App\Http\Controllers\StatisticController;
 use App\Http\Controllers\StatusStoreController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoucherController;
@@ -50,7 +51,7 @@ Route::prefix('product')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [ProductController::class, 'store']);
-        Route::put('/update/{id}', [ProductController::class, 'update']);
+        Route::post('/update/{id}', [ProductController::class, 'update']);
         Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
     });
 });
@@ -63,7 +64,7 @@ Route::prefix('voucher')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [VoucherController::class, 'store']);
-        Route::put('/update/{id}', [VoucherController::class, 'update']);
+        Route::post('/update/{id}', [VoucherController::class, 'update']);
         Route::delete('/delete/{id}', [VoucherController::class, 'destroy']);
     });
 });
@@ -99,7 +100,7 @@ Route::prefix('reward-product')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [RewardProductController::class, 'store']);
-        Route::put('/update/{id}', [RewardProductController::class, 'update']);
+        Route::post('/update/{id}', [RewardProductController::class, 'update']);
         Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
     });
 });
@@ -145,7 +146,7 @@ Route::prefix('banner')->group(function () {
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [BannerController::class, 'store']);
-        Route::put('/update/{id}', [BannerController::class, 'update']);
+        Route::post('/update/{id}', [BannerController::class, 'update']);
         Route::delete('/delete/{id}', [BannerController::class, 'destroy']);
     });
 });
@@ -170,3 +171,5 @@ Route::prefix('help-center')->group(function () {
         Route::delete('delete/{id}', [HelpCenterController::class, 'destroy']);
     });
 });
+
+Route::get('/show-weekly', [StatisticController::class, 'showWeeklyStatistic']);

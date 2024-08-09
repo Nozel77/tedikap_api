@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\VoucherRequest;
+use App\Http\Requests\VoucherUpdateRequest;
 use App\Http\Resources\VoucherResource;
 use App\Models\User;
 use App\Models\Voucher;
@@ -83,12 +84,16 @@ class VoucherController extends Controller
         $notificationData = [
             'title' => 'Voucher Baru Tersedia',
             'body' => 'Voucher baru telah tersedia! Periksa voucher terbaru dan nikmati diskon menarik.',
-            'route' => '',
+            'route' => 'voucher',
         ];
 
-        $this->notificationToAll($notificationData);
+        $notif = $this->notificationToAll($notificationData);
 
-        return new VoucherResource($data);
+        return response()->json([
+            'message' => 'Voucher created successfully.',
+            'voucher' => new VoucherResource($data),
+            'notification' => $notif,
+        ], 201);
     }
 
     public function show($id)
@@ -101,9 +106,9 @@ class VoucherController extends Controller
         return new VoucherResource($data);
     }
 
-    public function update(VoucherRequest $request, $id)
+    public function update(VoucherUpdateRequest $request, $id)
     {
-        $request->validated();
+        $voucher = $request->validated();
 
         $data = Voucher::find($id);
 
@@ -111,33 +116,18 @@ class VoucherController extends Controller
             return $this->resDataNotFound('Promo');
         }
 
+        $data->fill($voucher);
+
         if ($request->hasFile('image')) {
             Storage::delete('public/voucher/'.$data->image);
 
             $imageName = time().'.'.$request->image->extension();
             $request->file('image')->storeAs('voucher', $imageName, 'public');
 
-            $data->update([
-                'title' => $request->title,
-                'description' => $request->description,
-                'image' => $imageName,
-                'discount' => $request->discount,
-                'min_transaction' => $request->min_transaction,
-                'max_discount' => $request->max_discount,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-            ]);
-        } else {
-            $data->update([
-                'title' => $request->title,
-                'description' => $request->description,
-                'discount' => $request->discount,
-                'min_transaction' => $request->min_transaction,
-                'max_discount' => $request->max_discount,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-            ]);
+            $data->image = $imageName;
         }
+
+        $data->save();
 
         return $this->resUpdatedData($data);
     }
