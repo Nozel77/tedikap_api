@@ -34,6 +34,7 @@ class CartController extends Controller
                     'discount_amount' => 0,
                     'original_price' => 0,
                     'reward_point' => 0,
+                    'schedule_pickup' => null,
                     'cart_items' => [],
                 ],
             ]);
@@ -67,10 +68,22 @@ class CartController extends Controller
             return new CartItemResource($cart_item);
         });
 
+        $createdAt = now()->setTimezone('Asia/Jakarta');
+        $time = $createdAt->format('H:i');
+
+        if ($time <= '09:20') {
+            $schedulePickup = '09:40-10:00';
+        } elseif ($time > '09:20' && $time <= '11:40') {
+            $schedulePickup = '12:00-12:30';
+        } else {
+            $schedulePickup = 'CLOSED';
+        }
+
         $cart->cartItems = $cart_items_array;
         $cart->total_price = max(0, $total_price_after_discount);
         $cart->discount_amount = $discount_amount;
         $cart->original_price = $original_price;
+        $cart->schedule_pickup = $schedulePickup;
 
         return response()->json([
             'cart' => new CartResource($cart),
@@ -107,11 +120,23 @@ class CartController extends Controller
 
         $cart = Cart::all()->where('user_id', $userId)->first();
 
+        $createdAt = now()->setTimezone('Asia/Jakarta');
+        $time = $createdAt->format('H:i');
+
+        if ($time <= '09:20') {
+            $schedulePickup = '09:40-10:00';
+        } elseif ($time > '09:20' && $time <= '11:40') {
+            $schedulePickup = '12:00-12:30';
+        } else {
+            $schedulePickup = 'CLOSED';
+        }
+
         if ($cart) {
             return $this->addCartItem($cart->id, $request);
         } else {
             $cart = new Cart();
             $cart['user_id'] = $userId;
+            $cart['schedule_pickup'] = $schedulePickup;
             $cart->save();
 
             return $this->addCartItem($cart->id, $request);
