@@ -29,6 +29,7 @@ class CartResource extends JsonResource
             'discount_amount' => $this->discount_amount,
             'original_price' => $this->original_price,
             'reward_point' => $rewardPoint,
+            'schedule_pickup' => $this->schedule_pickup,
             'cart_items' => $this->cartItems,
         ];
     }

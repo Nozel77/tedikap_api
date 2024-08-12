@@ -19,7 +19,7 @@ class StatusStoreController extends Controller
             $description = 'The store is closed';
         } else {
             if ($now <= '09:20') {
-                $session = 'Sesi 1';
+                $session = 'Pick UpSesi 1';
                 $time = '09:40-10:00';
                 $description = 'The store is open';
             } elseif ($now > '09:20' && $now <= '11:40') {
@@ -53,10 +53,10 @@ class StatusStoreController extends Controller
 
         if ($status->open) {
             if ($now <= '09:20') {
-                $session = 'Sesi 1';
+                $session = 'Pick Up Sesi 1';
                 $time = '09:40-10:00';
             } elseif ($now > '09:20' && $now <= '11:40') {
-                $session = 'Sesi 2';
+                $session = 'Pick Up Sesi 2';
                 $time = '12:00-12:30';
             } else {
                 $session = 'CLOSED';
