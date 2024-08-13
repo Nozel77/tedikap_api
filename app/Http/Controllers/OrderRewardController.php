@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
+use App\Http\Resources\CartRewardResource;
 use App\Http\Resources\OrderRewardResource;
 use App\Models\CartReward;
+use App\Models\CartRewardItem;
 use App\Models\OrderReward;
 use App\Models\OrderRewardItem;
 use App\Models\Point;
@@ -244,5 +246,43 @@ class OrderRewardController extends Controller
             'message' => 'Order retrieved successfully.',
             'order' => new OrderRewardResource($order),
         ]);
+    }
+
+    public function reorderReward($orderId)
+    {
+        $userId = Auth::id();
+
+        $previousOrder = OrderReward::with('orderRewardItems')
+            ->where('id', $orderId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if (! $previousOrder) {
+            return response()->json([
+                'message' => 'Order not found or not authorized.',
+            ], 404);
+        }
+
+        $rewardCart = CartReward::firstOrCreate(['user_id' => $userId]);
+
+        $rewardCart->rewardCartItems()->delete();
+
+        foreach ($previousOrder->orderRewardItems as $orderRewardItem) {
+            $cartItem = new CartRewardItem();
+            $cartItem->cart_reward_id = $rewardCart->id;
+            $cartItem->reward_product_id = $orderRewardItem->reward_product_id;
+            $cartItem->quantity = $orderRewardItem->quantity;
+            $cartItem->points = $orderRewardItem->points;
+            $cartItem->temperatur = $orderRewardItem->temperatur;
+            $cartItem->size = $orderRewardItem->size;
+            $cartItem->sugar = $orderRewardItem->sugar;
+            $cartItem->ice = $orderRewardItem->ice;
+            $cartItem->save();
+        }
+
+        return response()->json([
+            'message' => 'Reward items successfully added to reward cart.',
+            'cart' => new CartRewardResource($rewardCart),
+        ], 200);
     }
 }
