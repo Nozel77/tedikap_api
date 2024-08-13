@@ -19,7 +19,7 @@ class CartRewardResource extends JsonResource
             'user_id' => $this->user_id,
             'total_points' => $this->total_points,
             'schedule_pickup' => $this->schedule_pickup,
-            'cartItems' => $this->cartItems,
+            'cart_items' => $this->rewardCartItems,
         ];
     }
 }

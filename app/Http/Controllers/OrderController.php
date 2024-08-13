@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
+use App\Http\Resources\CartResource;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrderRewardResource;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderReward;
@@ -13,6 +15,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -64,6 +67,9 @@ class OrderController extends Controller
         $user = Auth::user();
 
         $filterType = $request->query('type');
+        $statusOrder = $request->query('status_order');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
 
         $ongoingStatuses = ['menunggu pembayaran', 'menunggu konfirmasi', 'pesanan diproses', 'pesanan siap diambil'];
         $historyStatuses = ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'];
@@ -74,6 +80,18 @@ class OrderController extends Controller
             $query->whereIn('status', $ongoingStatuses);
         } elseif ($filterType === 'history') {
             $query->whereIn('status', $historyStatuses);
+        }
+
+        if ($statusOrder === 'finished') {
+            $query->where('status', 'pesanan selesai');
+        } elseif ($statusOrder === 'canceled') {
+            $query->whereIn('status', ['pesanan dibatalkan', 'pesanan ditolak']);
+        }
+
+        if ($startDate && $endDate) {
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+            $query->whereBetween('created_at', [$start, $end]);
         }
 
         $orders = $query->get();
@@ -255,7 +273,14 @@ class OrderController extends Controller
     public function getOrderAdmin()
     {
         $filterStatus = request()->query('status');
-        $validStatuses = ['new order' => 'menunggu konfirmasi', 'proccess' => 'pesanan diproses', 'taken' => 'pesanan siap diambil', 'done' => 'pesanan selesai'];
+        $filterSesi = request()->query('session');
+
+        $validStatuses = [
+            'new order' => 'menunggu konfirmasi',
+            'proccess' => 'pesanan diproses',
+            'taken' => 'pesanan siap diambil',
+            'done' => 'pesanan selesai',
+        ];
 
         $orderQuery = Order::query();
         $orderRewardQuery = OrderReward::query();
@@ -266,6 +291,14 @@ class OrderController extends Controller
         } else {
             $orderQuery->whereIn('status', array_values($validStatuses));
             $orderRewardQuery->whereIn('status', array_values($validStatuses));
+        }
+
+        if ($filterSesi === '1') {
+            $orderQuery->where('schedule_pickup', '09:40-10:00');
+            $orderRewardQuery->where('schedule_pickup', '09:40-10:00');
+        } elseif ($filterSesi === '2') {
+            $orderQuery->where('schedule_pickup', '12:00-12:30');
+            $orderRewardQuery->where('schedule_pickup', '12:00-12:30');
         }
 
         $orders = $orderQuery->orderBy('created_at', 'desc')->get();
@@ -537,41 +570,39 @@ class OrderController extends Controller
         ], 404);
     }
 
-    // public function HistoryOrderAdmin(){
-    //     $filterStatus = request()->query('status');
-    //     $validStatuses = ['done' => 'pesanan selesai'];
+    public function reorder($orderId)
+    {
+        $userId = Auth::id();
 
-    //     $orderQuery = Order::query();
-    //     $orderRewardQuery = OrderReward::query();
+        $previousOrder = Order::with('orderItems')->where('id', $orderId)->where('user_id', $userId)->first();
 
-    //     if (array_key_exists($filterStatus, $validStatuses)) {
-    //         $orderQuery->where('status', $validStatuses[$filterStatus]);
-    //         $orderRewardQuery->where('status', $validStatuses[$filterStatus]);
-    //     } else {
-    //         $orderQuery->whereIn('status', array_values($validStatuses));
-    //         $orderRewardQuery->whereIn('status', array_values($validStatuses));
-    //     }
+        if (! $previousOrder) {
+            return response()->json([
+                'message' => 'Order not found or not authorized.',
+            ], 404);
+        }
 
-    //     $orders = $orderQuery->orderBy('created_at', 'desc')->get();
-    //     $orderRewards = $orderRewardQuery->orderBy('created_at', 'desc')->get();
+        $cart = Cart::firstOrCreate(['user_id' => $userId]);
 
-    //     $combinedOrders = $orders->map(function ($order) {
-    //         if ($order->order_type === 'reward order') {
-    //             return (new OrderRewardResource($order))->toArray(request());
-    //         } else {
-    //             return (new OrderResource($order))->toArray(request());
-    //         }
-    //     });
+        $cart->cartItems()->delete();
 
-    //     $combinedOrderRewards = $orderRewards->map(function ($orderReward) {
-    //         return (new OrderRewardResource($orderReward))->toArray(request());
-    //     });
+        foreach ($previousOrder->orderItems as $orderItem) {
+            $cartItem = new CartItem();
+            $cartItem->cart_id = $cart->id;
+            $cartItem->product_id = $orderItem->product_id;
+            $cartItem->temperatur = $orderItem->temperatur;
+            $cartItem->ice = $orderItem->ice;
+            $cartItem->size = $orderItem->size;
+            $cartItem->sugar = $orderItem->sugar;
+            $cartItem->note = $orderItem->note;
+            $cartItem->quantity = $orderItem->quantity;
+            $cartItem->price = $orderItem->price;
+            $cartItem->save();
+        }
 
-    //     $allOrders = $combinedOrders->concat($combinedOrderRewards)->sortByDesc('created_at')->values()->all();
-
-    //     return response()->json([
-    //         'message' => 'Orders retrieved successfully.',
-    //         'orders' => $allOrders,
-    //     ]);
-    // }
+        return response()->json([
+            'message' => 'Items successfully added to cart.',
+            'cart' => new CartResource($cart),
+        ], 200);
+    }
 }

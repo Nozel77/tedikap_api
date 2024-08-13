@@ -36,7 +36,7 @@ Route::prefix('user')->group(function () {
     Route::post('otp', [OtpController::class, 'sendOtp']);
     Route::post('reset-pw', [UserController::class, 'resetPassword']);
     Route::get('get-user', [UserController::class, 'me'])->middleware('auth:sanctum');
-    Route::put('update-profile', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
+    Route::post('update-profile', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
     Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
     Route::put('/update-fcm-token', [FirebasePushController::class, 'setToken']);
     Route::post('send-notification', [FirebasePushController::class, 'sendNotificationToAll'])->middleware('auth:sanctum', 'admin');
@@ -136,7 +136,7 @@ Route::prefix('order-reward')->group(function () {
 });
 
 Route::prefix('status-store')->group(function () {
-    Route::get('/', [StatusStoreController::class, 'storeStatus'])->middleware(['auth:sanctum', 'admin']);
+    Route::get('/', [StatusStoreController::class, 'storeStatus'])->middleware(['auth:sanctum']);
     Route::put('/update', [StatusStoreController::class, 'updateStoreStatus'])->middleware(['auth:sanctum', 'admin']);
 });
 
@@ -173,3 +173,5 @@ Route::prefix('help-center')->group(function () {
 });
 
 Route::get('/show-weekly', [StatisticController::class, 'showWeeklyStatistic']);
+Route::post('reorder/{orderId}', [OrderController::class, 'reorder'])->middleware('auth:sanctum');
+Route::post('reorder-reward/{orderId}', [OrderRewardController::class, 'reorderReward'])->middleware('auth:sanctum');
