@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
@@ -68,6 +70,32 @@ class FirebasePushController extends Controller
         $messaging = app(Messaging::class);
         $messaging->sendMulticast($message, $tokens);
 
+        $data = new Notification([
+            'title' => $request->title,
+            'body' => $request->body,
+            'route' => $request->route,
+            'type' => 'common',
+        ]);
+        $data->save();
+
         return response()->json(['message' => 'Notification sent to all users successfully'], 200);
+    }
+
+    public function getNotifications(Request $request)
+    {
+        $user = Auth::user();
+        $type = $request->query('type');
+
+        $query = Notification::latest();
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $notifications = $query->get();
+
+        return response()->json([
+            'data' => $notifications,
+        ]);
     }
 }

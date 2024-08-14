@@ -40,6 +40,7 @@ Route::prefix('user')->group(function () {
     Route::post('logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
     Route::put('/update-fcm-token', [FirebasePushController::class, 'setToken']);
     Route::post('send-notification', [FirebasePushController::class, 'sendNotificationToAll'])->middleware('auth:sanctum', 'admin');
+    Route::get('notification', [FirebasePushController::class, 'getNotifications'])->middleware('auth:sanctum');
 });
 
 Route::prefix('product')->group(function () {

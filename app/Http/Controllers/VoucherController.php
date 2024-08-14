@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\VoucherRequest;
 use App\Http\Requests\VoucherUpdateRequest;
 use App\Http\Resources\VoucherResource;
+use App\Models\Notification;
 use App\Models\User;
 use App\Models\Voucher;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Contract\Messaging;
@@ -14,9 +16,9 @@ use Kreait\Firebase\Messaging\CloudMessage;
 
 class VoucherController extends Controller
 {
-    public function notificationToAll(array $notificationData)
+    public function notificationToAll(array $notificationData, Request $request)
     {
-        $tokens = User::whereNotNull('fcm_token')->pluck('fcm_token')->toArray();
+        $tokens = User::where('role', 'user')->whereNotNull('fcm_token')->pluck('fcm_token')->toArray();
 
         if (empty($tokens)) {
             return response()->json(['message' => 'No FCM tokens found'], 404);
@@ -33,6 +35,14 @@ class VoucherController extends Controller
 
         $messaging = app(Messaging::class);
         $messaging->sendMulticast($message, $tokens);
+
+        $data = new Notification([
+            'title' => $notificationData['title'],
+            'body' => $notificationData['body'],
+            'route' => $notificationData['route'],
+            'type' => 'voucher',
+        ]);
+        $data->save();
 
         return response()->json(['message' => 'Notification sent to all users successfully'], 200);
     }
@@ -87,7 +97,7 @@ class VoucherController extends Controller
             'route' => 'voucher',
         ];
 
-        $notif = $this->notificationToAll($notificationData);
+        $notif = $this->notificationToAll($notificationData, $request);
 
         return response()->json([
             'message' => 'Voucher created successfully.',
