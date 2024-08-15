@@ -85,11 +85,21 @@ class FirebasePushController extends Controller
     {
         $user = Auth::user();
         $type = $request->query('type');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
 
         $query = Notification::latest();
 
         if ($type) {
             $query->where('type', $type);
+        }
+
+        if ($startDate && $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->where('created_at', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->where('created_at', '<=', $endDate);
         }
 
         $notifications = $query->get();

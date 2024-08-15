@@ -31,6 +31,8 @@ class Order extends Model
         'payment_channel' => null,
     ];
 
+    protected $dates = ['created_at', 'updated_at', 'expires_at'];
+
     public function user()
     {
         return $this->belongsTo(User::class);

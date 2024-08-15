@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\BoxPromoController;
 use App\Http\Controllers\CartController;
@@ -123,10 +124,10 @@ Route::prefix('order')->group(function () {
     Route::post('/store', [OrderController::class, 'storeRegularOrder'])->middleware('auth:sanctum');
 
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
-        Route::get('/get-order', [OrderController::class, 'getOrderAdmin']);
-        Route::put('/update-status/{id}', [OrderController::class, 'updateStatusOrder']);
-        Route::put('/update-status-siap/{id}', [OrderController::class, 'updateStatusOrderSiap']);
-        Route::put('/update-status-selesai/{id}', [OrderController::class, 'updateStatusOrderSelesai']);
+        Route::get('/get-order', [AdminController::class, 'getOrderAdmin']);
+        Route::put('/update-status/{id}', [AdminController::class, 'updateStatusOrder']);
+        Route::put('/update-status-siap/{id}', [AdminController::class, 'updateStatusOrderSiap']);
+        Route::put('/update-status-selesai/{id}', [AdminController::class, 'updateStatusOrderSelesai']);
     });
 });
 

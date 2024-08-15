@@ -143,6 +143,10 @@ class OrderRewardController extends Controller
         $order->cart_reward_id = $rewardCart->id;
         $order->total_point = $totalPoints;
         $order->status = 'menunggu konfirmasi';
+        $order->status_description = 'mohon segera lakukan pembayaran supaya pesanan Anda dapat diproses';
+        $whatsappMessage = urlencode("halo saya ingin tanya tentang pesanan saya dengan id {$order->id}");
+        $order->whatsapp = "https://wa.me/62895395343223?text={$whatsappMessage}";
+        $order->expires_at = now()->addMinutes(5);
         $order->icon_status = 'ic_status_waiting';
         $order->order_type = 'reward order';
         $order->save();
