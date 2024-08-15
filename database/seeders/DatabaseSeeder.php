@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             VoucherSeeder::class,
             RewardProductSeeder::class,
             AdminUserSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

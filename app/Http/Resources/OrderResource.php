@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,6 +17,7 @@ class OrderResource extends JsonResource
     {
 
         $original_price = $this->total_price + $this->discount_amount;
+        $cartHasItems = $this->cart ? $this->cart->cartItems->isNotEmpty() : false;
 
         return [
             'id' => $this->id,
@@ -29,12 +31,16 @@ class OrderResource extends JsonResource
             'reward_point' => $this->reward_point,
             'original_price' => $original_price,
             'status' => $this->status,
+            'status_description' => $this->status_description,
+            'whatsapp' => $this->whatsapp,
             'order_type' => $this->order_type,
             'schedule_pickup' => $this->schedule_pickup,
             'icon_status' => $this->icon_status.'.svg',
             'payment_channel' => $this->payment ? $this->payment->payment_channel : null,
+            'cart_length' => $cartHasItems,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'expires_at' => Carbon::parse($this->expires_at)->format('Y-m-d H:i:s'),
             'order_items' => OrderItemsResource::collection($this->orderItems),
         ];
     }

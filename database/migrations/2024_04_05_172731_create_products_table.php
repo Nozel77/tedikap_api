@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->integer('regular_price');
             $table->integer('large_price');
-            $table->enum('category', ['tea', 'nontea', 'snack']);
+            $table->enum('category', ['tea', 'nontea', 'yakult']);
             $table->text('image');
             $table->timestamps();
         });

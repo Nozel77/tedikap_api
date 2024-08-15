@@ -23,11 +23,14 @@ return new class extends Migration
             $table->integer('discount_amount')->default(0);
             $table->integer('reward_point')->default(0);
             $table->string('status')->default('menunggu pembayaran');
+            $table->string('status_description');
+            $table->string('whatsapp');
             $table->string('order_type');
             $table->string('schedule_pickup')->nullable();
             $table->string('payment_channel')->nullable();
             $table->string('icon_status');
             $table->timestamps();
+            $table->timestamp('expires_at')->nullable();
         });
     }
 

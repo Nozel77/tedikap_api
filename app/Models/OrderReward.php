@@ -31,4 +31,9 @@ class OrderReward extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function cartReward()
+    {
+        return $this->belongsTo(CartReward::class);
+    }
 }

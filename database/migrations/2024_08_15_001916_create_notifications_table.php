@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reward_products', function (Blueprint $table) {
+        Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description');
-            $table->string('image');
-            $table->integer('regular_point');
-            $table->integer('large_point');
-            $table->enum('category', ['tea', 'nontea', 'yakult', 'merchandise']);
+            $table->string('title');
+            $table->text('body');
+            $table->string('route')->nullable();
+            $table->string('type');
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reward_products');
+        Schema::dropIfExists('notifications');
     }
 };

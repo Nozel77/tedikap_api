@@ -75,16 +75,12 @@ class PaymentController extends Controller
 
         $payer_email = $user->email;
 
-        $localTime = now()->addMinutes(2);
-        $utcTime = $localTime->utc();
-        $expiryDate = $utcTime->toIso8601String();
-
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
             'description' => 'kenapa gabisa',
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
-            'expiry_date' => $expiryDate,
+            'invoice_duration' => 120,
         ]);
 
         $result = $this->apiInstance->createInvoice($create_invoice_request);
@@ -97,7 +93,7 @@ class PaymentController extends Controller
         $payment->amount = $order->total_price;
         $payment->payment_channel = null;
         $payment->order_id = $order->id;
-        $payment->expires_at = $utcTime;
+        $payment->invoice_duration = 120;
         $payment->save();
 
         return response()->json($payment);
@@ -108,7 +104,7 @@ class PaymentController extends Controller
         $request->validate([
             'external_id' => 'required|exists:payments,external_id',
             'status' => 'required|string',
-            'payment_channel' => 'required|string',
+            'payment_channel' => 'nullable|string',
         ]);
 
         $payment = Payment::with(['user', 'order'])->where('external_id', $request->external_id)->firstOrFail();
@@ -135,20 +131,39 @@ class PaymentController extends Controller
             if ($order) {
                 $order->payment_channel = $payment->payment_channel;
                 $order->status = 'menunggu konfirmasi';
+                $order->status_description = 'pembayaran selesai pesanan sedang menunggu konfirmasi';
                 $order->save();
 
                 $this->notifyAdminsAboutNewOrder($order);
             }
+
+            $notification = [
+                'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
+                'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
+                'route' => '',
+            ];
+
+            $user = $payment->user;
+            $this->notification($notification, $user->id, $payment->order->id);
+
+        } elseif (strtolower($request->status) === 'expired') {
+            $order = $payment->order;
+            if ($order) {
+                $order->status = 'pesanan dibatalkan';
+                $order->status_description = 'Pembayaran gagal atau kadaluwarsa';
+                $order->icon_status = 'ic_status_canceled';
+                $order->save();
+
+                $notification = [
+                    'title' => 'Pembayaran Kadaluarsa',
+                    'body' => "Pembayaran untuk pesanan Anda (ID: {$payment->order->id}) telah kadaluwarsa dan pesanan Anda dibatalkan. Silakan lakukan pemesanan ulang jika Anda masih ingin melanjutkan.",
+                    'route' => '',
+                ];
+
+                $user = $payment->user;
+                $this->notification($notification, $user->id, $payment->order->id);
+            }
         }
-
-        $notification = [
-            'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
-            'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
-            'route' => '',
-        ];
-
-        $user = $payment->user;
-        $this->notification($notification, $user->id, $payment->order->id);
 
         return response()->json(['message' => 'Payment status updated successfully'], 200);
     }
