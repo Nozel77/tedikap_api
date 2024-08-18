@@ -55,6 +55,7 @@ class RewardProductController extends Controller
             'large_point' => $request->large_point,
             'category' => $request->category,
             'image' => $imageName,
+            'stock' => true,
         ]);
         $data->save();
 
@@ -102,7 +103,6 @@ class RewardProductController extends Controller
         $rewardProduct->save();
 
         return $this->resUpdatedData($rewardProduct);
-
     }
 
     public function destroy($id)
@@ -117,5 +117,19 @@ class RewardProductController extends Controller
         $data->delete();
 
         return $this->resDataDeleted();
+    }
+
+    public function updateStatusStock(Request $request, $id)
+    {
+        $product = RewardProduct::find($id);
+
+        if (! $product) {
+            return $this->resDataNotFound('Reward Product');
+        }
+
+        $product->stock = $request->stock;
+        $product->save();
+
+        return $this->resUpdatedData($product);
     }
 }

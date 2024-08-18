@@ -18,7 +18,9 @@ class ReviewController extends Controller
 
         $order = Order::where('id', $orderId)->where('user_id', $user->id)->first();
 
-        if (! $order) {
+        if ($order) {
+            $orderType = 'order';
+        } else {
             $order = OrderReward::where('id', $orderId)->where('user_id', $user->id)->first();
 
             if (! $order) {
@@ -26,6 +28,8 @@ class ReviewController extends Controller
                     'message' => 'Order tidak ditemukan atau tidak milik pengguna.',
                 ], 404);
             }
+
+            $orderType = 'reward order';
         }
 
         $review = new Review();
@@ -35,6 +39,16 @@ class ReviewController extends Controller
         $review->product_quality = $data['product_quality'];
         $review->note = $data['note'] ?? null;
         $review->save();
+
+        $averageRating = ($data['staff_service'] + $data['product_quality']) / 2;
+
+        if ($orderType === 'order') {
+            $order->rating = $averageRating;
+        } elseif ($orderType === 'reward order') {
+            $order->rating = $averageRating;
+        }
+
+        $order->save();
 
         return response()->json([
             'message' => 'Review berhasil disimpan.',

@@ -38,6 +38,7 @@ class OrderResource extends JsonResource
             'icon_status' => $this->icon_status.'.svg',
             'payment_channel' => $this->payment ? $this->payment->payment_channel : null,
             'cart_length' => $cartHasItems,
+            'rating' => $this->rating,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'expires_at' => Carbon::parse($this->expires_at)->format('Y-m-d H:i:s'),

@@ -22,8 +22,8 @@ class ReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'staff_service' => 'required|integer|min:1|max:5',
-            'product_quality' => 'required|integer|min:1|max:5',
+            'staff_service' => 'required|numeric|min:1|max:5',
+            'product_quality' => 'required|numeric|min:1|max:5',
             'note' => 'nullable|string',
         ];
     }

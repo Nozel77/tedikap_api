@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('order_id');
-            $table->integer('staff_service');
-            $table->integer('product_quality');
+            $table->double('staff_service');
+            $table->double('product_quality');
             $table->text('note')->nullable();
             $table->timestamps();
         });

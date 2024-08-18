@@ -22,6 +22,7 @@ class RewardProductResource extends JsonResource
             'large_point' => $this->large_point,
             'category' => $this->category,
             'image' => $this->image,
+            'stock' => $this->stock,
         ];
     }
 }

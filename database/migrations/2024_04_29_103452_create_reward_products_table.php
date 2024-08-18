@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('regular_point');
             $table->integer('large_point');
             $table->enum('category', ['tea', 'nontea', 'yakult', 'merchandise']);
+            $table->boolean('stock')->default(true);
             $table->timestamps();
         });
     }

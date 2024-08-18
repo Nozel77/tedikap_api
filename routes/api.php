@@ -55,6 +55,7 @@ Route::prefix('product')->group(function () {
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [ProductController::class, 'store']);
         Route::post('/update/{id}', [ProductController::class, 'update']);
+        Route::put('update-stock/{id}', [ProductController::class, 'updateStatusStock']);
         Route::delete('/delete/{id}', [ProductController::class, 'destroy']);
     });
 });
@@ -104,6 +105,7 @@ Route::prefix('reward-product')->group(function () {
     Route::group(['middleware' => ['auth:sanctum', 'admin']], function () {
         Route::post('/store', [RewardProductController::class, 'store']);
         Route::post('/update/{id}', [RewardProductController::class, 'update']);
+        Route::put('update-stock/{id}', [RewardProductController::class, 'updateStatusStock']);
         Route::delete('/delete/{id}', [RewardProductController::class, 'destroy']);
     });
 });

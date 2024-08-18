@@ -9,7 +9,11 @@ class StatusStoreController extends Controller
 {
     public function storeStatus()
     {
-        $status = StatusStore::all()->first();
+        $status = StatusStore::first();
+
+        if (! $status) {
+            return response()->json(['message' => 'Status store not found'], 404);
+        }
 
         $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
@@ -19,11 +23,11 @@ class StatusStoreController extends Controller
             $description = 'The store is closed';
         } else {
             if ($now <= '09:20') {
-                $session = 'Pick UpSesi 1';
+                $session = 'Pick Up Sesi 1';
                 $time = '09:40-10:00';
                 $description = 'The store is open';
             } elseif ($now > '09:20' && $now <= '11:40') {
-                $session = 'Sesi 2';
+                $session = 'Pick Up Sesi 2';
                 $time = '12:00-12:30';
                 $description = 'The store is open';
             } else {
@@ -45,7 +49,12 @@ class StatusStoreController extends Controller
 
     public function updateStoreStatus()
     {
-        $status = StatusStore::all()->first();
+        $status = StatusStore::first();
+
+        if (! $status) {
+            return response()->json(['message' => 'Status store not found'], 404);
+        }
+
         $status->open = ! $status->open;
         $status->save();
 
@@ -75,6 +84,6 @@ class StatusStoreController extends Controller
                 'session' => $session,
                 'time' => $time,
             ],
-        ]);
+        ], 200);
     }
 }
