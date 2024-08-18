@@ -27,6 +27,7 @@ class ProductResource extends JsonResource
             'image' => $this->image,
             'isLiked' => $user_id ? $this->favorites()->where('user_id', $user_id)->exists() : false,
             'favorites_count' => $this->favorites_count,
+            'stock' => $this->stock,
         ];
     }
 }

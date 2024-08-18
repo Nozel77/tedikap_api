@@ -32,6 +32,7 @@ class OrderRewardResource extends JsonResource
             'order_type' => $this->order_type,
             'schedule_pickup' => $this->schedule_pickup,
             'cart_length' => $cartHasItems,
+            'rating' => $this->rating,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
             'expires_at' => Carbon::parse($this->expires_at)->format('Y-m-d H:i:s'),

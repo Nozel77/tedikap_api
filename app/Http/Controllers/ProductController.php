@@ -33,6 +33,7 @@ class ProductController extends Controller
             'large_price' => $request->large_price,
             'category' => $request->category,
             'image' => $imageName,
+            'stock' => true,
         ]);
         $data->save();
 
@@ -168,5 +169,19 @@ class ProductController extends Controller
         $product = Product::withCount('favorites')->orderBy('favorites_count', 'desc')->take(10)->get();
 
         return ProductResource::collection($product);
+    }
+
+    public function updateStatusStock(Request $request, $id)
+    {
+        $product = Product::find($id);
+
+        if (! $product) {
+            return $this->resDataNotFound('Product');
+        }
+
+        $product->stock = $request->stock;
+        $product->save();
+
+        return $this->resUpdatedData($product);
     }
 }

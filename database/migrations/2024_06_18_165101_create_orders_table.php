@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('schedule_pickup')->nullable();
             $table->string('payment_channel')->nullable();
             $table->string('icon_status');
+            $table->double('rating')->nullable();
             $table->timestamps();
             $table->timestamp('expires_at')->nullable();
         });

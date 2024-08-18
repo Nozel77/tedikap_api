@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('schedule_pickup')->nullable();
             $table->string('icon_status');
             $table->string('order_type');
+            $table->double('rating')->nullable();
             $table->timestamps();
             $table->timestamp('expires_at')->nullable();
         });

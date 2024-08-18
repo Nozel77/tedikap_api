@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('large_price');
             $table->enum('category', ['tea', 'nontea', 'yakult']);
             $table->text('image');
+            $table->boolean('stock')->default(true);
             $table->timestamps();
         });
     }
