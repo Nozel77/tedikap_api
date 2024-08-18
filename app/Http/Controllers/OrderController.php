@@ -65,15 +65,21 @@ class OrderController extends Controller
         $query = Order::where('user_id', $user->id)->with('payment')->orderBy('created_at', 'desc');
 
         if ($filterType === 'ongoing') {
-            $query->whereIn('status', $ongoingStatuses);
+            $query->whereIn('status', $ongoingStatuses); 
         } elseif ($filterType === 'history') {
             $query->whereIn('status', $historyStatuses);
         }
 
-        if ($statusOrder === 'finished') {
-            $query->where('status', 'pesanan selesai');
-        } elseif ($statusOrder === 'canceled') {
-            $query->whereIn('status', ['pesanan dibatalkan', 'pesanan ditolak']);
+        if ($statusOrder) {
+            if (in_array($statusOrder, ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'])) {
+                $query->where('status', $statusOrder);
+            } elseif ($statusOrder === 'finished_rejected') {
+                $query->whereIn('status', ['pesanan selesai', 'pesanan ditolak']);
+            } elseif ($statusOrder === 'canceled_rejected') {
+                $query->whereIn('status', ['pesanan dibatalkan', 'pesanan ditolak']);
+            } elseif ($statusOrder === 'finished_canceled') {
+                $query->whereIn('status', ['pesanan selesai', 'pesanan dibatalkan']);
+            }
         }
 
         if ($startDate && $endDate) {

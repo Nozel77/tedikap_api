@@ -23,15 +23,9 @@ class Order extends Model
 
     public $incrementing = false;
 
-    protected $casts = [
-        'order_items' => 'array',
-    ];
-
     protected $attributes = [
         'payment_channel' => null,
     ];
-
-    protected $dates = ['created_at', 'updated_at', 'expires_at'];
 
     public function user()
     {

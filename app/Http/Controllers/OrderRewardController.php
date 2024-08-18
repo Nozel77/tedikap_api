@@ -12,6 +12,7 @@ use App\Models\OrderRewardItem;
 use App\Models\Point;
 use App\Models\RewardProduct;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -71,6 +72,9 @@ class OrderRewardController extends Controller
         $user = Auth::user();
 
         $filterType = $request->query('type');
+        $statusOrder = $request->query('status_order');
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
 
         $ongoingStatuses = ['menunggu konfirmasi', 'pesanan diproses', 'pesanan siap diambil'];
         $historyStatuses = ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'];
@@ -81,6 +85,24 @@ class OrderRewardController extends Controller
             $query->whereIn('status', $ongoingStatuses);
         } elseif ($filterType === 'history') {
             $query->whereIn('status', $historyStatuses);
+        }
+
+        if ($statusOrder) {
+            if (in_array($statusOrder, ['pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak'])) {
+                $query->where('status', $statusOrder);
+            } elseif ($statusOrder === 'finished_rejected') {
+                $query->whereIn('status', ['pesanan selesai', 'pesanan ditolak']);
+            } elseif ($statusOrder === 'canceled_rejected') {
+                $query->whereIn('status', ['pesanan dibatalkan', 'pesanan ditolak']);
+            } elseif ($statusOrder === 'finished_canceled') {
+                $query->whereIn('status', ['pesanan selesai', 'pesanan dibatalkan']);
+            }
+        }
+
+        if ($startDate && $endDate) {
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+            $query->whereBetween('created_at', [$start, $end]);
         }
 
         $orders = $query->get();
