@@ -65,7 +65,7 @@ class OrderController extends Controller
         $query = Order::where('user_id', $user->id)->with('payment')->orderBy('created_at', 'desc');
 
         if ($filterType === 'ongoing') {
-            $query->whereIn('status', $ongoingStatuses); 
+            $query->whereIn('status', $ongoingStatuses);
         } elseif ($filterType === 'history') {
             $query->whereIn('status', $historyStatuses);
         }

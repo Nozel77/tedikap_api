@@ -13,6 +13,7 @@ use App\Http\Controllers\OtpController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\RewardProductController;
 use App\Http\Controllers\StatisticController;
 use App\Http\Controllers\StatusStoreController;
@@ -174,6 +175,14 @@ Route::prefix('help-center')->group(function () {
     });
 });
 
+Route::prefix('reorder')->group(function () {
+    Route::post('{orderId}', [OrderController::class, 'reorder'])->middleware('auth:sanctum');
+    Route::post('reward/{orderId}', [OrderRewardController::class, 'reorderReward'])->middleware('auth:sanctum');
+});
+
+Route::prefix('review')->group(function () {
+    Route::get('', [ReviewController::class, 'index'])->middleware('auth:sanctum', 'admin');
+    Route::post('/{orderId}', [ReviewController::class, 'store'])->middleware('auth:sanctum');
+});
+
 Route::get('/show-weekly', [StatisticController::class, 'showWeeklyStatistic']);
-Route::post('reorder/{orderId}', [OrderController::class, 'reorder'])->middleware('auth:sanctum');
-Route::post('reorder-reward/{orderId}', [OrderRewardController::class, 'reorderReward'])->middleware('auth:sanctum');

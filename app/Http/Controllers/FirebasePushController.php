@@ -105,7 +105,7 @@ class FirebasePushController extends Controller
             } else {
                 $query->whereBetween('created_at', [$start, $end]);
             }
-        } 
+        }
 
         $notifications = $query->get();
 
