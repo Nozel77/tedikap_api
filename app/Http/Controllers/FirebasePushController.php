@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\NotificationResource;
 use App\Models\Notification;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,28 +86,31 @@ class FirebasePushController extends Controller
     public function getNotifications(Request $request)
     {
         $user = Auth::user();
-        $type = $request->query('type');
-        $startDate = $request->query('start_date');
-        $endDate = $request->query('end_date');
+        $type = $request->input('type');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
-        $query = Notification::latest();
+        $query = Notification::orderBy('created_at', 'desc');
 
         if ($type) {
             $query->where('type', $type);
         }
 
         if ($startDate && $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        } elseif ($startDate) {
-            $query->where('created_at', '>=', $startDate);
-        } elseif ($endDate) {
-            $query->where('created_at', '<=', $endDate);
-        }
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+
+            if ($startDate === $endDate) {
+                $query->whereDate('created_at', $startDate);
+            } else {
+                $query->whereBetween('created_at', [$start, $end]);
+            }
+        } 
 
         $notifications = $query->get();
 
         return response()->json([
-            'data' => $notifications,
+            'data' => NotificationResource::collection($notifications),
         ]);
     }
 }
