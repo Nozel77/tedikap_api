@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('role')->default('user');
             $table->enum('gender', ['male', 'female'])->default('male');
             $table->string('fcm_token')->nullable();
+            $table->string('whatsapp_service')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

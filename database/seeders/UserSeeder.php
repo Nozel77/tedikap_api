@@ -13,10 +13,12 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $whatsappMessage = urlencode('Halo Tedikap, Saya membutuhkan bantuan');
         User::factory()->create([
             'name' => 'halo',
             'email' => 'halo@mail.com',
             'password' => Hash::make('halopass'),
+            'whatsapp_service' => "https://wa.me/62895395343223?text={$whatsappMessage}",
         ]);
     }
 }

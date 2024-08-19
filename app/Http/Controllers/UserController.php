@@ -24,6 +24,8 @@ class UserController extends Controller
 
         $user = new User($data);
         $user->password = Hash::make($data['password']);
+        $whatsappMessage = urlencode('Halo Tedikap, Saya membutuhkan bantuan');
+        $user->whatsapp_service = "https://wa.me/62895395343223?text={$whatsappMessage}";
         $user->save();
 
         if ($fcmToken) {
