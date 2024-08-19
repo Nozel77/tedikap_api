@@ -113,8 +113,8 @@ class AdminController extends Controller
                 $order->icon_status = 'ic_status_canceled';
 
                 $notificationData = [
-                    'title' => 'Pesanan Anda Ditolak',
-                    'body' => 'Maaf, pesanan Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.',
+                    'title' => $request->input('title', 'Pesanan Anda Ditolak'),
+                    'body' => $request->input('body', 'Maaf, pesanan Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
                     'route' => '',
                 ];
             }
@@ -136,12 +136,12 @@ class AdminController extends Controller
                     ];
                 } elseif ($action == 'rejected') {
                     $orderReward->status = 'pesanan ditolak';
-                    $orderReward->status_description = 'Pesanan anda ditolak';
+                    $orderReward->status_description = 'Pesanan Anda ditolak';
                     $orderReward->icon_status = 'ic_status_canceled';
 
                     $notificationData = [
-                        'title' => 'Pesanan Anda Ditolak',
-                        'body' => 'Maaf, pesanan hadiah Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.',
+                        'title' => $request->input('title', 'Pesanan Anda Ditolak'),
+                        'body' => $request->input('body', 'Maaf, pesanan hadiah Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
                         'route' => '',
                     ];
                 }
@@ -150,7 +150,7 @@ class AdminController extends Controller
             }
         }
 
-        if ($user) {
+        if ($user && $notificationData) {
             $fcmToken = $user->fcm_token;
             $notif = $this->notification($fcmToken, $notificationData['title'], $notificationData['body'], $notificationData['route'], $id);
 

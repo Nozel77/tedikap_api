@@ -329,6 +329,9 @@ class CartController extends Controller
             ], 400);
         }
 
+        $voucher->is_used = true;
+        $voucher->save();
+
         $cart->voucher_id = $voucher->id;
         $cart->save();
 
@@ -337,9 +340,10 @@ class CartController extends Controller
         ], 200);
     }
 
-    public function removeVoucher(Request $request): JsonResponse
+    public function removeVoucher(ApplyVoucherRequest $request): JsonResponse
     {
         $userId = Auth::id();
+        $data = $request->validated();
 
         $cart = Cart::where('user_id', $userId)->first();
 
@@ -348,6 +352,11 @@ class CartController extends Controller
                 'message' => 'Cart not found for this user.',
             ], 404);
         }
+
+        $voucher = Voucher::find($data['voucher_id']);
+
+        $voucher->is_used = false;
+        $voucher->save();
 
         $cart->voucher_id = null;
         $cart->save();

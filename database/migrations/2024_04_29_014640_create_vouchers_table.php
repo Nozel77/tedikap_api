@@ -19,6 +19,7 @@ return new class extends Migration
             $table->double('discount')->default(0);
             $table->integer('min_transaction')->default(0);
             $table->integer('max_discount')->default(0);
+            $table->boolean('is_used')->default(false);
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();
