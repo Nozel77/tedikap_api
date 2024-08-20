@@ -12,6 +12,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,12 +69,11 @@ class CartController extends Controller
             return new CartItemResource($cart_item);
         });
 
-        $createdAt = now()->setTimezone('Asia/Jakarta');
-        $time = $createdAt->format('H:i');
+        $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
-        if ($time <= '09:20') {
+        if ($now >= '07:00' && $now <= '09:20') {
             $schedulePickup = '09:40-10:00';
-        } elseif ($time > '09:20' && $time <= '11:40') {
+        } elseif ($now > '09:20' && $now <= '11:40') {
             $schedulePickup = '12:00-12:30';
         } else {
             $schedulePickup = 'CLOSED';
@@ -120,12 +120,11 @@ class CartController extends Controller
 
         $cart = Cart::all()->where('user_id', $userId)->first();
 
-        $createdAt = now()->setTimezone('Asia/Jakarta');
-        $time = $createdAt->format('H:i');
+        $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
-        if ($time <= '09:20') {
+        if ($now >= '07:00' && $now <= '09:20') {
             $schedulePickup = '09:40-10:00';
-        } elseif ($time > '09:20' && $time <= '11:40') {
+        } elseif ($now > '09:20' && $now <= '11:40') {
             $schedulePickup = '12:00-12:30';
         } else {
             $schedulePickup = 'CLOSED';

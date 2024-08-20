@@ -22,7 +22,7 @@ class VoucherSeeder extends Seeder
                 'max_discount' => 30000,
                 'is_used' => false,
                 'start_date' => '2024-06-21',
-                'end_date' => '2024-08-21',
+                'end_date' => '2024-08-27',
             ],
             [
                 'title' => 'Nikmati promo sebesar 10% Sekarang !!!',
@@ -33,7 +33,7 @@ class VoucherSeeder extends Seeder
                 'max_discount' => 20000,
                 'is_used' => false,
                 'start_date' => '2024-06-21',
-                'end_date' => '2024-08-21',
+                'end_date' => '2024-08-27',
             ],
         ];
 

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('min_transaction')->default(0);
             $table->integer('max_discount')->default(0);
             $table->boolean('is_used')->default(false);
+            $table->boolean('is_eligible')->default(false);
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

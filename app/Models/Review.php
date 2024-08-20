@@ -15,6 +15,13 @@ class Review extends Model
         'staff_service',
         'product_quality',
         'note',
+        'rating',
+    ];
+
+    protected $casts = [
+        'staff_service' => 'double',
+        'product_quality' => 'double',
+        'rating' => 'double',
     ];
 
     public function user()

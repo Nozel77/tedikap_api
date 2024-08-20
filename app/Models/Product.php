@@ -18,6 +18,10 @@ class Product extends Model
         'image',
     ];
 
+    protected $casts = [
+        'stock' => 'boolean',
+    ];
+
     public function favorites()
     {
         return $this->hasMany(Favorite::class);
