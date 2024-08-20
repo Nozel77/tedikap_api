@@ -22,6 +22,7 @@ class ReviewResource extends JsonResource
             'avatar' => $this->user->avatar,
             'staff_service' => $this->staff_service,
             'product_quality' => $this->product_quality,
+            'average_rating' => $this->rating,
             'note' => $this->note,
         ];
     }

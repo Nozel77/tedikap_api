@@ -20,6 +20,11 @@ class Voucher extends Model
         'end_date',
     ];
 
+    protected $casts = [
+        'is_used' => 'boolean',
+        'is_eligible' => 'boolean',
+    ];
+
     public function userVouchers()
     {
         return $this->hasMany(UserVoucher::class);

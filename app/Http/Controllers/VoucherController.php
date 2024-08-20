@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\VoucherRequest;
 use App\Http\Requests\VoucherUpdateRequest;
 use App\Http\Resources\VoucherResource;
+use App\Models\Cart;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\Voucher;
@@ -59,6 +60,11 @@ class VoucherController extends Controller
         $userId = Auth::id();
         $currentDate = now();
 
+        $cart = Cart::where('user_id', $userId)->first();
+        $originalPrice = $cart ? $cart->cartItems->sum(function ($cart_item) {
+            return $cart_item->quantity * $cart_item->price;
+        }) : 0;
+
         $activeVouchers = Voucher::where('start_date', '<=', $currentDate)
             ->where('end_date', '>=', $currentDate)
             ->whereDoesntHave('userVouchers', function ($query) use ($userId) {
@@ -66,6 +72,12 @@ class VoucherController extends Controller
                     ->where('used', true);
             })
             ->get();
+
+        $activeVouchers->each(function ($voucher) use ($originalPrice) {
+            $isEligible = $originalPrice >= $voucher->min_transaction;
+            $voucher->is_eligible = $isEligible;
+            $voucher->save(); // Simpan perubahan ke database
+        });
 
         return response()->json([
             'active_vouchers' => VoucherResource::collection($activeVouchers),

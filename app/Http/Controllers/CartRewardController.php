@@ -8,7 +8,9 @@ use App\Http\Resources\CartRewardItemResource;
 use App\Http\Resources\CartRewardResource;
 use App\Models\CartReward;
 use App\Models\CartRewardItem;
+use App\Models\Point;
 use App\Models\RewardProduct;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +28,8 @@ class CartRewardController extends Controller
                     'user_id' => $user_id,
                     'total_points' => 0,
                     'schedule_pickup' => null,
-                    'cartItems' => [],
+                    'points_enough' => false,
+                    'cart_items' => [],
                 ],
             ], 200);
         }
@@ -36,16 +39,19 @@ class CartRewardController extends Controller
             return $cart_item->quantity * $cart_item->points;
         });
 
+        $requiredPoints = $total_points;
+        $userPoints = Point::where('user_id', $user_id)->sum('point');
+        $pointsEnough = $userPoints >= $requiredPoints;
+
         $cart_items_array = $cart_items->map(function ($cart_item) {
             return new CartRewardItemResource($cart_item);
         });
 
-        $createdAt = now()->setTimezone('Asia/Jakarta');
-        $time = $createdAt->format('H:i');
+        $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
-        if ($time <= '09:20') {
+        if ($now >= '07:00' && $now <= '09:20') {
             $schedulePickup = '09:40-10:00';
-        } elseif ($time > '09:20' && $time <= '11:40') {
+        } elseif ($now > '09:20' && $now <= '11:40') {
             $schedulePickup = '12:00-12:30';
         } else {
             $schedulePickup = 'CLOSED';
@@ -54,6 +60,7 @@ class CartRewardController extends Controller
         $cart->cartItems = $cart_items_array;
         $cart->schedule_pickup = $schedulePickup;
         $cart->total_points = $total_points;
+        $cart->points_enough = $pointsEnough;
 
         return response()->json([
             'cart' => new CartRewardResource($cart),
@@ -85,12 +92,11 @@ class CartRewardController extends Controller
 
         $cart = CartReward::where('user_id', $userId)->first();
 
-        $createdAt = now()->setTimezone('Asia/Jakarta');
-        $time = $createdAt->format('H:i');
+        $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
-        if ($time <= '09:20') {
+        if ($now >= '07:00' && $now <= '09:20') {
             $schedulePickup = '09:40-10:00';
-        } elseif ($time > '09:20' && $time <= '11:40') {
+        } elseif ($now > '09:20' && $now <= '11:40') {
             $schedulePickup = '12:00-12:30';
         } else {
             $schedulePickup = 'CLOSED';

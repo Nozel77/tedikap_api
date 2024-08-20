@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('order_id');
             $table->double('staff_service');
             $table->double('product_quality');
+            $table->double('rating');
             $table->text('note')->nullable();
             $table->timestamps();
         });

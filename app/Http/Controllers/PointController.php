@@ -13,15 +13,13 @@ class PointController extends Controller
     {
         $user = Auth::user();
 
-        $userExists = Point::where('user_id', $user->id)->exists();
+        $point = Point::where('user_id', $user->id)->first();
 
-        if (! $userExists) {
+        if (! $point) {
             return response()->json(['user_id' => $user->id, 'points' => 0]);
         }
 
-        $data = Point::where('user_id', $user->id)->get();
-
-        return PointResource::collection($data);
+        return new PointResource($point);
     }
 
     public function addPoints(Request $request)

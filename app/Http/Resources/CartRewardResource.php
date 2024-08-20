@@ -19,6 +19,7 @@ class CartRewardResource extends JsonResource
             'user_id' => $this->user_id,
             'total_points' => $this->total_points,
             'schedule_pickup' => $this->schedule_pickup,
+            'points_enough' => $this->points_enough,
             'cart_items' => CartRewardItemResource::collection($this->rewardCartItems),
         ];
     }

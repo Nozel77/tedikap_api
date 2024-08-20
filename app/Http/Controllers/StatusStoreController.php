@@ -22,14 +22,14 @@ class StatusStoreController extends Controller
             $time = null;
             $description = 'The store is closed';
         } else {
-            if ($now <= '09:20') {
+            if ($now >= '07:00' && $now <= '09:20') {
                 $session = 'Pick Up Sesi 1';
                 $time = '09:40-10:00';
-                $description = 'The store is open';
+                $description = 'The store is open for Sesi 1';
             } elseif ($now > '09:20' && $now <= '11:40') {
                 $session = 'Pick Up Sesi 2';
                 $time = '12:00-12:30';
-                $description = 'The store is open';
+                $description = 'The store is open for Sesi 2';
             } else {
                 $session = 'CLOSED';
                 $time = null;
