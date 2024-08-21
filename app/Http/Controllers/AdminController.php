@@ -12,22 +12,6 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class AdminController extends Controller
 {
-    public function notification($fcmToken, $title, $body, $route, $orderId)
-    {
-        $message = CloudMessage::fromArray([
-            'token' => $fcmToken,
-            'notification' => [
-                'title' => $title,
-                'body' => $body,
-            ],
-        ])->withData([
-            'route' => $route,
-            'order_id' => $orderId,
-        ]);
-
-        return Firebase::messaging()->send($message);
-    }
-
     public function getOrderAdmin()
     {
         $filterStatus = request()->query('status');
@@ -316,5 +300,21 @@ class AdminController extends Controller
         return response()->json([
             'message' => 'Order not found or not in the "pesanan siap diambil" status.',
         ], 404);
+    }
+
+    public function notification($fcmToken, $title, $body, $route, $orderId)
+    {
+        $message = CloudMessage::fromArray([
+            'token' => $fcmToken,
+            'notification' => [
+                'title' => $title,
+                'body' => $body,
+            ],
+        ])->withData([
+            'route' => $route,
+            'order_id' => $orderId,
+        ]);
+
+        return Firebase::messaging()->send($message);
     }
 }
