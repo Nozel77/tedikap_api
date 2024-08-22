@@ -187,4 +187,7 @@ Route::prefix('review')->group(function () {
     Route::post('/{orderId}', [ReviewController::class, 'store'])->middleware('auth:sanctum');
 });
 
-Route::get('/show-weekly', [StatisticController::class, 'showWeeklyStatistic']);
+Route::prefix('statistic')->group(function () {
+    Route::get('earnings', [StatisticController::class, 'earningsStatistic'])->middleware('auth:sanctum', 'admin');
+    Route::get('analytics', [StatisticController::class, 'analyticStatistic'])->middleware('auth:sanctum', 'admin');
+});

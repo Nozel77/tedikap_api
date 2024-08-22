@@ -12,7 +12,6 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,8 +21,11 @@ class CartController extends Controller
     public function showCartByUser(): JsonResponse
     {
         $user_id = Auth::id();
+        $user = Auth::user();
 
         $cart = Cart::where('user_id', $user_id)->first();
+
+        $isPhone = ! empty($user->whatsapp_number);
 
         if (! $cart) {
             return response()->json([
@@ -35,8 +37,9 @@ class CartController extends Controller
                     'discount_amount' => 0,
                     'original_price' => 0,
                     'reward_point' => 0,
-                    'schedule_pickup' => null,
+                    'schedule_pickup' => $this->getSchedulePickup(),
                     'cart_items' => [],
+                    'is_phone' => $isPhone,
                 ],
             ]);
         }
@@ -69,24 +72,17 @@ class CartController extends Controller
             return new CartItemResource($cart_item);
         });
 
-        $now = Carbon::now('Asia/Jakarta')->format('H:i');
-
-        if ($now >= '07:00' && $now <= '09:20') {
-            $schedulePickup = '09:40-10:00';
-        } elseif ($now > '09:20' && $now <= '11:40') {
-            $schedulePickup = '12:00-12:30';
-        } else {
-            $schedulePickup = 'CLOSED';
-        }
+        $schedulePickup = $this->getSchedulePickup();
 
         $cart->cartItems = $cart_items_array;
         $cart->total_price = max(0, $total_price_after_discount);
         $cart->discount_amount = $discount_amount;
         $cart->original_price = $original_price;
         $cart->schedule_pickup = $schedulePickup;
+        $cart->is_phone = $isPhone;
 
         return response()->json([
-            'cart' => new CartResource($cart),
+            'cart' => (new CartResource($cart)),
         ]);
     }
 
@@ -120,15 +116,7 @@ class CartController extends Controller
 
         $cart = Cart::all()->where('user_id', $userId)->first();
 
-        $now = Carbon::now('Asia/Jakarta')->format('H:i');
-
-        if ($now >= '07:00' && $now <= '09:20') {
-            $schedulePickup = '09:40-10:00';
-        } elseif ($now > '09:20' && $now <= '11:40') {
-            $schedulePickup = '12:00-12:30';
-        } else {
-            $schedulePickup = 'CLOSED';
-        }
+        $schedulePickup = $this->getSchedulePickup();
 
         if ($cart) {
             return $this->addCartItem($cart->id, $request);

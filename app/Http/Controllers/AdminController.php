@@ -12,22 +12,6 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class AdminController extends Controller
 {
-    public function notification($fcmToken, $title, $body, $route, $orderId)
-    {
-        $message = CloudMessage::fromArray([
-            'token' => $fcmToken,
-            'notification' => [
-                'title' => $title,
-                'body' => $body,
-            ],
-        ])->withData([
-            'route' => $route,
-            'order_id' => $orderId,
-        ]);
-
-        return Firebase::messaging()->send($message);
-    }
-
     public function getOrderAdmin()
     {
         $filterStatus = request()->query('status');
@@ -105,7 +89,7 @@ class AdminController extends Controller
                 $notificationData = [
                     'title' => 'Pesanan Anda Sedang Diproses',
                     'body' => 'Terima kasih telah melakukan pemesanan! Pesanan Anda saat ini sedang diproses dan akan segera dikirimkan. Kami akan mengupdate status pesanan Anda jika ada perubahan.',
-                    'route' => '',
+                    'route' => 'detail_order_common',
                 ];
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan ditolak';
@@ -115,7 +99,7 @@ class AdminController extends Controller
                 $notificationData = [
                     'title' => $request->input('title', 'Pesanan Anda Ditolak'),
                     'body' => $request->input('body', 'Maaf, pesanan Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
-                    'route' => '',
+                    'route' => 'detail_order_common',
                 ];
             }
             $order->save();
@@ -132,7 +116,7 @@ class AdminController extends Controller
                     $notificationData = [
                         'title' => 'Pesanan Anda Sedang Diproses',
                         'body' => 'Terima kasih telah melakukan pemesanan! Pesanan Anda saat ini sedang diproses dan akan segera dikirimkan. Kami akan mengupdate status pesanan Anda jika ada perubahan.',
-                        'route' => '',
+                        'route' => 'detail_order_reward',
                     ];
                 } elseif ($action == 'rejected') {
                     $orderReward->status = 'pesanan ditolak';
@@ -142,7 +126,7 @@ class AdminController extends Controller
                     $notificationData = [
                         'title' => $request->input('title', 'Pesanan Anda Ditolak'),
                         'body' => $request->input('body', 'Maaf, pesanan hadiah Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
-                        'route' => '',
+                        'route' => 'detail_order_reward',
                     ];
                 }
                 $orderReward->save();
@@ -187,6 +171,7 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Anda Siap Diambil';
                 $body = 'Pesanan Anda saat ini siap untuk diambil. Silakan ambil pesanan Anda sesuai dengan informasi yang diberikan.';
+                $route = 'detail_common_order';
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan dibatalkan';
                 $order->status_description = 'Pesanan Anda dibatalkan';
@@ -194,11 +179,12 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Anda Dibatalkan';
                 $body = 'Maaf, pesanan Anda telah dibatalkan. Jika Anda merasa ada kesalahan, silakan hubungi kami.';
+                $route = 'detail_common_order';
             }
             $order->save();
             $user = $order->user;
 
-            $notif = $this->notification($user->fcm_token, $title, $body, '', $order->id);
+            $notif = $this->notification($user->fcm_token, $title, $body, $route, $order->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -217,6 +203,7 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Hadiah Anda Siap Diambil';
                 $body = 'Pesanan hadiah Anda saat ini siap untuk diambil. Silakan ambil pesanan hadiah Anda sesuai dengan informasi yang diberikan.';
+                $route = 'detail_order_reward';
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan dibatalkan';
                 $orderReward->status_description = 'Pesanan hadiah Anda dibatalkan';
@@ -224,11 +211,12 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Hadiah Anda Dibatalkan';
                 $body = 'Maaf, pesanan hadiah Anda telah dibatalkan. Jika Anda merasa ada kesalahan, silakan hubungi kami.';
+                $route = 'detail_order_reward';
             }
             $orderReward->save();
             $user = $orderReward->user;
 
-            $notif = $this->notification($user->fcm_token, $title, $body, '', $orderReward->id);
+            $notif = $this->notification($user->fcm_token, $title, $body, $route, $orderReward->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -263,6 +251,7 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Anda Selesai';
                 $body = 'Pesanan Anda telah selesai. Terima kasih telah berbelanja dengan kami. Kami berharap Anda puas dengan layanan kami.';
+                $route = 'detail_order_common';
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan dibatalkan';
                 $order->status_description = 'Pesanan Anda dibatalkan';
@@ -270,11 +259,12 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Anda Dibatalkan';
                 $body = 'Maaf, pesanan Anda telah dibatalkan. Jika Anda merasa ada kesalahan atau ingin melakukan pemesanan ulang, silakan hubungi kami.';
+                $route = 'detail_order_common';
             }
             $order->save();
             $user = $order->user;
 
-            $notif = $this->notification($user->fcm_token, $title, $body, '', $order->id);
+            $notif = $this->notification($user->fcm_token, $title, $body, $route, $order->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -293,6 +283,7 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Hadiah Anda Selesai';
                 $body = 'Pesanan hadiah Anda telah selesai. Terima kasih telah berbelanja dengan kami. Kami berharap Anda puas dengan layanan kami.';
+                $route = 'detail_order_reward';
             } elseif ($action == 'rejected') {
                 $orderReward->status = 'pesanan dibatalkan';
                 $orderReward->status_description = 'Pesanan hadiah Anda dibatalkan';
@@ -300,11 +291,12 @@ class AdminController extends Controller
 
                 $title = 'Pesanan Hadiah Anda Dibatalkan';
                 $body = 'Maaf, pesanan hadiah Anda telah dibatalkan. Jika Anda merasa ada kesalahan atau ingin melakukan pemesanan ulang, silakan hubungi kami.';
+                $route = 'detail_order_reward';
             }
             $orderReward->save();
             $user = $orderReward->user;
 
-            $notif = $this->notification($user->fcm_token, $title, $body, '', $orderReward->id);
+            $notif = $this->notification($user->fcm_token, $title, $body, $route, $orderReward->id);
 
             return response()->json([
                 'message' => 'Order status updated successfully.',
@@ -316,5 +308,21 @@ class AdminController extends Controller
         return response()->json([
             'message' => 'Order not found or not in the "pesanan siap diambil" status.',
         ], 404);
+    }
+
+    public function notification($fcmToken, $title, $body, $route, $orderId)
+    {
+        $message = CloudMessage::fromArray([
+            'token' => $fcmToken,
+            'notification' => [
+                'title' => $title,
+                'body' => $body,
+            ],
+        ])->withData([
+            'route' => $route,
+            'order_id' => $orderId,
+        ]);
+
+        return Firebase::messaging()->send($message);
     }
 }

@@ -24,6 +24,7 @@ class ReviewResource extends JsonResource
             'product_quality' => $this->product_quality,
             'average_rating' => $this->rating,
             'note' => $this->note,
+            'pickup_time' => $this->updated_at->format('Y-m-d H:i:s'),
         ];
     }
 }

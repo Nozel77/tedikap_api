@@ -27,7 +27,7 @@ class CartRewardController extends Controller
                     'id' => null,
                     'user_id' => $user_id,
                     'total_points' => 0,
-                    'schedule_pickup' => null,
+                    'schedule_pickup' => $this->getSchedulePickup(),
                     'points_enough' => false,
                     'cart_items' => [],
                 ],
@@ -47,15 +47,7 @@ class CartRewardController extends Controller
             return new CartRewardItemResource($cart_item);
         });
 
-        $now = Carbon::now('Asia/Jakarta')->format('H:i');
-
-        if ($now >= '07:00' && $now <= '09:20') {
-            $schedulePickup = '09:40-10:00';
-        } elseif ($now > '09:20' && $now <= '11:40') {
-            $schedulePickup = '12:00-12:30';
-        } else {
-            $schedulePickup = 'CLOSED';
-        }
+        $schedulePickup = $this->getSchedulePickup();
 
         $cart->cartItems = $cart_items_array;
         $cart->schedule_pickup = $schedulePickup;
@@ -92,15 +84,7 @@ class CartRewardController extends Controller
 
         $cart = CartReward::where('user_id', $userId)->first();
 
-        $now = Carbon::now('Asia/Jakarta')->format('H:i');
-
-        if ($now >= '07:00' && $now <= '09:20') {
-            $schedulePickup = '09:40-10:00';
-        } elseif ($now > '09:20' && $now <= '11:40') {
-            $schedulePickup = '12:00-12:30';
-        } else {
-            $schedulePickup = 'CLOSED';
-        }
+        $schedulePickup = $this->getSchedulePickup();
 
         if ($cart) {
             return $this->addCartItem($cart->id, $request);
@@ -297,5 +281,18 @@ class CartRewardController extends Controller
         return response()->json([
             'message' => 'Cart item deleted successfully.',
         ]);
+    }
+
+    public function getSchedulePickup()
+    {
+        $now = Carbon::now('Asia/Jakarta')->format('H:i');
+
+        if ($now >= '07:00' && $now <= '09:20') {
+            return '09:40-10:00';
+        } elseif ($now > '09:20' && $now <= '11:40') {
+            return '12:00-12:30';
+        } else {
+            return 'CLOSED';
+        }
     }
 }

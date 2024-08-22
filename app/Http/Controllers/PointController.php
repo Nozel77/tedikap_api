@@ -16,7 +16,12 @@ class PointController extends Controller
         $point = Point::where('user_id', $user->id)->first();
 
         if (! $point) {
-            return response()->json(['user_id' => $user->id, 'points' => 0]);
+            return response()->json([
+                'data' => [
+                    'user_id' => $user->id,
+                    'point' => 0,
+                ],
+            ]);
         }
 
         return new PointResource($point);
@@ -38,7 +43,7 @@ class PointController extends Controller
         return response()->json([
             'message' => 'Points added successfully',
             'user_id' => $user->id,
-            'points' => $point->point,
+            'point' => $point->point,
         ]);
     }
 }

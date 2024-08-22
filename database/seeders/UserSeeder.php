@@ -20,5 +20,12 @@ class UserSeeder extends Seeder
             'password' => Hash::make('halopass'),
             'whatsapp_service' => "https://wa.me/62895395343223?text={$whatsappMessage}",
         ]);
+
+        User::factory()->create([
+            'name' => 'nozel',
+            'email' => 'nozel@mail.com',
+            'password' => Hash::make('nozelpass'),
+            'whatsapp_service' => "https://wa.me/62895395343223?text={$whatsappMessage}",
+        ]);
     }
 }

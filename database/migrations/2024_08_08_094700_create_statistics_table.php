@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('statistics', function (Blueprint $table) {
             $table->id();
+            $table->string('type');
+            $table->date('date');
+            $table->integer('total_sales')->nullable();
+            $table->integer('average_per_week')->nullable();
+            $table->integer('earning_growth')->nullable();
+            $table->integer('total_pcs_sold')->nullable();
+            $table->integer('total_income')->nullable();
             $table->timestamps();
         });
     }

@@ -20,36 +20,6 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class OrderController extends Controller
 {
-    public function notification($fcmToken, $title, $body, $route, $orderId)
-    {
-        $message = CloudMessage::fromArray([
-            'token' => $fcmToken,
-            'notification' => [
-                'title' => $title,
-                'body' => $body,
-            ],
-        ])->withData([
-            'route' => $route,
-            'order_id' => $orderId,
-        ]);
-
-        return Firebase::messaging()->send($message);
-    }
-
-    public function generateCustomUUID()
-    {
-        $now = now()->setTimezone('Asia/Jakarta');
-        $date = $now->format('d');
-        $month = $now->format('m');
-        $year = $now->format('Y');
-        $hour = $now->format('H');
-        $minute = $now->format('i');
-        $second = $now->format('s');
-        $customUUID = strtoupper("ORD{$date}{$month}{$year}{$hour}{$minute}{$second}");
-
-        return $customUUID;
-    }
-
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -94,15 +64,7 @@ class OrderController extends Controller
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
             $time = $createdAt->format('H:i');
 
-            if ($time <= '09:20') {
-                $pickupTime = '09:40-10:00';
-            } elseif ($time > '09:20' && $time <= '11:40') {
-                $pickupTime = '12:00-12:30';
-            } else {
-                $pickupTime = 'CLOSED';
-            }
-
-            $order->schedule_pickup = $pickupTime;
+            $order->schedule_pickup = $this->getSchedulePickup($time);
 
             if ($order->payment) {
                 $order->payment_channel = $order->payment->payment_channel;
@@ -123,6 +85,14 @@ class OrderController extends Controller
     {
         $userId = Auth::id();
         $data = $request->validated();
+
+        $user = Auth::user();
+        if (empty($user->whatsapp_number)) {
+            return response()->json([
+                'message' => 'Nomor WhatsApp harus diisi sebelum melakukan order.',
+            ], 400);
+        }
+
         $cart = Cart::where('user_id', $userId)
             ->with('cartItems')
             ->first();
@@ -173,16 +143,9 @@ class OrderController extends Controller
         $order->icon_status = 'ic_status_waiting';
         $order->save();
 
-        $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
+        $createdAt = now()->setTimezone('Asia/Jakarta');
         $time = $createdAt->format('H:i');
-
-        if ($time <= '09:20') {
-            $pickupTime = '09:40-10:00';
-        } elseif ($time > '09:20' && $time <= '11:40') {
-            $pickupTime = '12:00-12:30';
-        } else {
-            $pickupTime = 'CLOSED';
-        }
+        $pickupTime = $this->getSchedulePickup($time);
 
         $order->schedule_pickup = $pickupTime;
         $order->save();
@@ -301,5 +264,35 @@ class OrderController extends Controller
             'message' => 'Items successfully added to cart.',
             'cart' => new CartResource($cart),
         ], 200);
+    }
+
+    public function notification($fcmToken, $title, $body, $route, $orderId)
+    {
+        $message = CloudMessage::fromArray([
+            'token' => $fcmToken,
+            'notification' => [
+                'title' => $title,
+                'body' => $body,
+            ],
+        ])->withData([
+            'route' => $route,
+            'order_id' => $orderId,
+        ]);
+
+        return Firebase::messaging()->send($message);
+    }
+
+    public function generateCustomUUID()
+    {
+        $now = now()->setTimezone('Asia/Jakarta');
+        $date = $now->format('d');
+        $month = $now->format('m');
+        $year = $now->format('Y');
+        $hour = $now->format('H');
+        $minute = $now->format('i');
+        $second = $now->format('s');
+        $customUUID = strtoupper("ORD{$date}{$month}{$year}{$hour}{$minute}{$second}");
+
+        return $customUUID;
     }
 }

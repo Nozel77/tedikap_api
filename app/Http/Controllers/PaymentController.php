@@ -51,7 +51,7 @@ class PaymentController extends Controller
             $notificationData = [
                 'title' => 'Pesanan Baru - Menunggu Konfirmasi',
                 'body' => "Pesanan baru dengan ID: {$order->id} sekarang menunggu konfirmasi. Silakan periksa pesanan baru di sistem admin.",
-                'route' => 'admin/orders',
+                'route' => '/orders',
             ];
 
             $this->notification($notificationData, $adminId, $order->id);
@@ -140,7 +140,7 @@ class PaymentController extends Controller
             $notification = [
                 'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
                 'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
-                'route' => '',
+                'route' => 'detail_order_common',
             ];
 
             $user = $payment->user;
@@ -157,7 +157,7 @@ class PaymentController extends Controller
                 $notification = [
                     'title' => 'Pembayaran Kadaluarsa',
                     'body' => "Pembayaran untuk pesanan Anda (ID: {$payment->order->id}) telah kadaluwarsa dan pesanan Anda dibatalkan. Silakan lakukan pemesanan ulang jika Anda masih ingin melanjutkan.",
-                    'route' => '',
+                    'route' => 'detail_order_common',
                 ];
 
                 $user = $payment->user;

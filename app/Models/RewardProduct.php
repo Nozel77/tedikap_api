@@ -17,4 +17,8 @@ class RewardProduct extends Model
         'large_point',
         'category',
     ];
+
+    protected $casts = [
+        'stock' => 'boolean',
+    ];
 }

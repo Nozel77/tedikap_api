@@ -10,4 +10,8 @@ class StatusStore extends Model
     use HasFactory;
 
     protected $fillable = ['open'];
+
+    protected $casts = [
+        'open' => 'boolean',
+    ];
 }

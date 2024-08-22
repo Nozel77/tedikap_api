@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
+use App\Models\RewardProduct;
 use App\Models\StatusStore;
 use Carbon\Carbon;
 
@@ -21,6 +23,8 @@ class StatusStoreController extends Controller
             $session = 'CLOSED';
             $time = null;
             $description = 'The store is closed';
+            Product::where('stock', true)->update(['stock' => false]);
+            RewardProduct::where('stock', true)->update(['stock' => false]);
         } else {
             if ($now >= '07:00' && $now <= '09:20') {
                 $session = 'Pick Up Sesi 1';
@@ -35,6 +39,8 @@ class StatusStoreController extends Controller
                 $time = null;
                 $description = 'The store is closed';
             }
+            Product::where('stock', false)->update(['stock' => true]);
+            RewardProduct::where('stock', false)->update(['stock' => true]);
         }
 
         return response()->json([
@@ -71,9 +77,13 @@ class StatusStoreController extends Controller
                 $session = 'CLOSED';
                 $time = null;
             }
+            Product::where('stock', false)->update(['stock' => true]);
+            RewardProduct::where('stock', false)->update(['stock' => true]);
         } else {
             $session = 'CLOSED';
             $time = null;
+            Product::where('stock', true)->update(['stock' => false]);
+            RewardProduct::where('stock', true)->update(['stock' => false]);
         }
 
         return response()->json([
