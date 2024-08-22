@@ -26,6 +26,7 @@ class UserRequest extends FormRequest
             'email' => 'email|',
             'avatar' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'gender' => 'string',
+            'whatsapp_number' => 'string',
         ];
     }
 }

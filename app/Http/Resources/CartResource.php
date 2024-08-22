@@ -30,6 +30,7 @@ class CartResource extends JsonResource
             'original_price' => $this->original_price,
             'reward_point' => $rewardPoint,
             'schedule_pickup' => $this->schedule_pickup,
+            'is_phone' => $this->is_phone,
             'cart_items' => CartItemResource::collection($this->cartItems),
         ];
     }

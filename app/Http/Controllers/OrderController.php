@@ -85,6 +85,14 @@ class OrderController extends Controller
     {
         $userId = Auth::id();
         $data = $request->validated();
+
+        $user = Auth::user();
+        if (empty($user->whatsapp_number)) {
+            return response()->json([
+                'message' => 'Nomor WhatsApp harus diisi sebelum melakukan order.',
+            ], 400);
+        }
+
         $cart = Cart::where('user_id', $userId)
             ->with('cartItems')
             ->first();

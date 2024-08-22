@@ -26,7 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'gender',
         'fcm_token',
-
+        'whatsapp_number',
     ];
 
     /**

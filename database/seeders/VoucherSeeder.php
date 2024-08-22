@@ -16,7 +16,7 @@ class VoucherSeeder extends Seeder
             [
                 'title' => 'Nikmati promo sebesar 30% Sekarang !!!',
                 'description' => 'WLEOWLEOWLEO',
-                'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNM3i81AVOBzNyWUAz46EwPtbQYIpzn7EE4w&s',
+                'image' => 'promo.png',
                 'discount' => 30,
                 'min_transaction' => 20000,
                 'max_discount' => 30000,
@@ -27,7 +27,7 @@ class VoucherSeeder extends Seeder
             [
                 'title' => 'Nikmati promo sebesar 10% Sekarang !!!',
                 'description' => 'WLEOWLEOWLEO',
-                'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNM3i81AVOBzNyWUAz46EwPtbQYIpzn7EE4w&s',
+                'image' => 'promo.png',
                 'discount' => 10,
                 'min_transaction' => 10000,
                 'max_discount' => 20000,

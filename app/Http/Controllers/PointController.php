@@ -19,7 +19,7 @@ class PointController extends Controller
             return response()->json([
                 'data' => [
                     'user_id' => $user->id,
-                    'points' => 0,
+                    'point' => 0,
                 ],
             ]);
         }
@@ -43,7 +43,7 @@ class PointController extends Controller
         return response()->json([
             'message' => 'Points added successfully',
             'user_id' => $user->id,
-            'points' => $point->point,
+            'point' => $point->point,
         ]);
     }
 }

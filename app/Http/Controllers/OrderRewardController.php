@@ -139,7 +139,8 @@ class OrderRewardController extends Controller
         $adminNotification = new Request([
             'title' => 'Pesanan Baru - Menunggu Konfirmasi',
             'body' => "Pesanan baru dengan ID: {$order->id} telah dibuat dan menunggu konfirmasi. Silakan periksa pesanan baru di sistem admin.",
-            'route' => '',
+            'route' => '/order',
+            'order_id' => $order->id,
         ]);
         $this->notifyAdmins($adminNotification);
 

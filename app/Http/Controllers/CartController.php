@@ -21,8 +21,11 @@ class CartController extends Controller
     public function showCartByUser(): JsonResponse
     {
         $user_id = Auth::id();
+        $user = Auth::user();
 
         $cart = Cart::where('user_id', $user_id)->first();
+
+        $isPhone = ! empty($user->whatsapp_number);
 
         if (! $cart) {
             return response()->json([
@@ -36,6 +39,7 @@ class CartController extends Controller
                     'reward_point' => 0,
                     'schedule_pickup' => $this->getSchedulePickup(),
                     'cart_items' => [],
+                    'is_phone' => $isPhone,
                 ],
             ]);
         }
@@ -75,9 +79,10 @@ class CartController extends Controller
         $cart->discount_amount = $discount_amount;
         $cart->original_price = $original_price;
         $cart->schedule_pickup = $schedulePickup;
+        $cart->is_phone = $isPhone;
 
         return response()->json([
-            'cart' => new CartResource($cart),
+            'cart' => (new CartResource($cart)),
         ]);
     }
 
