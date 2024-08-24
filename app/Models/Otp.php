@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,4 +17,9 @@ class Otp extends Model
         'email',
         'otp',
     ];
+
+    public function isExpired()
+    {
+        return Carbon::now()->gt($this->expires_at);
+    }
 }

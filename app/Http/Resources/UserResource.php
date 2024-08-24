@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'avatar' => $this->avatar,
             'gender' => $this->gender,
             'role' => $this->role,
-            'wahatsapp_number' => $this->whatsapp_number,
+            'whatsapp_number' => $this->whatsapp_number,
             'whatsapp_service' => $this->whatsapp_service,
             'fcm_token' => $this->fcm_token,
         ];

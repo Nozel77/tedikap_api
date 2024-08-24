@@ -16,6 +16,7 @@ class AdminController extends Controller
     {
         $filterStatus = request()->query('status');
         $filterSesi = request()->query('session');
+        $filterType = request()->query('type');
 
         $validStatuses = [
             'new order' => 'menunggu konfirmasi',
@@ -24,45 +25,61 @@ class AdminController extends Controller
             'done' => 'pesanan selesai',
         ];
 
-        $orderQuery = Order::query();
-        $orderRewardQuery = OrderReward::query();
+        $orders = collect();
 
-        if (array_key_exists($filterStatus, $validStatuses)) {
-            $orderQuery->where('status', $validStatuses[$filterStatus]);
-            $orderRewardQuery->where('status', $validStatuses[$filterStatus]);
-        } else {
-            $orderQuery->whereIn('status', array_values($validStatuses));
-            $orderRewardQuery->whereIn('status', array_values($validStatuses));
-        }
+        if ($filterType === 'order' || ! $filterType) {
+            $orderQuery = Order::query();
 
-        if ($filterSesi === '1') {
-            $orderQuery->where('schedule_pickup', '09:40-10:00');
-            $orderRewardQuery->where('schedule_pickup', '09:40-10:00');
-        } elseif ($filterSesi === '2') {
-            $orderQuery->where('schedule_pickup', '12:00-12:30');
-            $orderRewardQuery->where('schedule_pickup', '12:00-12:30');
-        }
-
-        $orders = $orderQuery->orderBy('created_at', 'desc')->get();
-        $orderRewards = $orderRewardQuery->orderBy('created_at', 'desc')->get();
-
-        $combinedOrders = $orders->map(function ($order) {
-            if ($order->order_type === 'reward order') {
-                return (new OrderRewardResource($order))->toArray(request());
+            if (array_key_exists($filterStatus, $validStatuses)) {
+                $orderQuery->where('status', $validStatuses[$filterStatus]);
             } else {
+                $orderQuery->whereIn('status', array_values($validStatuses));
+            }
+
+            if ($filterSesi === '1') {
+                $orderQuery->where('schedule_pickup', '09:40-10:00');
+            } elseif ($filterSesi === '2') {
+                $orderQuery->where('schedule_pickup', '12:00-12:30');
+            }
+
+            $orders = $orders->merge($orderQuery->orderBy('created_at', 'desc')->get());
+        }
+
+        if ($filterType === 'reward' || ! $filterType) {
+            $orderRewardQuery = OrderReward::query();
+
+            if (array_key_exists($filterStatus, $validStatuses)) {
+                $orderRewardQuery->where('status', $validStatuses[$filterStatus]);
+            } else {
+                $orderRewardQuery->whereIn('status', array_values($validStatuses));
+            }
+
+            if ($filterSesi === '1') {
+                $orderRewardQuery->where('schedule_pickup', '09:40-10:00');
+            } elseif ($filterSesi === '2') {
+                $orderRewardQuery->where('schedule_pickup', '12:00-12:30');
+            }
+
+            $orders = $orders->merge($orderRewardQuery->orderBy('created_at', 'desc')->get());
+        }
+
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'message' => 'No orders found.',
+            ], 404);
+        }
+
+        $formattedOrders = $orders->map(function ($order) {
+            if ($order instanceof Order) {
                 return (new OrderResource($order))->toArray(request());
+            } elseif ($order instanceof OrderReward) {
+                return (new OrderRewardResource($order))->toArray(request());
             }
         });
 
-        $combinedOrderRewards = $orderRewards->map(function ($orderReward) {
-            return (new OrderRewardResource($orderReward))->toArray(request());
-        });
-
-        $allOrders = $combinedOrders->concat($combinedOrderRewards)->sortByDesc('created_at')->values()->all();
-
         return response()->json([
             'message' => 'Orders retrieved successfully.',
-            'orders' => $allOrders,
+            'orders' => $formattedOrders,
         ]);
     }
 

@@ -38,8 +38,10 @@ class CartController extends Controller
                     'original_price' => 0,
                     'reward_point' => 0,
                     'schedule_pickup' => $this->getSchedulePickup(),
-                    'cart_items' => [],
+                    'session_1' => '9.40-10.00',
+                    'session_2' => '12.00-12.30',
                     'is_phone' => $isPhone,
+                    'cart_items' => [],
                 ],
             ]);
         }

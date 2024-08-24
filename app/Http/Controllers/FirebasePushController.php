@@ -42,6 +42,7 @@ class FirebasePushController extends Controller
             'notification' => [
                 'title' => $request->title,
                 'body' => $request->body,
+                'image' => $request->image,
             ],
         ])->withData([
             'route' => $request->route,

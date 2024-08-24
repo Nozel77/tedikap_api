@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             RewardProductSeeder::class,
             AdminUserSeeder::class,
             UserSeeder::class,
-            // OrderSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }

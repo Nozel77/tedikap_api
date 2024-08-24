@@ -19,6 +19,7 @@ class CartRewardItemResource extends JsonResource
             'product_id' => $this->reward_product_id,
             'product_name' => $this->rewardProduct->name,
             'product_image' => $this->rewardProduct->image,
+            'stock' => $this->rewardProduct->stock,
             'temperatur' => $this->temperatur,
             'size' => $this->size,
             'ice' => $this->ice,

@@ -19,8 +19,12 @@ class CartRewardController extends Controller
     public function showCartByUser()
     {
         $user_id = Auth::id();
+        $user = Auth::user();
 
         $cart = CartReward::where('user_id', $user_id)->first();
+
+        $isPhone = ! empty($user->whatsapp_number);
+
         if (! $cart) {
             return response()->json([
                 'cart' => [
@@ -28,7 +32,10 @@ class CartRewardController extends Controller
                     'user_id' => $user_id,
                     'total_points' => 0,
                     'schedule_pickup' => $this->getSchedulePickup(),
+                    'session_1' => '9.40-10.00',
+                    'session_2' => '12.00-12.30',
                     'points_enough' => false,
+                    'is_phone' => $isPhone,
                     'cart_items' => [],
                 ],
             ], 200);
@@ -53,6 +60,7 @@ class CartRewardController extends Controller
         $cart->schedule_pickup = $schedulePickup;
         $cart->total_points = $total_points;
         $cart->points_enough = $pointsEnough;
+        $cart->is_phone = $isPhone;
 
         return response()->json([
             'cart' => new CartRewardResource($cart),
