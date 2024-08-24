@@ -61,9 +61,9 @@ class StatisticController extends Controller
 
     public function analyticStatistic(Request $request)
     {
-        $period = $request->input('period', 'this_week'); // Ambil parameter period dari request, default 'this_week'
-        $startDate = $request->input('start_date'); // Ambil parameter start_date dari request
-        $endDate = $request->input('end_date'); // Ambil parameter end_date dari request
+        $period = $request->input('period', 'this_week');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
         switch ($period) {
             case 'this_week':
@@ -105,9 +105,9 @@ class StatisticController extends Controller
 
                 case 'this_month':
                     $dailyOrders = $orders->filter(function ($order) use ($currentDate) {
-                        return Carbon::parse($order->created_at)->format('W') == $currentDate->format('W');
+                        return Carbon::parse($order->created_at)->format('l') == $currentDate->format('l');
                     });
-                    $label = $currentDate->format('W');
+                    $label = $currentDate->format('l');
                     $currentDate->addWeek();
                     break;
 
@@ -131,7 +131,6 @@ class StatisticController extends Controller
                 'total_income' => $totalIncome,
             ]);
 
-            // Save to database
             Statistic::updateOrCreate(
                 ['type' => 'analytic', 'date' => $currentDate->toDateString()],
                 [

@@ -18,7 +18,10 @@ class OrderSeeder extends Seeder
         $hour = $now->format('H');
         $minute = $now->format('i');
         $second = $now->format('s');
-        $customUUID = strtoupper("ORD{$date}{$month}{$year}{$hour}{$minute}{$second}");
+        $millisecond = $now->format('v'); // Tambahkan milidetik untuk meningkatkan keunikan
+        $randomNumber = rand(1000, 9999); // Tambahkan angka acak sebagai penambah keunikan
+
+        $customUUID = strtoupper("ORD{$date}{$month}{$year}{$hour}{$minute}{$second}{$millisecond}{$randomNumber}");
 
         return $customUUID;
     }
@@ -67,6 +70,21 @@ class OrderSeeder extends Seeder
                         'ice' => $iceOptions[array_rand($iceOptions)],
                         'sugar' => $sugarOptions[array_rand($sugarOptions)],
                         'note' => 'Catatan untuk item '.$k,
+                        'quantity' => rand(1, 5),
+                        'price' => rand(5000, 20000),
+                    ]);
+                }
+
+                for ($k = 0; $k < 2; $k++) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => rand(1, 6), // menggunakan range ID yang berbeda untuk variasi
+                        'item_type' => $itemTypes[array_rand($itemTypes)],
+                        'temperatur' => $temperaturOptions[array_rand($temperaturOptions)],
+                        'size' => $sizeOptions[array_rand($sizeOptions)],
+                        'ice' => $iceOptions[array_rand($iceOptions)],
+                        'sugar' => $sugarOptions[array_rand($sugarOptions)],
+                        'note' => 'Catatan tambahan untuk item '.$k,
                         'quantity' => rand(1, 5),
                         'price' => rand(5000, 20000),
                     ]);
