@@ -14,18 +14,24 @@ class StatusStoreController extends Controller
         if ($now >= '07:00' && $now <= '09:20') {
             $session = 'Pick Up Sesi 1';
             $time = '09:40-10:00';
-            $description = 'The store is open for Sesi 1';
+            $description = 'Toko Buka Untuk Sesi 1';
         } elseif ($now > '09:20' && $now <= '11:40') {
             $session = 'Pick Up Sesi 2';
             $time = '12:00-12:30';
-            $description = 'The store is open for Sesi 2';
+            $description = 'Toko Buka Untuk Sesi 2';
         } else {
-            $session = 'CLOSED';
+            $session = 'Toko Sedang Tutup';
             $time = null;
-            $description = 'The store is closed';
+            $description = 'Toko Sedang Tutup';
         }
 
         return [$session, $time, $description];
+    }
+
+    private function updateProductStock($isOpen)
+    {
+        Product::where('stock', !$isOpen)->update(['stock' => $isOpen]);
+        RewardProduct::where('stock', !$isOpen)->update(['stock' => $isOpen]);
     }
 
     public function storeStatus()
@@ -33,24 +39,26 @@ class StatusStoreController extends Controller
         $status = StatusStore::first();
 
         if (! $status) {
-            return response()->json(['message' => 'Status store not found'], 404);
+            return response()->json(['message' => 'Status Tidak Ada'], 404);
         }
 
         $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
-        if (! $status->open) {
-            $session = 'CLOSED';
-            $time = null;
-            $description = 'The store is closed';
+        if ($now > '11:40' && $status->open) {
+            $status->open = false;
+            $this->updateProductStock($status->open);
+            $status->save();
+        }
 
-            Product::where('stock', true)->update(['stock' => false]);
-            RewardProduct::where('stock', true)->update(['stock' => false]);
+        if (! $status->open) {
+            $session = 'Toko Sedang Tutup';
+            $time = null;
+            $description = 'Toko Sedang Tutup';
         } else {
             [$session, $time, $description] = $this->determineSessionAndStock($now);
-
-            Product::where('stock', false)->update(['stock' => true]);
-            RewardProduct::where('stock', false)->update(['stock' => true]);
         }
+
+        $this->updateProductStock($status->open);
 
         return response()->json([
             'data' => [
@@ -67,8 +75,9 @@ class StatusStoreController extends Controller
         $status = StatusStore::first();
 
         if (! $status) {
-            return response()->json(['message' => 'Status store not found'], 404);
+            return response()->json(['message' => 'Status Tidak Ada'], 404);
         }
+
         $status->open = ! $status->open;
         $status->save();
 
@@ -76,18 +85,16 @@ class StatusStoreController extends Controller
 
         if ($status->open) {
             [$session, $time, $description] = $this->determineSessionAndStock($now);
-            Product::where('stock', false)->update(['stock' => true]);
-            RewardProduct::where('stock', false)->update(['stock' => true]);
         } else {
-            $session = 'CLOSED';
+            $session = 'Toko Sedang Tutup';
             $time = null;
-            $description = 'The store is closed';
-            Product::where('stock', true)->update(['stock' => false]);
-            RewardProduct::where('stock', true)->update(['stock' => false]);
+            $description = 'Toko Sedang Tutup';
         }
 
+        $this->updateProductStock($status->open);
+
         return response()->json([
-            'message' => 'Store status updated successfully',
+            'message' => 'Status Toko Berhasil Diubah',
             'data' => [
                 'status_store' => $status->open,
                 'description' => $description,
