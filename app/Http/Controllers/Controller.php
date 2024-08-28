@@ -66,7 +66,7 @@ class Controller extends BaseController
         } elseif ($now > '09:20' && $now <= '11:40') {
             return '12:00-12:30';
         } else {
-            return 'CLOSED';
+            return 'Toko Sedang Tutup :)';
         }
     }
 }
