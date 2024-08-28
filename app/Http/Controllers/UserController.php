@@ -24,7 +24,15 @@ class UserController extends Controller
 
         if (! $otpRecord) {
             return response()->json([
-                'message' => 'Invalid OTP or OTP expired.',
+                'message' => 'Invalid OTP',
+            ], 400);
+        }
+
+        if ($otpRecord->isExpired()) {
+            $otpRecord->delete();
+
+            return response()->json([
+                'message' => 'OTP expired. Please request a new one.',
             ], 400);
         }
 
@@ -90,36 +98,37 @@ class UserController extends Controller
 
     public function resetPassword(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'token' => 'required|string',
             'email' => 'required|email',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $email = Cache::get("password-reset-{$request->token}");
+        $email = Cache::get("password-reset-{$validatedData['token']}");
 
-        if (! $email || $email !== $request->email) {
-            return response([
+        if (! $email || $email !== $validatedData['email']) {
+            return response()->json([
                 'message' => 'Invalid or expired token',
             ], 400);
         }
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $validatedData['email'])->first();
 
         if (! $user) {
-            return response([
+            return response()->json([
                 'message' => 'User not found',
             ], 404);
         }
 
         $user->update([
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($validatedData['password']),
         ]);
 
-        // Hapus token dari cache
-        Cache::forget("password-reset-{$request->token}");
+        Cache::forget("password-reset-{$validatedData['token']}");
 
-        return response([
+        Otp::where('email', $validatedData['email'])->delete();
+
+        return response()->json([
             'message' => 'Password has been reset successfully',
         ], 200);
     }

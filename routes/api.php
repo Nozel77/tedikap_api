@@ -35,7 +35,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('user')->group(function () {
     Route::post('register', [UserController::class, 'register']);
     Route::post('login', [UserController::class, 'login']);
-    Route::post('otp', [OtpController::class, 'sendOtp']);
+    Route::post('otp-reset', [OtpController::class, 'sendOtp']);
+    Route::post('otp-register', [OtpController::class, 'sendOtpRegister']);
     Route::post('verify-otp', [OtpController::class, 'verifyOtp']);
     Route::post('reset-pw', [UserController::class, 'resetPassword']);
     Route::get('get-user', [UserController::class, 'me'])->middleware('auth:sanctum');

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -19,7 +20,10 @@ class DatabaseSeeder extends Seeder
             RewardProductSeeder::class,
             AdminUserSeeder::class,
             UserSeeder::class,
-            OrderSeeder::class,
+            BannerSeeder::class,
+            BoxPromoSeeder::class,
+            HelpCenterSeeder::class,
+            // OrderSeeder::class,
         ]);
     }
 }

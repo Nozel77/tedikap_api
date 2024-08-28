@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('status')->default('menunggu pembayaran');
             $table->string('status_description');
             $table->string('whatsapp');
+            $table->string('whatsapp_user');
             $table->string('order_type');
             $table->string('schedule_pickup')->nullable();
             $table->string('payment_channel')->nullable();

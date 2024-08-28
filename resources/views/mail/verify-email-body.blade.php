@@ -86,7 +86,7 @@
                 font-weight: 500;
               "
             >
-            Hi, {{ $userName }}
+            Hi, Guest
             </p>
             <p
               style="
@@ -96,8 +96,8 @@
                 letter-spacing: 0.56px;
               "
             >
-              Thank you for use Tedikap App. Use the following OTP
-              to complete the procedure to change your password. OTP is
+              Thank you for register Tedikap Api. Use the following OTP
+              to complete the procedure to register your account. OTP is
               valid for
               <span style="font-weight: 600; color: #1f1f1f;">5 minutes</span>.
               Do not share this code with others, including Tedikap

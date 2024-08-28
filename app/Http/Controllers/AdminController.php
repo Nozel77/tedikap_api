@@ -63,12 +63,6 @@ class AdminController extends Controller
             $orders = $orders->merge($orderRewardQuery->orderBy('created_at', 'desc')->get());
         }
 
-        if ($orders->isEmpty()) {
-            return response()->json([
-                'message' => 'No orders found.',
-            ], 404);
-        }
-
         $formattedOrders = $orders->map(function ($order) {
             if ($order instanceof Order) {
                 return (new OrderResource($order))->toArray(request());

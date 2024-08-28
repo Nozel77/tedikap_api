@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -12,12 +13,20 @@ class ResetPassword extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private $otp;
+
+    private $userName;
+
+    private $currentDate;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(private $otp)
+    public function __construct($otp, $userName)
     {
-        //
+        $this->otp = $otp;
+        $this->userName = $userName;
+        $this->currentDate = Carbon::now()->format('d M, Y');
     }
 
     /**
@@ -37,7 +46,11 @@ class ResetPassword extends Mailable
     {
         return new Content(
             view: 'mail.reset-password-body',
-            with: ['otp' => $this->otp],
+            with: [
+                'otp' => $this->otp,
+                'userName' => $this->userName,
+                'currentDate' => $this->currentDate,
+            ],
         );
     }
 
