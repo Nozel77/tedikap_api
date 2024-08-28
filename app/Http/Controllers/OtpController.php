@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ResetPassword;
+use App\Mail\VerifyEmail;
 use App\Models\Otp;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -19,14 +22,47 @@ class OtpController extends Controller
 
         Otp::where('email', $request->email)->delete();
 
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response([
+                'message' => 'User not found',
+            ], 404);
+        }
+
         $otp = rand(1000, 9999);
 
-        Mail::to($request->email)->send(new ResetPassword($otp));
+        Mail::to($request->email)->send(new ResetPassword($otp, $user->name));
 
         Otp::create([
             'id' => 'otp-'.Str::uuid(),
             'email' => $request->email,
             'otp' => $otp,
+            'expires_at' => Carbon::now()->addMinutes(5),
+        ]);
+
+        return response([
+            'message' => 'Otp has been sent to your email',
+        ], 200);
+    }
+
+    public function sendOtpRegister(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|max:255',
+        ]);
+
+        Otp::where('email', $request->email)->delete();
+
+        $otp = rand(1000, 9999);
+
+        Mail::to($request->email)->send(new VerifyEmail($otp));
+
+        Otp::create([
+            'id' => 'otp-'.Str::uuid(),
+            'email' => $request->email,
+            'otp' => $otp,
+            'expires_at' => Carbon::now()->addMinutes(5),
         ]);
 
         return response([
@@ -47,7 +83,7 @@ class OtpController extends Controller
 
         if (! $otpData) {
             return response([
-                'message' => 'OTP not found',
+                'message' => 'OTP Invalid',
             ], 404);
         }
 
@@ -57,13 +93,14 @@ class OtpController extends Controller
             ], 400);
         }
 
-        $token = Str::random(60);
+        // Generate a new reset token and store it in cache with email
+        $resetToken = Str::random(60);
 
-        Cache::put("password-reset-{$token}", $request->email, now()->addMinutes(15));
+        Cache::put("password-reset-{$resetToken}", $request->email, now()->addMinutes(5));
 
         return response([
             'message' => 'OTP is valid',
-            'reset_token' => $token,
+            'reset_token' => $resetToken, // Return the reset token to be used in the next request
         ], 200);
     }
 }

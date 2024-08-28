@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('status')->default('menunggu konfirmasi');
             $table->string('status_description');
             $table->string('whatsapp');
+            $table->string('whatsapp_user');
             $table->string('schedule_pickup')->nullable();
             $table->string('icon_status');
             $table->string('order_type');

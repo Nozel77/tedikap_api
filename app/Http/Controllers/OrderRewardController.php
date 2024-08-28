@@ -82,6 +82,13 @@ class OrderRewardController extends Controller
         $userId = Auth::id();
         $data = $request->validated();
 
+        $user = Auth::user();
+        if (empty($user->whatsapp_number)) {
+            return response()->json([
+                'message' => 'Nomor WhatsApp harus diisi sebelum melakukan order.',
+            ], 400);
+        }
+
         $rewardCart = CartReward::where('user_id', $userId)
             ->with('rewardCartItems')
             ->first();
@@ -115,6 +122,7 @@ class OrderRewardController extends Controller
         $order->status_description = 'mohon segera lakukan pembayaran supaya pesanan Anda dapat diproses';
         $whatsappMessage = urlencode("halo saya ingin tanya tentang pesanan saya dengan id {$order->id}");
         $order->whatsapp = "https://wa.me/62895395343223?text={$whatsappMessage}";
+        $order->whatsapp_user = "https://wa.me/62{$user->whatsapp_number}";
         $order->expires_at = now()->addMinutes(5);
         $order->icon_status = 'ic_status_waiting';
         $order->order_type = 'reward order';
@@ -132,7 +140,7 @@ class OrderRewardController extends Controller
             'title' => 'Pemesanan Berhasil',
             'body' => 'Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.',
             'route' => 'detail_order_reward',
-            'order_id' => $order->id,
+            'order_reward_id' => $order->id, 
         ]);
         $notif = $this->notification($userNotification, $userId);
 
@@ -140,7 +148,7 @@ class OrderRewardController extends Controller
             'title' => 'Pesanan Baru - Menunggu Konfirmasi',
             'body' => "Pesanan baru dengan ID: {$order->id} telah dibuat dan menunggu konfirmasi. Silakan periksa pesanan baru di sistem admin.",
             'route' => '/order',
-            'order_id' => $order->id,
+            'order_reward_id' => $order->id,  
         ]);
         $this->notifyAdmins($adminNotification);
 
@@ -251,8 +259,11 @@ class OrderRewardController extends Controller
     public function notification(Request $request, $id)
     {
         $FcmToken = User::find($id)->fcm_token;
-        $order = OrderReward::find($request->order_reward_id);
+        if (! $FcmToken) {
+            return response()->json(['message' => 'FCM token not found.'], 404);
+        }
 
+        $order = OrderReward::find($request->order_reward_id);
         if (! $order) {
             return response()->json(['message' => 'OrderReward not found.'], 404);
         }
@@ -265,12 +276,12 @@ class OrderRewardController extends Controller
             ],
         ])->withData([
             'route' => $request->route,
-            'order_id' => $order->id,
+            'order_reward_id' => $order->id,
         ]);
 
         Firebase::messaging()->send($message);
 
-        return $message;
+        return response()->json(['message' => 'Notification sent successfully.']);
     }
 
     protected function notifyAdmins(Request $request)

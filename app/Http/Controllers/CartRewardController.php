@@ -117,9 +117,9 @@ class CartRewardController extends Controller
             ], 404);
         }
 
-        $isSnackCategory = $rewardProduct->category === 'snack';
+        $isMerchandiseCategory = $rewardProduct->category === 'merchandise';
 
-        if ($isSnackCategory) {
+        if ($isMerchandiseCategory) {
             $data['temperatur'] = null;
             $data['size'] = null;
             $data['sugar'] = null;
@@ -139,12 +139,12 @@ class CartRewardController extends Controller
 
         $existingCartRewardItem = CartRewardItem::where('cart_reward_id', $cartId)
             ->where('reward_product_id', $data['reward_product_id'])
-            ->where(function ($query) use ($data, $isSnackCategory) {
+            ->where(function ($query) use ($data, $isMerchandiseCategory) {
                 $query->where('temperatur', $data['temperatur'])
                     ->where('size', $data['size'])
                     ->where('sugar', $data['sugar'])
-                    ->where(function ($subQuery) use ($data, $isSnackCategory) {
-                        if ($isSnackCategory) {
+                    ->where(function ($subQuery) use ($data, $isMerchandiseCategory) {
+                        if ($isMerchandiseCategory) {
                             $subQuery->whereNull('ice');
                         } else {
                             $subQuery->where('ice', $data['ice']);

@@ -33,6 +33,7 @@ class OrderResource extends JsonResource
             'status' => $this->status,
             'status_description' => $this->status_description,
             'whatsapp' => $this->whatsapp,
+            'whatsapp_user' => $this->whatsapp_user,
             'order_type' => $this->order_type,
             'schedule_pickup' => $this->schedule_pickup,
             'icon_status' => $this->icon_status.'.svg',

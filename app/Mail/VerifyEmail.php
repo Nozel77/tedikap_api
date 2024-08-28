@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -12,12 +13,15 @@ class VerifyEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private $currentDate;
+
     /**
      * Create a new message instance.
      */
     public function __construct(private $otp)
     {
-        //
+        $this->otp = $otp;
+        $this->currentDate = Carbon::now()->format('d M, Y');
     }
 
     /**
@@ -37,7 +41,10 @@ class VerifyEmail extends Mailable
     {
         return new Content(
             view: 'mail.verify-email-body',
-            with: ['otp' => $this->otp],
+            with: [
+                'otp' => $this->otp,
+                'currentDate' => $this->currentDate,
+            ],
         );
     }
 
