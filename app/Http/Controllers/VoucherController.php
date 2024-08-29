@@ -76,7 +76,7 @@ class VoucherController extends Controller
         $activeVouchers->each(function ($voucher) use ($originalPrice) {
             $isEligible = $originalPrice >= $voucher->min_transaction;
             $voucher->is_eligible = $isEligible;
-            $voucher->save(); 
+            $voucher->save();
         });
 
         return response()->json([
