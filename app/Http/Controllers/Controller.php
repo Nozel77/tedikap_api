@@ -24,7 +24,7 @@ class Controller extends BaseController
     public function resUpdatedData($data)
     {
         return response([
-            'message' => 'Data Updated',
+            'message' => 'Data Berhasil diubah',
             'data' => $data,
         ], 200);
     }
@@ -32,29 +32,29 @@ class Controller extends BaseController
     public function resAddData($data)
     {
         return response([
-            'message' => 'Data Added',
+            'message' => 'Data Berhasil ditambahkan',
             'data' => $data,
         ], 201);
     }
 
     public function resUserNotFound()
     {
-        return response(['message' => 'User Not Found'], 404);
+        return response(['message' => 'User tidak ditemukan'], 404);
     }
 
     public function resUserNotAdmin()
     {
-        return response(['message' => 'User Not Admin'], 403);
+        return response(['message' => 'User bukan admin'], 403);
     }
 
     public function resDataNotFound($data)
     {
-        return response(['message' => $data.' Not Found'], 404);
+        return response(['message' => $data.' Tidak ditemukan'], 404);
     }
 
     public function resDataDeleted()
     {
-        return response(['message' => 'Data Deleted'], 200);
+        return response(['message' => 'Data Berhasil dihapus'], 200);
     }
 
     public function getSchedulePickup()

@@ -6,6 +6,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrderRewardResource;
 use App\Models\Order;
 use App\Models\OrderReward;
+use App\Models\Point;
 use Illuminate\Http\Request;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
@@ -63,6 +64,8 @@ class AdminController extends Controller
             $orders = $orders->merge($orderRewardQuery->orderBy('created_at', 'desc')->get());
         }
 
+        $totalOrders = $orders->count();
+
         $formattedOrders = $orders->map(function ($order) {
             if ($order instanceof Order) {
                 return (new OrderResource($order))->toArray(request());
@@ -72,9 +75,10 @@ class AdminController extends Controller
         });
 
         return response()->json([
-            'message' => 'Orders retrieved successfully.',
+            'message' => 'Order Berhasil Diterima',
+            'orders_length' => $totalOrders,
             'orders' => $formattedOrders,
-        ]);
+        ], 200);
     }
 
     public function updateStatusOrder(Request $request, $id)
@@ -83,7 +87,7 @@ class AdminController extends Controller
 
         if (! $action || ! in_array($action, ['accepted', 'rejected'])) {
             return response()->json([
-                'message' => 'Invalid action.',
+                'message' => 'Tidak ada nilai action yang valid.',
             ], 400);
         }
 
@@ -104,11 +108,11 @@ class AdminController extends Controller
                 ];
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan ditolak';
-                $order->status_description = 'Pesanan Anda ditolak';
+                $order->status_description = $request->input('body', 'Pesanan Anda ditolak');
                 $order->icon_status = 'ic_status_canceled';
 
                 $notificationData = [
-                    'title' => $request->input('title', 'Pesanan Anda Ditolak'),
+                    'title' => 'Pesanan anda ditolak',
                     'body' => $request->input('body', 'Maaf, pesanan Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
                     'route' => 'detail_order_common',
                 ];
@@ -131,14 +135,20 @@ class AdminController extends Controller
                     ];
                 } elseif ($action == 'rejected') {
                     $orderReward->status = 'pesanan ditolak';
-                    $orderReward->status_description = 'Pesanan Anda ditolak';
+                    $orderReward->status_description = $request->input('body', 'Pesanan hadiah Anda ditolak');
                     $orderReward->icon_status = 'ic_status_canceled';
 
                     $notificationData = [
-                        'title' => $request->input('title', 'Pesanan Anda Ditolak'),
+                        'title' => 'Pesanan Hadiah Anda Ditolak',
                         'body' => $request->input('body', 'Maaf, pesanan hadiah Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
                         'route' => 'detail_order_reward',
                     ];
+                    $user = $orderReward->user;
+                    if ($user) {
+                        $point = Point::firstOrNew(['user_id' => $user->id]);
+                        $point->point += $orderReward->total_points; // Menambahkan kembali total_points ke saldo pengguna
+                        $point->save();
+                    }
                 }
                 $orderReward->save();
                 $user = $orderReward->user;
@@ -150,14 +160,14 @@ class AdminController extends Controller
             $notif = $this->notification($fcmToken, $notificationData['title'], $notificationData['body'], $notificationData['route'], $id);
 
             return response()->json([
-                'message' => 'Order status updated successfully.',
+                'message' => 'Order status berhasil diubah',
                 'order' => $order ? new OrderResource($order) : new OrderRewardResource($orderReward),
                 'notification' => $notif,
             ], 200);
         }
 
         return response()->json([
-            'message' => 'Order not found or not in the "menunggu konfirmasi" status.',
+            'message' => 'Order tidak ditemukan atau tidak dalam status "menunggu konfirmasi".',
         ], 404);
     }
 
@@ -167,7 +177,7 @@ class AdminController extends Controller
 
         if (! $action || ! in_array($action, ['accepted', 'rejected'])) {
             return response()->json([
-                'message' => 'Invalid action.',
+                'message' => 'Tidak ada nilai action yang valid.',
             ], 400);
         }
 
@@ -198,7 +208,7 @@ class AdminController extends Controller
             $notif = $this->notification($user->fcm_token, $title, $body, $route, $order->id);
 
             return response()->json([
-                'message' => 'Order status updated successfully.',
+                'message' => 'Order status berhasil diubah',
                 'order' => new OrderResource($order),
                 'notification' => $notif,
             ], 200);
@@ -230,14 +240,14 @@ class AdminController extends Controller
             $notif = $this->notification($user->fcm_token, $title, $body, $route, $orderReward->id);
 
             return response()->json([
-                'message' => 'Order status updated successfully.',
+                'message' => 'Order status berhasil diubah',
                 'order' => new OrderRewardResource($orderReward),
                 'notification' => $notif,
             ], 200);
         }
 
         return response()->json([
-            'message' => 'Order not found or not in the "pesanan diproses" status.',
+            'message' => 'Order tidak ditemukan atau tidak dalam status "pesanan diproses".',
         ], 404);
     }
 
@@ -247,7 +257,7 @@ class AdminController extends Controller
 
         if (! $action || ! in_array($action, ['accepted', 'rejected'])) {
             return response()->json([
-                'message' => 'Invalid action.',
+                'message' => 'Tidak ada nilai action yang valid.',
             ], 400);
         }
 
@@ -278,7 +288,7 @@ class AdminController extends Controller
             $notif = $this->notification($user->fcm_token, $title, $body, $route, $order->id);
 
             return response()->json([
-                'message' => 'Order status updated successfully.',
+                'message' => 'Order status berhasil diubah',
                 'order' => new OrderResource($order),
                 'notification' => $notif,
             ], 200);
@@ -310,14 +320,14 @@ class AdminController extends Controller
             $notif = $this->notification($user->fcm_token, $title, $body, $route, $orderReward->id);
 
             return response()->json([
-                'message' => 'Order status updated successfully.',
+                'message' => 'Order status berhasil diubah',
                 'order' => new OrderRewardResource($orderReward),
                 'notification' => $notif,
             ], 200);
         }
 
         return response()->json([
-            'message' => 'Order not found or not in the "pesanan siap diambil" status.',
+            'message' => 'Order tidak ditemukan atau tidak dalam status "pesanan siap diambil".',
         ], 404);
     }
 

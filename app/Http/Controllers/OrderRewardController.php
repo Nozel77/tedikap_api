@@ -156,7 +156,7 @@ class OrderRewardController extends Controller
             $rewardProduct = RewardProduct::find($rewardCartItem->reward_product_id);
 
             if ($rewardProduct) {
-                if ($rewardProduct->category === 'snack') {
+                if ($rewardProduct->category === 'merchandise') {
                     $temperatur = null;
                     $size = null;
                     $sugar = null;

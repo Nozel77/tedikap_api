@@ -44,6 +44,16 @@ class StatusStoreController extends Controller
 
         $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
+        // Tambahkan sapaan berdasarkan waktu
+        $hour = Carbon::now('Asia/Jakarta')->format('H');
+        if ($hour >= 5 && $hour < 12) {
+            $greeting = 'Selamat Pagi';
+        } elseif ($hour >= 12 && $hour < 18) {
+            $greeting = 'Selamat Siang';
+        } else {
+            $greeting = 'Selamat Malam';
+        }
+
         if ($now > '11:40' && $status->open) {
             $status->open = false;
             $this->updateProductStock($status->open);
@@ -66,6 +76,7 @@ class StatusStoreController extends Controller
                 'description' => $description,
                 'session' => $session,
                 'time' => $time,
+                'greeting' => $greeting,
             ],
         ]);
     }

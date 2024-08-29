@@ -93,14 +93,13 @@ class OtpController extends Controller
             ], 400);
         }
 
-        // Generate a new reset token and store it in cache with email
         $resetToken = Str::random(60);
 
         Cache::put("password-reset-{$resetToken}", $request->email, now()->addMinutes(5));
 
         return response([
             'message' => 'OTP is valid',
-            'reset_token' => $resetToken, // Return the reset token to be used in the next request
+            'reset_token' => $resetToken,
         ], 200);
     }
 }

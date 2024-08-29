@@ -36,6 +36,7 @@ class PaymentController extends Controller
             ],
         ])->withData([
             'route' => $notification['route'],
+            'order_id' => $orderId,
         ]);
 
         Firebase::messaging()->send($message);
@@ -77,10 +78,11 @@ class PaymentController extends Controller
 
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
-            'description' => 'kenapa gabisa',
+            'description' => 'pembayaran sebesar '.$order->total_price,
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
             'invoice_duration' => 120,
+            'payment_methods' => ['OVO', 'DANA', 'SHOPEEPAY', 'QRIS'],
         ]);
 
         $result = $this->apiInstance->createInvoice($create_invoice_request);
@@ -95,6 +97,9 @@ class PaymentController extends Controller
         $payment->order_id = $order->id;
         $payment->invoice_duration = 120;
         $payment->save();
+
+        $order->link_invoice = $result['invoice_url'];
+        $order->save();
 
         return response()->json($payment);
     }
@@ -141,6 +146,8 @@ class PaymentController extends Controller
                 'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
                 'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
                 'route' => 'detail_order_common',
+                'order_id' => $payment->order->id,
+
             ];
 
             $user = $payment->user;
@@ -158,6 +165,7 @@ class PaymentController extends Controller
                     'title' => 'Pembayaran Kadaluarsa',
                     'body' => "Pembayaran untuk pesanan Anda (ID: {$payment->order->id}) telah kadaluwarsa dan pesanan Anda dibatalkan. Silakan lakukan pemesanan ulang jika Anda masih ingin melanjutkan.",
                     'route' => 'detail_order_common',
+                    'order_id' => $payment->order->id,
                 ];
 
                 $user = $payment->user;
