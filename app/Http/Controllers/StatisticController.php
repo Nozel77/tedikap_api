@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AnalyticStatisticResource;
 use App\Http\Resources\EarningStatisticResource;
 use App\Models\Order;
 use App\Models\Statistic;
@@ -13,17 +12,18 @@ class StatisticController extends Controller
 {
     public function earningsStatistic()
     {
-        $orders = Order::where('status', 'pesanan selesai')->get();
-
-        $totalSales = $orders->sum('total_price');
-
         $startDate = now()->subWeeks(4);
         $endDate = now();
 
-        $weeklyEarnings = $orders->whereBetween('created_at', [$startDate, $endDate])
-            ->groupBy(function ($order) {
-                return Carbon::parse($order->created_at)->format('W');
-            })
+        $orders = Order::where('status', 'pesanan selesai')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $totalSales = $orders->sum('total_price');
+
+        $weeklyEarnings = $orders->groupBy(function ($order) {
+            return Carbon::parse($order->created_at)->format('W');
+        })
             ->map(function ($week) {
                 return $week->sum('total_price');
             });
@@ -33,15 +33,9 @@ class StatisticController extends Controller
         $currentWeekEarnings = $weeklyEarnings->last();
         $previousWeekEarnings = $weeklyEarnings->slice(-2, 1)->first() ?? 0;
 
-        if ($previousWeekEarnings > 0) {
-            $earningGrowth = (($currentWeekEarnings - $previousWeekEarnings) / $previousWeekEarnings) * 100;
-            // Round to the nearest even integer
-            $earningGrowth = round($earningGrowth / 2) * 2;
-            // Ensure it does not exceed 100
-            $earningGrowth = min($earningGrowth, 100);
-        } else {
-            $earningGrowth = $currentWeekEarnings > 0 ? 100 : 0;
-        }
+        $earningGrowth = $previousWeekEarnings > 0
+            ? min(round((($currentWeekEarnings - $previousWeekEarnings) / $previousWeekEarnings) * 100 / 2) * 2, 100)
+            : ($currentWeekEarnings > 0 ? 100 : 0);
 
         Statistic::updateOrCreate(
             ['type' => 'earning', 'date' => now()->toDateString()],
@@ -62,25 +56,20 @@ class StatisticController extends Controller
     public function analyticStatistic(Request $request)
     {
         $period = $request->input('period', 'this_week');
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
 
         switch ($period) {
             case 'this_week':
-                $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->startOfWeek();
-                $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfWeek();
+                $startDate = Carbon::now()->startOfWeek()->startOfDay();
+                $endDate = Carbon::now()->endOfWeek()->endOfDay();
                 break;
-
             case 'this_month':
-                $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->startOfMonth();
-                $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfMonth();
+                $startDate = Carbon::now()->startOfMonth()->startOfDay();
+                $endDate = Carbon::now()->endOfMonth()->endOfDay();
                 break;
-
             case 'this_year':
-                $startDate = $startDate ? Carbon::parse($startDate) : Carbon::now()->startOfYear();
-                $endDate = $endDate ? Carbon::parse($endDate) : Carbon::now()->endOfYear();
+                $startDate = Carbon::now()->startOfYear()->startOfDay();
+                $endDate = Carbon::now()->endOfYear()->endOfDay();
                 break;
-
             default:
                 return response()->json(['error' => 'Invalid period'], 400);
         }
@@ -91,57 +80,62 @@ class StatisticController extends Controller
             ->get();
 
         $salesData = [];
-        $currentDate = $startDate;
+        $currentDate = $startDate->copy();
+        $totalProductSales = 0;
+        $totalIncome = 0;
 
         while ($currentDate <= $endDate) {
-            switch ($period) {
-                case 'this_week':
-                    $dailyOrders = $orders->filter(function ($order) use ($currentDate) {
-                        return Carbon::parse($order->created_at)->isSameDay($currentDate);
-                    });
-                    $label = $currentDate->format('l');
-                    $currentDate->addDay();
-                    break;
+            $dailyOrders = $orders->filter(function ($order) use ($currentDate) {
+                return $order->created_at->isSameDay($currentDate);
+            });
 
-                case 'this_month':
-                    $dailyOrders = $orders->filter(function ($order) use ($currentDate) {
-                        return Carbon::parse($order->created_at)->format('l') == $currentDate->format('l');
-                    });
-                    $label = $currentDate->format('l');
-                    $currentDate->addWeek();
-                    break;
-
-                case 'this_year':
-                    $dailyOrders = $orders->filter(function ($order) use ($currentDate) {
-                        return Carbon::parse($order->created_at)->format('m') == $currentDate->format('m');
-                    });
-                    $label = $currentDate->format('F');
-                    $currentDate->addMonth();
-                    break;
-            }
+            $label = $this->getLabelByPeriod($currentDate, $period);
 
             $totalPcsSold = $dailyOrders->sum(function ($order) {
                 return $order->orderItems->sum('quantity');
             });
 
-            $totalIncome = $dailyOrders->sum('total_price');
+            $dailyIncome = $dailyOrders->sum('total_price');
 
-            $salesData[$label] = new AnalyticStatisticResource((object) [
+            $totalProductSales += $totalPcsSold;
+            $totalIncome += $dailyIncome;
+
+            $salesData[$label] = [
+                'date' => $currentDate->toDateString(),
                 'total_pcs_sold' => $totalPcsSold,
-                'total_income' => $totalIncome,
-            ]);
+                'total_income' => $dailyIncome,
+            ];
 
-            Statistic::updateOrCreate(
-                ['type' => 'analytic', 'date' => $currentDate->toDateString()],
-                [
-                    'total_pcs_sold' => $totalPcsSold,
-                    'total_income' => $totalIncome,
-                ]
-            );
+            switch ($period) {
+                case 'this_week':
+                case 'this_month':
+                    $currentDate->addDay();
+                    break;
+                case 'this_year':
+                    $currentDate->addMonth();
+                    $currentDate->startOfMonth();
+                    break;
+            }
         }
 
         return response()->json([
             'data' => $salesData,
+            'product_sales' => $totalProductSales,
+            'income' => $totalIncome,
         ]);
+    }
+
+    private function getLabelByPeriod(Carbon $date, $period)
+    {
+        switch ($period) {
+            case 'this_week':
+                return $date->format('l');
+            case 'this_month':
+                return $date->format('d');
+            case 'this_year':
+                return $date->format('F');
+            default:
+                return $date->format('l');
+        }
     }
 }

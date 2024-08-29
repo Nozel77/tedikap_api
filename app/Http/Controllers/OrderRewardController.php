@@ -140,7 +140,7 @@ class OrderRewardController extends Controller
             'title' => 'Pemesanan Berhasil',
             'body' => 'Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.',
             'route' => 'detail_order_reward',
-            'order_reward_id' => $order->id, 
+            'order_reward_id' => $order->id,
         ]);
         $notif = $this->notification($userNotification, $userId);
 
@@ -148,7 +148,7 @@ class OrderRewardController extends Controller
             'title' => 'Pesanan Baru - Menunggu Konfirmasi',
             'body' => "Pesanan baru dengan ID: {$order->id} telah dibuat dan menunggu konfirmasi. Silakan periksa pesanan baru di sistem admin.",
             'route' => '/order',
-            'order_reward_id' => $order->id,  
+            'order_reward_id' => $order->id,
         ]);
         $this->notifyAdmins($adminNotification);
 

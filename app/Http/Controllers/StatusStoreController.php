@@ -30,8 +30,8 @@ class StatusStoreController extends Controller
 
     private function updateProductStock($isOpen)
     {
-        Product::where('stock', !$isOpen)->update(['stock' => $isOpen]);
-        RewardProduct::where('stock', !$isOpen)->update(['stock' => $isOpen]);
+        Product::where('stock', ! $isOpen)->update(['stock' => $isOpen]);
+        RewardProduct::where('stock', ! $isOpen)->update(['stock' => $isOpen]);
     }
 
     public function storeStatus()
