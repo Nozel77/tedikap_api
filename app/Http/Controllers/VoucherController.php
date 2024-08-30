@@ -9,6 +9,7 @@ use App\Models\Cart;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\Voucher;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -98,7 +99,7 @@ class VoucherController extends Controller
             'discount' => $request->discount,
             'min_transaction' => $request->min_transaction,
             'max_discount' => $request->max_discount,
-            'start_date' => $request->start_date,
+            'start_date' => Carbon::now(),
             'end_date' => $request->end_date,
         ]);
         $data->save();

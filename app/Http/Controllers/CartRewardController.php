@@ -34,6 +34,8 @@ class CartRewardController extends Controller
                     'schedule_pickup' => $this->getSchedulePickup(),
                     'session_1' => '9.40-10.00',
                     'session_2' => '12.00-12.30',
+                    'endSession_1' => '9.20',
+                    'endSession_2' => '11.40',
                     'points_enough' => false,
                     'is_phone' => $isPhone,
                     'cart_items' => [],

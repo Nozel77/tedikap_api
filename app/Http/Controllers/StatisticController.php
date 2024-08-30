@@ -112,8 +112,7 @@ class StatisticController extends Controller
                     $currentDate->addDay();
                     break;
                 case 'this_year':
-                    $currentDate->addMonth();
-                    $currentDate->startOfMonth();
+                    $currentDate->addMonth(); 
                     break;
             }
         }

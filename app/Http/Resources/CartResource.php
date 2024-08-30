@@ -32,6 +32,8 @@ class CartResource extends JsonResource
             'schedule_pickup' => $this->schedule_pickup,
             'session_1' => '9.40-10.00',
             'session_2' => '12.00-12.30',
+            'endSession_1' => '9.20',
+            'endSession_2' => '11.40',
             'is_phone' => $this->is_phone,
             'cart_items' => CartItemResource::collection($this->cartItems),
         ];
