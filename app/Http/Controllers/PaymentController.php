@@ -85,6 +85,8 @@ class PaymentController extends Controller
 
         $result = $this->apiInstance->createInvoice($create_invoice_request);
 
+        
+
         $payment = new Payment();
         $payment->status = 'menunggu pembayaran';
         $payment->checkout_link = $result['invoice_url'];
@@ -95,6 +97,10 @@ class PaymentController extends Controller
         $payment->order_id = $order->id;
         $payment->invoice_duration = 120;
         $payment->save();
+
+        $order->link_invoice = $result['invoice_url'];
+        $order->save();
+        
 
         return response()->json($payment);
     }

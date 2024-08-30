@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('payment_channel')->nullable();
             $table->string('icon_status');
             $table->double('rating')->nullable();
+            $table->text('link_invoice')->nullable();
             $table->timestamps();
             $table->timestamp('expires_at')->nullable();
         });
