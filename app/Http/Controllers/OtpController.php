@@ -61,8 +61,7 @@ class OtpController extends Controller
         Otp::create([
             'id' => 'otp-'.Str::uuid(),
             'email' => $request->email,
-            'otp' => $otp,
-            'expires_at' => Carbon::now()->addMinutes(5),
+            'otp' => $otp
         ]);
 
         return response([
@@ -100,7 +99,7 @@ class OtpController extends Controller
 
         return response([
             'message' => 'OTP is valid',
-            'reset_token' => $resetToken, // Return the reset token to be used in the next request
+            'reset_token' => $resetToken,
         ], 200);
     }
 }
