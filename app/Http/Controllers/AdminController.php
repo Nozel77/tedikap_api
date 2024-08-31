@@ -104,11 +104,11 @@ class AdminController extends Controller
                 ];
             } elseif ($action == 'rejected') {
                 $order->status = 'pesanan ditolak';
-                $order->status_description = 'Pesanan Anda ditolak';
+                $order->status_description = $request->input('body', 'Pesanan Anda ditolak');
                 $order->icon_status = 'ic_status_canceled';
 
                 $notificationData = [
-                    'title' => $request->input('title', 'Pesanan Anda Ditolak'),
+                    'title' => 'Pesanan Anda Ditolak',
                     'body' => $request->input('body', 'Maaf, pesanan Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
                     'route' => 'detail_order_common',
                 ];
@@ -131,11 +131,11 @@ class AdminController extends Controller
                     ];
                 } elseif ($action == 'rejected') {
                     $orderReward->status = 'pesanan ditolak';
-                    $orderReward->status_description = 'Pesanan Anda ditolak';
+                    $orderReward->status_description = $request->input('body', 'Pesanan Hadiah Anda ditolak');
                     $orderReward->icon_status = 'ic_status_canceled';
 
                     $notificationData = [
-                        'title' => $request->input('title', 'Pesanan Anda Ditolak'),
+                        'title' => 'Pesanan Anda Ditolak',
                         'body' => $request->input('body', 'Maaf, pesanan hadiah Anda telah ditolak. Jika Anda merasa ada kesalahan, silakan hubungi kami.'),
                         'route' => 'detail_order_reward',
                     ];

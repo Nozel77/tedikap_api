@@ -42,9 +42,19 @@ class StatusStoreController extends Controller
             return response()->json(['message' => 'Status Tidak Ada'], 404);
         }
 
-        $now = Carbon::now('Asia/Jakarta')->format('H:i');
+        $now = Carbon::now('Asia/Jakarta');
+        $currentTime = $now->format('H:i');
 
-        if ($now > '11:40' && $status->open) {
+        $hour = $now->format('H');
+        if ($hour >= 5 && $hour < 12) {
+            $greetings = 'Selamat Pagi';
+        } elseif ($hour >= 12 && $hour < 18) {
+            $greetings = 'Selamat Siang';
+        } else {
+            $greetings = 'Selamat Malam';
+        }
+
+        if ($currentTime > '11:40' && $status->open) {
             $status->open = false;
             $this->updateProductStock($status->open);
             $status->save();
@@ -55,7 +65,7 @@ class StatusStoreController extends Controller
             $time = null;
             $description = 'Toko Sedang Tutup';
         } else {
-            [$session, $time, $description] = $this->determineSessionAndStock($now);
+            [$session, $time, $description] = $this->determineSessionAndStock($currentTime);
         }
 
         $this->updateProductStock($status->open);
@@ -66,9 +76,11 @@ class StatusStoreController extends Controller
                 'description' => $description,
                 'session' => $session,
                 'time' => $time,
+                'greetings' => $greetings,
             ],
         ]);
     }
+
 
     public function updateStoreStatus()
     {
