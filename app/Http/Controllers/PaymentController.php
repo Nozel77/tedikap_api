@@ -77,15 +77,14 @@ class PaymentController extends Controller
 
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
-            'description' => 'kenapa gabisa',
+            'description' => 'Pembayaran untuk pesanan ' . $order->id,
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
             'invoice_duration' => 120,
+            'payment_methods' => ['OVO', 'DANA', 'SHOPEEPAY', 'LINKAJA'],
         ]);
 
         $result = $this->apiInstance->createInvoice($create_invoice_request);
-
-        
 
         $payment = new Payment();
         $payment->status = 'menunggu pembayaran';
@@ -95,7 +94,7 @@ class PaymentController extends Controller
         $payment->amount = $order->total_price;
         $payment->payment_channel = null;
         $payment->order_id = $order->id;
-        $payment->invoice_duration = 120;
+        $payment->invoice_duration = 60;
         $payment->save();
 
         $order->link_invoice = $result['invoice_url'];
