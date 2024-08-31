@@ -81,7 +81,6 @@ class StatusStoreController extends Controller
         ]);
     }
 
-
     public function updateStoreStatus()
     {
         $status = StatusStore::first();

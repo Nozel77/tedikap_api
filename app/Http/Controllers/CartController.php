@@ -40,8 +40,6 @@ class CartController extends Controller
                     'schedule_pickup' => $this->getSchedulePickup(),
                     'session_1' => '9.40-10.00',
                     'session_2' => '12.00-12.30',
-                    'endSession_1' => '9.20',
-                    'endSession_2' => '11.40',
                     'is_phone' => $isPhone,
                     'cart_items' => [],
                 ],
@@ -65,6 +63,14 @@ class CartController extends Controller
                     if (isset($voucher->max_discount) && $discount_amount > $voucher->max_discount) {
                         $discount_amount = $voucher->max_discount;
                     }
+                } else {
+                    // Jika harga total tidak memenuhi persyaratan min_transaction, ubah status is_used menjadi false
+                    $voucher->is_used = false;
+                    $voucher->save();
+
+                    // Hapus voucher dari keranjang
+                    $cart->voucher_id = null;
+                    $cart->save();
                 }
             }
         }

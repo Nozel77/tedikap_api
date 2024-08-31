@@ -61,7 +61,7 @@ class OtpController extends Controller
         Otp::create([
             'id' => 'otp-'.Str::uuid(),
             'email' => $request->email,
-            'otp' => $otp
+            'otp' => $otp,
         ]);
 
         return response([

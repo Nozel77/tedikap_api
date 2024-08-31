@@ -77,7 +77,7 @@ class PaymentController extends Controller
 
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
-            'description' => 'Pembayaran untuk pesanan ' . $order->id,
+            'description' => 'Pembayaran untuk pesanan '.$order->id,
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
             'invoice_duration' => 120,
@@ -99,7 +99,6 @@ class PaymentController extends Controller
 
         $order->link_invoice = $result['invoice_url'];
         $order->save();
-        
 
         return response()->json($payment);
     }
