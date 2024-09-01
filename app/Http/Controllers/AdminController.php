@@ -137,8 +137,6 @@ class AdminController extends Controller
 
                     $userId = $orderReward->user_id;
                     $totalPoints = $orderReward->total_point;
-
-                    // Tambahkan poin kembali ke pengguna
                     Point::where('user_id', $userId)->increment('point', $totalPoints);
 
                     $notificationData = [
