@@ -4,28 +4,48 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\RewardProduct;
+use App\Models\SessionTime;
 use App\Models\StatusStore;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class StatusStoreController extends Controller
 {
-    private function determineSessionAndStock($now)
+    // Method untuk mengubah waktu sesi
+    public function updateSessionTimes(Request $request)
     {
-        if ($now >= '07:00' && $now <= '09:20') {
-            $session = 'Pick Up Sesi 1';
-            $time = '09:40-10:00';
-            $description = 'Toko Buka Untuk Sesi 1';
-        } elseif ($now > '09:20' && $now <= '11:40') {
-            $session = 'Pick Up Sesi 2';
-            $time = '12:00-12:30';
-            $description = 'Toko Buka Untuk Sesi 2';
-        } else {
-            $session = 'Toko Sedang Tutup';
-            $time = null;
-            $description = 'Toko Sedang Tutup';
+        $request->validate([
+            'session_times' => 'required|array',
+            'session_times.*.id' => 'required|exists:session_times,id',
+            'session_times.*.start_time' => 'required|date_format:H:i',
+            'session_times.*.end_time' => 'required|date_format:H:i',
+        ]);
+
+        foreach ($request->session_times as $session) {
+            $sessionTime = SessionTime::find($session['id']);
+            $sessionTime->start_time = $session['start_time'];
+            $sessionTime->end_time = $session['end_time'];
+            $sessionTime->save();
         }
 
-        return [$session, $time, $description];
+        return response()->json(['message' => 'Waktu sesi berhasil diubah'], 200);
+    }
+
+    private function determineSessionAndStock($now)
+    {
+        $sessionTimes = SessionTime::all();
+
+        foreach ($sessionTimes as $session) {
+            if ($now >= $session->start_time && $now <= $session->end_time) {
+                return [
+                    $session->session_name,
+                    "{$session->start_time}-{$session->end_time}",
+                    "Toko Buka Untuk {$session->session_name}",
+                ];
+            }
+        }
+
+        return ['Toko Sedang Tutup', null, 'Toko Sedang Tutup'];
     }
 
     private function updateProductStock($isOpen)
@@ -42,19 +62,12 @@ class StatusStoreController extends Controller
             return response()->json(['message' => 'Status Tidak Ada'], 404);
         }
 
-        $now = Carbon::now('Asia/Jakarta');
-        $currentTime = $now->format('H:i');
+        $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
-        $hour = $now->format('H');
-        if ($hour >= 5 && $hour < 12) {
-            $greetings = 'Selamat Pagi';
-        } elseif ($hour >= 12 && $hour < 18) {
-            $greetings = 'Selamat Siang';
-        } else {
-            $greetings = 'Selamat Malam';
-        }
+        $hour = Carbon::now('Asia/Jakarta')->format('H');
+        $greetings = ($hour >= 5 && $hour < 12) ? 'Selamat Pagi' : (($hour >= 12 && $hour < 18) ? 'Selamat Siang' : 'Selamat Malam');
 
-        if ($currentTime > '11:40' && $status->open) {
+        if ($now > '14:00' && $status->open) {
             $status->open = false;
             $this->updateProductStock($status->open);
             $status->save();
@@ -65,7 +78,7 @@ class StatusStoreController extends Controller
             $time = null;
             $description = 'Toko Sedang Tutup';
         } else {
-            [$session, $time, $description] = $this->determineSessionAndStock($currentTime);
+            [$session, $time, $description] = $this->determineSessionAndStock($now);
         }
 
         $this->updateProductStock($status->open);

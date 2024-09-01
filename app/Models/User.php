@@ -49,7 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     protected $attributes = [
-        'avatar' => 'avatar.jpg',
+        'avatar' => 'avatar.png',
         'role' => 'user',
         'gender' => 'male',
     ];

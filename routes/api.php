@@ -145,6 +145,7 @@ Route::prefix('order-reward')->group(function () {
 Route::prefix('status-store')->group(function () {
     Route::get('/', [StatusStoreController::class, 'storeStatus'])->middleware(['auth:sanctum']);
     Route::put('/update', [StatusStoreController::class, 'updateStoreStatus'])->middleware(['auth:sanctum', 'admin']);
+    Route::put('/update-session-times', [StatusStoreController::class, 'updateSessionTimes'])->middleware(['auth:sanctum', 'admin']);
 });
 
 Route::prefix('banner')->group(function () {

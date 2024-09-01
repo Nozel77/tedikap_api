@@ -24,6 +24,8 @@ class CartRewardController extends Controller
 
         $isPhone = ! empty($user->whatsapp_number);
 
+        $storeStatus = $this->getStoreStatus();
+
         if (! $cart) {
             return response()->json([
                 'cart' => [
@@ -31,8 +33,8 @@ class CartRewardController extends Controller
                     'user_id' => $user_id,
                     'total_points' => 0,
                     'schedule_pickup' => $this->getSchedulePickup(),
-                    'session_1' => '9.40-10.00',
-                    'session_2' => '12.00-12.30',
+                    'session' => $storeStatus['session'],
+                    'time' => $storeStatus['time'],
                     'endSession_1' => '9.20',
                     'endSession_2' => '11.40',
                     'points_enough' => false,
