@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Point;
 use App\Models\User;
+use App\Models\UserVoucher;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -36,6 +38,7 @@ class PaymentController extends Controller
             ],
         ])->withData([
             'route' => $notification['route'],
+            'order_id' => $orderId,
         ]);
 
         Firebase::messaging()->send($message);
@@ -77,7 +80,7 @@ class PaymentController extends Controller
 
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => (string) Str::uuid(),
-            'description' => 'Pembayaran untuk pesanan ' . $order->id,
+            'description' => 'Pembayaran untuk pesanan '.$order->id,
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
             'invoice_duration' => 120,
@@ -99,7 +102,6 @@ class PaymentController extends Controller
 
         $order->link_invoice = $result['invoice_url'];
         $order->save();
-        
 
         return response()->json($payment);
     }
@@ -136,20 +138,20 @@ class PaymentController extends Controller
             if ($order) {
                 $order->payment_channel = $payment->payment_channel;
                 $order->status = 'menunggu konfirmasi';
-                $order->status_description = 'pembayaran selesai pesanan sedang menunggu konfirmasi';
+                $order->status_description = 'Pembayaran selesai, pesanan sedang menunggu konfirmasi';
                 $order->save();
 
                 $this->notifyAdminsAboutNewOrder($order);
+
+                $notification = [
+                    'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
+                    'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
+                    'route' => 'detail_order_common',
+                ];
+
+                $user = $payment->user;
+                $this->notification($notification, $user->id, $payment->order->id);
             }
-
-            $notification = [
-                'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
-                'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
-                'route' => 'detail_order_common',
-            ];
-
-            $user = $payment->user;
-            $this->notification($notification, $user->id, $payment->order->id);
 
         } elseif (strtolower($request->status) === 'expired') {
             $order = $payment->order;
@@ -163,10 +165,28 @@ class PaymentController extends Controller
                     'title' => 'Pembayaran Kadaluarsa',
                     'body' => "Pembayaran untuk pesanan Anda (ID: {$payment->order->id}) telah kadaluwarsa dan pesanan Anda dibatalkan. Silakan lakukan pemesanan ulang jika Anda masih ingin melanjutkan.",
                     'route' => 'detail_order_common',
+                    'order_id' => $payment->order->id,
                 ];
 
                 $user = $payment->user;
                 $this->notification($notification, $user->id, $payment->order->id);
+
+                if ($order->voucher_id) {
+                    $userVoucher = UserVoucher::where('user_id', $payment->user_id)
+                        ->where('voucher_id', $order->voucher_id)
+                        ->first();
+
+                    if ($userVoucher) {
+                        $voucher = Voucher::find($order->voucher_id);
+                        if ($voucher) {
+                            $voucher->is_used = false;
+                            $voucher->save();
+                        }
+
+                        $userVoucher->used = false;
+                        $userVoucher->save();
+                    }
+                }
             }
         }
 

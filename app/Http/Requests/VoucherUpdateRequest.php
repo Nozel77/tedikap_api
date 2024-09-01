@@ -28,6 +28,7 @@ class VoucherUpdateRequest extends FormRequest
             'discount' => 'numeric',
             'min_transaction' => 'numeric',
             'max_discount' => 'numeric',
+            'start_date' => 'date',
             'end_date' => 'date',
 
         ];
