@@ -83,7 +83,7 @@ class PaymentController extends Controller
             'description' => 'Pembayaran untuk pesanan '.$order->id,
             'amount' => $order->total_price,
             'payer_email' => $payer_email,
-            'invoice_duration' => 120,
+            'invoice_duration' => 300,
             'payment_methods' => ['OVO', 'DANA', 'SHOPEEPAY', 'LINKAJA'],
         ]);
 

@@ -11,14 +11,13 @@ use Illuminate\Http\Request;
 
 class StatusStoreController extends Controller
 {
-    // Method untuk mengubah waktu sesi
     public function updateSessionTimes(Request $request)
     {
         $request->validate([
             'session_times' => 'required|array',
             'session_times.*.id' => 'required|exists:session_times,id',
-            'session_times.*.start_time' => 'required|date_format:H:i',
-            'session_times.*.end_time' => 'required|date_format:H:i',
+            'session_times.*.start_time' => 'required|date_format',
+            'session_times.*.end_time' => 'required|date_format',
         ]);
 
         foreach ($request->session_times as $session) {
@@ -36,10 +35,13 @@ class StatusStoreController extends Controller
         $sessionTimes = SessionTime::all();
 
         foreach ($sessionTimes as $session) {
-            if ($now >= $session->start_time && $now <= $session->end_time) {
+            $startTimeFormatted = Carbon::parse($session->start_time)->format('H:i');
+            $endTimeFormatted = Carbon::parse($session->end_time)->format('H:i');
+
+            if ($now >= $startTimeFormatted && $now <= $endTimeFormatted) {
                 return [
                     $session->session_name,
-                    "{$session->start_time}-{$session->end_time}",
+                    "{$startTimeFormatted}-{$endTimeFormatted}",
                     "Toko Buka Untuk {$session->session_name}",
                 ];
             }
