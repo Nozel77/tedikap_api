@@ -6,6 +6,7 @@ use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrderRewardResource;
 use App\Models\Order;
 use App\Models\OrderReward;
+use App\Models\Point;
 use Illuminate\Http\Request;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
@@ -133,6 +134,12 @@ class AdminController extends Controller
                     $orderReward->status = 'pesanan ditolak';
                     $orderReward->status_description = $request->input('body', 'Pesanan Hadiah Anda ditolak');
                     $orderReward->icon_status = 'ic_status_canceled';
+
+                    $userId = $orderReward->user_id;
+                    $totalPoints = $orderReward->total_point;
+
+                    // Tambahkan poin kembali ke pengguna
+                    Point::where('user_id', $userId)->increment('point', $totalPoints);
 
                     $notificationData = [
                         'title' => 'Pesanan Anda Ditolak',

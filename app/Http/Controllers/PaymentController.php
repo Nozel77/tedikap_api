@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Point;
 use App\Models\User;
 use App\Models\UserVoucher;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -38,6 +38,7 @@ class PaymentController extends Controller
             ],
         ])->withData([
             'route' => $notification['route'],
+            'order_id' => $orderId,
         ]);
 
         Firebase::messaging()->send($message);
@@ -106,89 +107,89 @@ class PaymentController extends Controller
     }
 
     public function webhook(Request $request)
-{
-    $request->validate([
-        'external_id' => 'required|exists:payments,external_id',
-        'status' => 'required|string',
-        'payment_channel' => 'nullable|string',
-    ]);
+    {
+        $request->validate([
+            'external_id' => 'required|exists:payments,external_id',
+            'status' => 'required|string',
+            'payment_channel' => 'nullable|string',
+        ]);
 
-    $payment = Payment::with(['user', 'order'])->where('external_id', $request->external_id)->firstOrFail();
+        $payment = Payment::with(['user', 'order'])->where('external_id', $request->external_id)->firstOrFail();
 
-    if (strtolower($payment->status) === 'paid') {
-        return response()->json('Payment has already been processed', 200);
-    }
-
-    $payment->status = strtolower($request->status);
-    $payment->payment_channel = $request->payment_channel;
-    $payment->save();
-
-    if (strtolower($request->status) === 'paid') {
-        $additionalPoints = floor($payment->amount / 3000);
-        $additionalPoints += ($payment->amount % 3000 == 0) ? 0 : 1;
-
-        if ($additionalPoints > 0) {
-            $point = Point::firstOrCreate(['user_id' => $payment->user_id]);
-            $point->point += $additionalPoints;
-            $point->save();
+        if (strtolower($payment->status) === 'paid') {
+            return response()->json('Payment has already been processed', 200);
         }
 
-        $order = $payment->order;
-        if ($order) {
-            $order->payment_channel = $payment->payment_channel;
-            $order->status = 'menunggu konfirmasi';
-            $order->status_description = 'pembayaran selesai pesanan sedang menunggu konfirmasi';
-            $order->save();
+        $payment->status = strtolower($request->status);
+        $payment->payment_channel = $request->payment_channel;
+        $payment->save();
 
-            $this->notifyAdminsAboutNewOrder($order);
+        if (strtolower($request->status) === 'paid') {
+            $additionalPoints = floor($payment->amount / 3000);
+            $additionalPoints += ($payment->amount % 3000 == 0) ? 0 : 1;
 
-            if ($order->voucher_id) {
-                $userVoucher = UserVoucher::where('user_id', $payment->user_id)
-                    ->where('voucher_id', $order->voucher_id)
-                    ->first();
-                
-                if ($userVoucher) {
-                    $userVoucher->used = true;
-                    $userVoucher->save();
-                }
+            if ($additionalPoints > 0) {
+                $point = Point::firstOrCreate(['user_id' => $payment->user_id]);
+                $point->point += $additionalPoints;
+                $point->save();
+            }
 
-                $cart = Cart::where('user_id', $payment->user_id)->first();
-                if ($cart) {
-                    $cart->voucher_id = null;
-                    $cart->save();
+            $order = $payment->order;
+            if ($order) {
+                $order->payment_channel = $payment->payment_channel;
+                $order->status = 'menunggu konfirmasi';
+                $order->status_description = 'Pembayaran selesai, pesanan sedang menunggu konfirmasi';
+                $order->save();
+
+                $this->notifyAdminsAboutNewOrder($order);
+
+                $notification = [
+                    'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
+                    'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
+                    'route' => 'detail_order_common',
+                ];
+
+                $user = $payment->user;
+                $this->notification($notification, $user->id, $payment->order->id);
+            }
+
+        } elseif (strtolower($request->status) === 'expired') {
+            $order = $payment->order;
+            if ($order) {
+                $order->status = 'pesanan dibatalkan';
+                $order->status_description = 'Pembayaran gagal atau kadaluwarsa';
+                $order->icon_status = 'ic_status_canceled';
+                $order->save();
+
+                $notification = [
+                    'title' => 'Pembayaran Kadaluarsa',
+                    'body' => "Pembayaran untuk pesanan Anda (ID: {$payment->order->id}) telah kadaluwarsa dan pesanan Anda dibatalkan. Silakan lakukan pemesanan ulang jika Anda masih ingin melanjutkan.",
+                    'route' => 'detail_order_common',
+                    'order_id' => $payment->order->id,
+                ];
+
+                $user = $payment->user;
+                $this->notification($notification, $user->id, $payment->order->id);
+
+                if ($order->voucher_id) {
+                    $userVoucher = UserVoucher::where('user_id', $payment->user_id)
+                        ->where('voucher_id', $order->voucher_id)
+                        ->first();
+
+                    if ($userVoucher) {
+                        $voucher = Voucher::find($order->voucher_id);
+                        if ($voucher) {
+                            $voucher->is_used = false;
+                            $voucher->save();
+                        }
+
+                        $userVoucher->used = false;
+                        $userVoucher->save();
+                    }
                 }
             }
         }
 
-        $notification = [
-            'title' => 'Pembayaran Selesai - Menunggu Konfirmasi',
-            'body' => "Terima kasih telah menyelesaikan pembayaran untuk pesanan Anda (ID: {$payment->order->id}). Pesanan Anda sekarang sedang menunggu konfirmasi dari admin. Kami akan segera memprosesnya dan memberi tahu Anda jika ada pembaruan lebih lanjut.",
-            'route' => 'detail_order_common',
-        ];
-
-        $user = $payment->user;
-        $this->notification($notification, $user->id, $payment->order->id);
-
-    } elseif (strtolower($request->status) === 'expired') {
-        $order = $payment->order;
-        if ($order) {
-            $order->status = 'pesanan dibatalkan';
-            $order->status_description = 'Pembayaran gagal atau kadaluwarsa';
-            $order->icon_status = 'ic_status_canceled';
-            $order->save();
-
-            $notification = [
-                'title' => 'Pembayaran Kadaluarsa',
-                'body' => "Pembayaran untuk pesanan Anda (ID: {$payment->order->id}) telah kadaluwarsa dan pesanan Anda dibatalkan. Silakan lakukan pemesanan ulang jika Anda masih ingin melanjutkan.",
-                'route' => 'detail_order_common',
-            ];
-
-            $user = $payment->user;
-            $this->notification($notification, $user->id, $payment->order->id);
-        }
+        return response()->json(['message' => 'Payment status updated successfully'], 200);
     }
-
-    return response()->json(['message' => 'Payment status updated successfully'], 200);
-}
-
 }

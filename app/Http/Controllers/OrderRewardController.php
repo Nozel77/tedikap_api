@@ -119,7 +119,7 @@ class OrderRewardController extends Controller
         $order->cart_reward_id = $rewardCart->id;
         $order->total_point = $totalPoints;
         $order->status = 'menunggu konfirmasi';
-        $order->status_description = 'mohon segera lakukan pembayaran supaya pesanan Anda dapat diproses';
+        $order->status_description = 'pesanan anda sedang menunggu konfirmasi dari admin';
         $whatsappMessage = urlencode("halo saya ingin tanya tentang pesanan saya dengan id {$order->id}");
         $order->whatsapp = "https://wa.me/62895395343223?text={$whatsappMessage}";
         $order->whatsapp_user = "https://wa.me/62{$user->whatsapp_number}";
@@ -156,7 +156,7 @@ class OrderRewardController extends Controller
             $rewardProduct = RewardProduct::find($rewardCartItem->reward_product_id);
 
             if ($rewardProduct) {
-                if ($rewardProduct->category === 'snack') {
+                if ($rewardProduct->category === 'merchandise') {
                     $temperatur = null;
                     $size = null;
                     $sugar = null;

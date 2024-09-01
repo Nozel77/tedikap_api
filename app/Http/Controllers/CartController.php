@@ -10,7 +10,6 @@ use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
-use App\Models\UserVoucher;
 use App\Models\Voucher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -305,13 +304,21 @@ class CartController extends Controller
             ], 404);
         }
 
-        $userVoucher = UserVoucher::where('user_id', $userId)
-            ->where('voucher_id', $voucher->id)
-            ->first();
+        // Cek jika voucher aktif
+        $currentDate = now();
+        $activeVouchers = Voucher::where('start_date', '<=', $currentDate)
+            ->where('end_date', '>=', $currentDate)
+            ->whereDoesntHave('userVouchers', function ($query) use ($userId) {
+                $query->where('user_id', $userId)
+                    ->where('used', true);
+            })
+            ->get();
 
-        if ($userVoucher && $userVoucher->used) {
+        $isVoucherActive = $activeVouchers->contains('id', $voucher->id);
+
+        if (! $isVoucherActive) {
             return response()->json([
-                'message' => 'Voucher has already been used.',
+                'message' => 'Voucher is not active or not eligible for use.',
             ], 400);
         }
 

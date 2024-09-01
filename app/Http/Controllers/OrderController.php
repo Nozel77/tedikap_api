@@ -114,6 +114,12 @@ class OrderController extends Controller
                 $discountPercentage = $voucher->discount;
                 $discountAmount = ($discountPercentage / 100) * $totalPrice;
                 $totalPrice -= $discountAmount;
+                $userVoucher = UserVoucher::firstOrNew([
+                    'user_id' => $userId,
+                    'voucher_id' => $cart->voucher_id,
+                ]);
+                $userVoucher->used = true;
+                $userVoucher->save();
             }
         }
 
@@ -181,6 +187,9 @@ class OrderController extends Controller
         }
 
         $cart->cartItems()->delete();
+
+        $cart->voucher_id = null;
+        $cart->save();
 
         return response()->json([
             'message' => 'Order placed successfully.',
