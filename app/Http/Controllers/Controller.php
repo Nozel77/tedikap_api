@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SessionTime;
-use App\Models\StatusStore;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -70,62 +68,5 @@ class Controller extends BaseController
         } else {
             return 'Toko Sedang Tutup :)';
         }
-    }
-
-    public function getStoreStatus()
-    {
-        $status = StatusStore::first();
-
-        if (! $status) {
-            return [
-                'status_store' => false,
-                'description' => 'Status Tidak Ada',
-                'session' => 'Toko Sedang Tutup',
-                'time' => null,
-                'greetings' => 'Selamat Malam',
-            ];
-        }
-
-        $now = Carbon::now('Asia/Jakarta')->format('H:i');
-        $hour = Carbon::now('Asia/Jakarta')->format('H');
-        $greetings = ($hour >= 5 && $hour < 12) ? 'Selamat Pagi' : (($hour >= 12 && $hour < 18) ? 'Selamat Siang' : 'Selamat Malam');
-
-        if ($now > '14:00' && $status->open) {
-            $status->open = false;
-            $status->save();
-        }
-
-        $session = 'Toko Sedang Tutup';
-        $time = null;
-        $description = 'Toko Sedang Tutup';
-
-        if ($status->open) {
-            [$session, $time, $description] = $this->determineSessionAndStock($now);
-        }
-
-        return [
-            'status_store' => $status->open,
-            'description' => $description,
-            'session' => $session,
-            'time' => $time,
-            'greetings' => $greetings,
-        ];
-    }
-
-    private function determineSessionAndStock($now)
-    {
-        $sessionTimes = SessionTime::all();
-
-        foreach ($sessionTimes as $session) {
-            if ($now >= $session->start_time && $now <= $session->end_time) {
-                return [
-                    $session->session_name,
-                    "{$session->start_time}-{$session->end_time}",
-                    "Toko Buka Untuk {$session->session_name}",
-                ];
-            }
-        }
-
-        return ['Toko Sedang Tutup', null, 'Toko Sedang Tutup'];
     }
 }

@@ -10,6 +10,8 @@ use App\Models\CartReward;
 use App\Models\CartRewardItem;
 use App\Models\Point;
 use App\Models\RewardProduct;
+use App\Models\SessionTime;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,7 +26,14 @@ class CartRewardController extends Controller
 
         $isPhone = ! empty($user->whatsapp_number);
 
-        $storeStatus = $this->getStoreStatus();
+        $session1 = SessionTime::find(1);
+        $session2 = SessionTime::find(2);
+
+        $session1Time = $session1 ? Carbon::parse($session1->start_time)->format('H:i').'-'.Carbon::parse($session1->end_time)->format('H:i') : null;
+        $session2Time = $session2 ? Carbon::parse($session2->start_time)->format('H:i').'-'.Carbon::parse($session2->end_time)->format('H:i') : null;
+
+        $endOrderSession1 = $session1 ? Carbon::parse($session1->end_time)->subMinutes(20)->format('H:i') : null;
+        $endOrderSession2 = $session2 ? Carbon::parse($session2->end_time)->subMinutes(20)->format('H:i') : null;
 
         if (! $cart) {
             return response()->json([
@@ -33,10 +42,10 @@ class CartRewardController extends Controller
                     'user_id' => $user_id,
                     'total_points' => 0,
                     'schedule_pickup' => $this->getSchedulePickup(),
-                    'session' => $storeStatus['session'],
-                    'time' => $storeStatus['time'],
-                    'endSession_1' => '9.20',
-                    'endSession_2' => '11.40',
+                    'session_1' => $session1Time, // Mengambil waktu sesi 1
+                    'session_2' => $session2Time, // Mengambil waktu sesi 2
+                    'endOrderSession_1' => $endOrderSession1, // Mengambil end time sesi 1 dikurangi 20 menit
+                    'endOrderSession_2' => $endOrderSession2,
                     'points_enough' => false,
                     'is_phone' => $isPhone,
                     'cart_items' => [],

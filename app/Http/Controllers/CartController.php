@@ -10,7 +10,9 @@ use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\SessionTime;
 use App\Models\Voucher;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +28,14 @@ class CartController extends Controller
 
         $isPhone = ! empty($user->whatsapp_number);
 
-        $storeStatus = $this->getStoreStatus();
+        $session1 = SessionTime::find(1);
+        $session2 = SessionTime::find(2);
+
+        $session1Time = $session1 ? Carbon::parse($session1->start_time)->format('H:i').'-'.Carbon::parse($session1->end_time)->format('H:i') : null;
+        $session2Time = $session2 ? Carbon::parse($session2->start_time)->format('H:i').'-'.Carbon::parse($session2->end_time)->format('H:i') : null;
+
+        $endOrderSession1 = $session1 ? Carbon::parse($session1->end_time)->subMinutes(20)->format('H:i') : null;
+        $endOrderSession2 = $session2 ? Carbon::parse($session2->end_time)->subMinutes(20)->format('H:i') : null;
 
         if (! $cart) {
             return response()->json([
@@ -39,8 +48,10 @@ class CartController extends Controller
                     'original_price' => 0,
                     'reward_point' => 0,
                     'schedule_pickup' => $this->getSchedulePickup(),
-                    'session' => $storeStatus['session'],
-                    'time' => $storeStatus['time'],
+                    'session_1' => $session1Time,
+                    'session_2' => $session2Time,
+                    'endOrderSession_1' => $endOrderSession1,
+                    'endOrderSession_2' => $endOrderSession2,
                     'is_phone' => $isPhone,
                     'cart_items' => [],
                 ],
@@ -65,11 +76,9 @@ class CartController extends Controller
                         $discount_amount = $voucher->max_discount;
                     }
                 } else {
-                    // Jika harga total tidak memenuhi persyaratan min_transaction, ubah status is_used menjadi false
                     $voucher->is_used = false;
                     $voucher->save();
 
-                    // Hapus voucher dari keranjang
                     $cart->voucher_id = null;
                     $cart->save();
                 }
