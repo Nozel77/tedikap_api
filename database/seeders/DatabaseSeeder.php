@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             BannerSeeder::class,
             BoxPromoSeeder::class,
             HelpCenterSeeder::class,
+            SessionTimesSeeder::class,
             // OrderSeeder::class,
         ]);
     }
