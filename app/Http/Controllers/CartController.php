@@ -19,6 +19,12 @@ use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
+    protected $statusStoreService;
+
+    public function __construct(StatusStoreController $statusStoreService)
+    {
+        $this->statusStoreService = $statusStoreService;
+    }
     public function showCartByUser(): JsonResponse
     {
         $user_id = Auth::id();
@@ -37,6 +43,8 @@ class CartController extends Controller
         $endOrderSession1 = $session1 ? Carbon::parse($session1->end_time)->subMinutes(20)->format('H:i') : null;
         $endOrderSession2 = $session2 ? Carbon::parse($session2->end_time)->subMinutes(20)->format('H:i') : null;
 
+        $schedulePickup = $this->statusStoreService->storeStatus()->getData()->data->time ?? 'Toko Sedang Tutup';
+
         if (! $cart) {
             return response()->json([
                 'cart' => [
@@ -47,7 +55,7 @@ class CartController extends Controller
                     'discount_amount' => 0,
                     'original_price' => 0,
                     'reward_point' => 0,
-                    'schedule_pickup' => $this->getSchedulePickup(),
+                    'schedule_pickup' => $schedulePickup,
                     'session_1' => $session1Time,
                     'session_2' => $session2Time,
                     'endOrderSession_1' => $endOrderSession1,
@@ -92,14 +100,16 @@ class CartController extends Controller
             return new CartItemResource($cart_item);
         });
 
-        $schedulePickup = $this->getSchedulePickup();
-
         $cart->cartItems = $cart_items_array;
         $cart->total_price = max(0, $total_price_after_discount);
         $cart->discount_amount = $discount_amount;
         $cart->original_price = $original_price;
         $cart->schedule_pickup = $schedulePickup;
         $cart->is_phone = $isPhone;
+        $cart->session_1 = $session1Time;
+        $cart->session_2 = $session2Time;
+        $cart->endSession_1 = $endOrderSession1;
+        $cart->endSession_2 = $endOrderSession2;
 
         return response()->json([
             'cart' => (new CartResource($cart)),
@@ -136,7 +146,7 @@ class CartController extends Controller
 
         $cart = Cart::all()->where('user_id', $userId)->first();
 
-        $schedulePickup = $this->getSchedulePickup();
+        $schedulePickup = $this->statusStoreService->storeStatus()->getData()->data->time ?? 'Toko Sedang Tutup';
 
         if ($cart) {
             return $this->addCartItem($cart->id, $request);
