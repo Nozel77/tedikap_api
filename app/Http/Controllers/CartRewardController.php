@@ -17,6 +17,12 @@ use Illuminate\Support\Facades\Auth;
 
 class CartRewardController extends Controller
 {
+    protected $statusStoreService;
+
+    public function __construct(StatusStoreController $statusStoreService)
+    {
+        $this->statusStoreService = $statusStoreService;
+    }
     public function showCartByUser()
     {
         $user_id = Auth::id();
@@ -35,16 +41,18 @@ class CartRewardController extends Controller
         $endOrderSession1 = $session1 ? Carbon::parse($session1->end_time)->subMinutes(20)->format('H:i') : null;
         $endOrderSession2 = $session2 ? Carbon::parse($session2->end_time)->subMinutes(20)->format('H:i') : null;
 
+        $schedulePickup = $this->statusStoreService->storeStatus()->getData()->data->time ?? 'Toko Sedang Tutup';
+
         if (! $cart) {
             return response()->json([
                 'cart' => [
                     'id' => null,
                     'user_id' => $user_id,
                     'total_points' => 0,
-                    'schedule_pickup' => $this->getSchedulePickup(),
-                    'session_1' => $session1Time, // Mengambil waktu sesi 1
-                    'session_2' => $session2Time, // Mengambil waktu sesi 2
-                    'endOrderSession_1' => $endOrderSession1, // Mengambil end time sesi 1 dikurangi 20 menit
+                    'schedule_pickup' => $schedulePickup,
+                    'session_1' => $session1Time,
+                    'session_2' => $session2Time,
+                    'endOrderSession_1' => $endOrderSession1,
                     'endOrderSession_2' => $endOrderSession2,
                     'points_enough' => false,
                     'is_phone' => $isPhone,
@@ -66,13 +74,15 @@ class CartRewardController extends Controller
             return new CartRewardItemResource($cart_item);
         });
 
-        $schedulePickup = $this->getSchedulePickup();
-
         $cart->cartItems = $cart_items_array;
         $cart->schedule_pickup = $schedulePickup;
         $cart->total_points = $total_points;
         $cart->points_enough = $pointsEnough;
         $cart->is_phone = $isPhone;
+        $cart->session_1 = $session1Time;
+        $cart->session_2 = $session2Time;
+        $cart->endSession_1 = $endOrderSession1;
+        $cart->endSession_2 = $endOrderSession2;
 
         return response()->json([
             'cart' => new CartRewardResource($cart),
@@ -104,7 +114,7 @@ class CartRewardController extends Controller
 
         $cart = CartReward::where('user_id', $userId)->first();
 
-        $schedulePickup = $this->getSchedulePickup();
+        $schedulePickup = $this->statusStoreService->storeStatus()->getData()->data->time ?? 'Toko Sedang Tutup';
 
         if ($cart) {
             return $this->addCartItem($cart->id, $request);
