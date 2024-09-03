@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             BoxPromoSeeder::class,
             HelpCenterSeeder::class,
             SessionTimesSeeder::class,
+            PointConfigurationSeeder::class,
             // OrderSeeder::class,
         ]);
     }

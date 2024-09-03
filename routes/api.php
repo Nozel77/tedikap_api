@@ -98,6 +98,8 @@ Route::prefix('cart-reward')->group(function () {
 Route::prefix('point')->group(function () {
     Route::get('/', [PointController::class, 'index'])->middleware('auth:sanctum');
     Route::post('/add', [PointController::class, 'addPoints'])->middleware('auth:sanctum');
+    Route::get('/configuration', [\App\Http\Controllers\PointConfigurationController::class, 'index'])->middleware('auth:sanctum', 'admin');
+    Route::put('/update-configuration/{id}', [\App\Http\Controllers\PointConfigurationController::class, 'update'])->middleware('auth:sanctum', 'admin');
 });
 
 Route::prefix('reward-product')->group(function () {

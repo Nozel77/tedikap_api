@@ -23,6 +23,7 @@ class CartRewardController extends Controller
     {
         $this->statusStoreService = $statusStoreService;
     }
+
     public function showCartByUser()
     {
         $user_id = Auth::id();

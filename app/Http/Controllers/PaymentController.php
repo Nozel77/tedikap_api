@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Point;
+use App\Models\PointConfiguration;
 use App\Models\User;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
@@ -125,8 +126,12 @@ class PaymentController extends Controller
         $payment->save();
 
         if (strtolower($request->status) === 'paid') {
-            $additionalPoints = floor($payment->amount / 3000);
-            $additionalPoints += ($payment->amount % 3000 == 0) ? 0 : 1;
+            $pointConfig = PointConfiguration::all()->first;
+            $minimumAmount = $pointConfig->minimum_amount;
+            $collectPoint = $pointConfig->collect_point;
+
+            $additionalPoints = floor($payment->amount / $minimumAmount) * $collectPoint;
+            $additionalPoints += ($payment->amount % $minimumAmount == 0) ? 0 : $collectPoint;
 
             if ($additionalPoints > 0) {
                 $point = Point::firstOrCreate(['user_id' => $payment->user_id]);
