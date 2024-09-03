@@ -2,10 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\RewardProduct;
-use App\Models\SessionTime;
-use App\Models\StatusStore;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -60,4 +56,17 @@ class Controller extends BaseController
     {
         return response(['message' => 'Data Deleted'], 200);
     }
+
+    //    public function getSchedulePickup()
+    //    {
+    //        $now = Carbon::now('Asia/Jakarta')->format('H:i');
+    //
+    //        if ($now >= '07:00' && $now <= '09:20') {
+    //            return '09:40-10:00';
+    //        } elseif ($now > '09:20' && $now <= '11:40') {
+    //            return '12:00-12:30';
+    //        } else {
+    //            return 'Toko Sedang Tutup :)';
+    //        }
+    //    }
 }

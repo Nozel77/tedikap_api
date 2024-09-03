@@ -9,6 +9,7 @@ use App\Http\Resources\CartItemResource;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\PointConfiguration;
 use App\Models\Product;
 use App\Models\SessionTime;
 use App\Models\Voucher;
@@ -25,6 +26,7 @@ class CartController extends Controller
     {
         $this->statusStoreService = $statusStoreService;
     }
+
     public function showCartByUser(): JsonResponse
     {
         $user_id = Auth::id();
@@ -100,11 +102,27 @@ class CartController extends Controller
             return new CartItemResource($cart_item);
         });
 
+        $totalPrice = $this->cartItems->sum(function ($cartItem) {
+            return $cartItem->quantity * $cartItem->price;
+        });
+
+        $pointConfig = PointConfiguration::all()->first();
+        $minimumAmount = $pointConfig->minimum_amount;
+        $collectPoint = $pointConfig->collect_point;
+
+        if ($totalPrice >= $minimumAmount) {
+            $rewardPoint = floor($totalPrice / $minimumAmount);
+            $rewardPoint += ($totalPrice % $minimumAmount == 0) ? 0 : $collectPoint;
+        } else {
+            $rewardPoint = 0;
+        }
+
         $cart->cartItems = $cart_items_array;
         $cart->total_price = max(0, $total_price_after_discount);
         $cart->discount_amount = $discount_amount;
         $cart->original_price = $original_price;
         $cart->schedule_pickup = $schedulePickup;
+        $cart->reward_point = $rewardPoint;
         $cart->is_phone = $isPhone;
         $cart->session_1 = $session1Time;
         $cart->session_2 = $session2Time;

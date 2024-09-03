@@ -20,6 +20,13 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class OrderRewardController extends Controller
 {
+    protected $statusStoreService;
+
+    public function __construct(StatusStoreController $statusStoreService)
+    {
+        $this->statusStoreService = $statusStoreService;
+    }
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -64,7 +71,7 @@ class OrderRewardController extends Controller
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
             $time = $createdAt->format('H:i');
 
-            $pickupTime = $this->getSchedulePickup($time);
+            $pickupTime = $this->statusStoreService->storeStatus()->getData($time)->data->time;
 
             $order->schedule_pickup = $pickupTime;
 
@@ -131,7 +138,7 @@ class OrderRewardController extends Controller
         $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
         $time = $createdAt->format('H:i');
 
-        $pickupTime = $this->getSchedulePickup($time);
+        $pickupTime = $this->statusStoreService->storeStatus()->getData($time)->data->time;
 
         $order->schedule_pickup = $pickupTime;
         $order->save();
@@ -207,7 +214,7 @@ class OrderRewardController extends Controller
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
             $time = $createdAt->format('H:i');
 
-            $pickupTime = $this->getSchedulePickup($time);
+            $pickupTime = $this->statusStoreService->storeStatus()->getData($time)->data->time;
 
             $order->schedule_pickup = $pickupTime;
         }

@@ -9,6 +9,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PointConfiguration;
 use App\Models\Product;
 use App\Models\UserVoucher;
 use App\Models\Voucher;
@@ -20,6 +21,13 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class OrderController extends Controller
 {
+    protected $statusStoreService;
+
+    public function __construct(StatusStoreController $statusStoreService)
+    {
+        $this->statusStoreService = $statusStoreService;
+    }
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -64,7 +72,7 @@ class OrderController extends Controller
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
             $time = $createdAt->format('H:i');
 
-            $order->schedule_pickup = $this->getSchedulePickup($time);
+            $order->schedule_pickup = $this->statusStoreService->storeStatus()->getData($time)->data->time;
 
             if ($order->payment) {
                 $order->payment_channel = $order->payment->payment_channel;
@@ -123,8 +131,12 @@ class OrderController extends Controller
             }
         }
 
-        $additionalPoints = floor($totalPrice / 3000);
-        $additionalPoints += ($totalPrice % 3000 == 0) ? 0 : 1;
+        $pointConfig = PointConfiguration::all()->first;
+        $minimumAmount = $pointConfig->minimum_amount ?? 5000;
+        $collectPoint = $pointConfig->collect_point ?? 1000;
+
+        $additionalPoints = floor($totalPrice / $minimumAmount);
+        $additionalPoints += ($totalPrice % $minimumAmount == 0) ? 0 : $collectPoint;
 
         $order = new Order();
         $order->id = $this->generateCustomUUID();
@@ -146,7 +158,7 @@ class OrderController extends Controller
 
         $createdAt = now()->setTimezone('Asia/Jakarta');
         $time = $createdAt->format('H:i');
-        $pickupTime = $this->getSchedulePickup($time);
+        $pickupTime = $this->statusStoreService->storeStatus()->getData($time)->data->time;
 
         $order->schedule_pickup = $pickupTime;
         $order->save();

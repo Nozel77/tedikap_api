@@ -12,62 +12,64 @@ use Illuminate\Http\Request;
 
 class StatusStoreController extends Controller
 {
-    public function storeStatus() : JsonResponse
-{
-    $status = StatusStore::all()->first();
+    public function storeStatus(): JsonResponse
+    {
+        $status = StatusStore::all()->first();
 
-    //error handling jika status tidak ada
-    if (! $status) {
-        return response()->json(['message' => 'Status Tidak Ada'], 404);
-    }
+        //error handling jika status tidak ada
+        if (! $status) {
+            return response()->json(['message' => 'Status Tidak Ada'], 404);
+        }
 
-    // mengambil waktu sekarang
-    $now = Carbon::now('Asia/Jakarta')->format('H:i');
+        // mengambil waktu sekarang
+        $now = Carbon::now('Asia/Jakarta')->format('H:i');
 
-    // menentukan waktu pagi, siang, atau malam
-    $hour = Carbon::now('Asia/Jakarta')->format('H');
-    $greetings = ($hour >= 5 && $hour < 12) ? 'Selamat Pagi' : (($hour >= 12 && $hour < 18) ? 'Selamat Siang' : 'Selamat Malam');
+        // menentukan waktu pagi, siang, atau malam
+        $hour = Carbon::now('Asia/Jakarta')->format('H');
+        $greetings = ($hour >= 5 && $hour < 12) ? 'Selamat Pagi' : (($hour >= 12 && $hour < 18) ? 'Selamat Siang' : 'Selamat Malam');
 
-    // buka toko otomatis ketika jam 07.00
-    if ($now >= '07:00' && ! $status->open) {
-        $status->open = true;
-        $status->save();
-    }
+        // buka toko otomatis ketika jam 07.00
+        if ($now >= '07:00' && ! $status->open) {
+            $status->open = true;
+            $status->save();
+        }
 
-    // tutup toko otomatis jam 16:00
-    if ($now > '17:00' && $status->open) {
-        $status->open = false;
+        // tutup toko otomatis jam 16:00
+        if ($now > '17:00' && $status->open) {
+            $status->open = false;
+            $this->updateProductStock($status->open);
+            $status->save();
+        }
+
+        // jika toko tutup
+        if (! $status->open) {
+            $session = 'Toko Sedang Tutup';
+            $time = 'Toko akan buka besok';
+            $description = 'Toko Sedang Tutup';
+        } else {
+            [$session, $time, $description] = $this->determineSessionAndStock($now);
+        }
+
         $this->updateProductStock($status->open);
-        $status->save();
+
+        return response()->json([
+            'data' => [
+                'status_store' => $status->open,
+                'description' => $description,
+                'session' => $session,
+                'time' => $time,
+                'greetings' => $greetings,
+            ],
+        ]);
     }
 
-    // jika toko tutup
-    if (! $status->open) {
-        $session = 'Toko Sedang Tutup';
-        $time = 'Toko akan buka besok';
-        $description = 'Toko Sedang Tutup';
-    } else {
-        [$session, $time, $description] = $this->determineSessionAndStock($now);
-    }
-
-    $this->updateProductStock($status->open);
-
-    return response()->json([
-        'data' => [
-            'status_store' => $status->open,
-            'description' => $description,
-            'session' => $session,
-            'time' => $time,
-            'greetings' => $greetings,
-        ],
-    ]);
-}
     public function getSessionTimes()
     {
         $sessionTimes = SessionTime::all();
 
         return response()->json(['session_times' => $sessionTimes], 200);
     }
+
     public function updateSessionTimes(Request $request)
     {
         $request->validate([
@@ -86,7 +88,8 @@ class StatusStoreController extends Controller
 
         return response()->json(['message' => 'Waktu sesi berhasil diubah'], 200);
     }
-    public function determineSessionAndStock($now) : array
+
+    public function determineSessionAndStock($now): array
     {
         $sessionTimes = SessionTime::all();
 
@@ -105,11 +108,13 @@ class StatusStoreController extends Controller
 
         return ['Toko Sedang Tutup', 'Toko Sedang Tutup', 'Toko Sedang Tutup'];
     }
-    private function updateProductStock($isOpen) : void
+
+    private function updateProductStock($isOpen): void
     {
         Product::where('stock', ! $isOpen)->update(['stock' => $isOpen]);
         RewardProduct::where('stock', ! $isOpen)->update(['stock' => $isOpen]);
     }
+
     public function updateStoreStatus()
     {
         $status = StatusStore::first();
