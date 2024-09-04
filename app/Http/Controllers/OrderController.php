@@ -71,8 +71,9 @@ class OrderController extends Controller
         $orders = $orders->map(function ($order) {
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
             $time = $createdAt->format('H:i');
-
-            $order->schedule_pickup = $this->statusStoreService->storeStatus()->getData($time)->data->time;
+            $storeStatusData = $this->statusStoreService->storeStatus()->getData($time);
+            $pickupTime = $storeStatusData['data']['time'] ?? 'Default Time';
+            $order->schedule_pickup = $pickupTime;
 
             if ($order->payment) {
                 $order->payment_channel = $order->payment->payment_channel;
@@ -131,7 +132,7 @@ class OrderController extends Controller
             }
         }
 
-        $pointConfig = PointConfiguration::all()->first;
+        $pointConfig = PointConfiguration::all()->first();
         $minimumAmount = $pointConfig->minimum_amount ?? 5000;
         $collectPoint = $pointConfig->collect_point ?? 1000;
 
@@ -158,7 +159,9 @@ class OrderController extends Controller
 
         $createdAt = now()->setTimezone('Asia/Jakarta');
         $time = $createdAt->format('H:i');
-        $pickupTime = $this->statusStoreService->storeStatus()->getData($time)->data->time;
+        $storeStatusData = $this->statusStoreService->storeStatus()->getData($time);
+
+        $pickupTime = $storeStatusData['data']['time'] ?? 'Default Time';
 
         $order->schedule_pickup = $pickupTime;
         $order->save();

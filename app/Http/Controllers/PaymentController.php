@@ -126,7 +126,7 @@ class PaymentController extends Controller
         $payment->save();
 
         if (strtolower($request->status) === 'paid') {
-            $pointConfig = PointConfiguration::all()->first;
+            $pointConfig = PointConfiguration::all()->first();
             $minimumAmount = $pointConfig->minimum_amount;
             $collectPoint = $pointConfig->collect_point;
 

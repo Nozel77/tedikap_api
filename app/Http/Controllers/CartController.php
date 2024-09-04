@@ -102,9 +102,10 @@ class CartController extends Controller
             return new CartItemResource($cart_item);
         });
 
-        $totalPrice = $this->cartItems->sum(function ($cartItem) {
+        $totalPrice = $cart_items->sum(function ($cartItem) {
             return $cartItem->quantity * $cartItem->price;
         });
+
 
         $pointConfig = PointConfiguration::all()->first();
         $minimumAmount = $pointConfig->minimum_amount;
