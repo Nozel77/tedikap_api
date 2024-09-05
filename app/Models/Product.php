@@ -14,6 +14,8 @@ class Product extends Model
         'description',
         'regular_price',
         'large_price',
+        'original_regular_price',
+        'original_large_price',
         'category',
         'image',
     ];
@@ -30,5 +32,20 @@ class Product extends Model
     public function getFavoritesCountAttribute()
     {
         return $this->favorites()->count();
+    }
+
+    public function promos()
+    {
+        return $this->belongsToMany(Promo::class, 'product_promotion');
+    }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'order_product');
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'product_id');
     }
 }

@@ -23,7 +23,7 @@ class AdminController extends Controller
             'new order' => 'menunggu konfirmasi',
             'proccess' => 'pesanan diproses',
             'taken' => 'pesanan siap diambil',
-            'done' => 'pesanan selesai',
+            'done' => 'pesanan selesai', 'pesanan dibatalkan', 'pesanan ditolak',
         ];
 
         $orders = collect();

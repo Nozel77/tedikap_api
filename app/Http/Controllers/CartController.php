@@ -106,7 +106,6 @@ class CartController extends Controller
             return $cartItem->quantity * $cartItem->price;
         });
 
-
         $pointConfig = PointConfiguration::all()->first();
         $minimumAmount = $pointConfig->minimum_amount;
         $collectPoint = $pointConfig->collect_point;
