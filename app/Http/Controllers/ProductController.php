@@ -10,6 +10,7 @@ use App\Models\Favorite;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -169,6 +170,15 @@ class ProductController extends Controller
         $product = Product::withCount('favorites')->orderBy('favorites_count', 'desc')->take(10)->get();
 
         return ProductResource::collection($product);
+    }
+
+    public function mostSoldProduct()
+    {
+        $products = Product::withCount(['orderItems as total_sold' => function ($query) {
+            $query->select(DB::raw('SUM(quantity)'));
+        }])->orderBy('total_sold', 'desc')->take(10)->get();
+
+        return ProductResource::collection($products);
     }
 
     public function updateStatusStock(Request $request, $id)

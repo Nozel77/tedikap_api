@@ -10,6 +10,7 @@ use App\Models\CartRewardItem;
 use App\Models\OrderReward;
 use App\Models\OrderRewardItem;
 use App\Models\Point;
+use App\Models\PointTransaction;
 use App\Models\RewardProduct;
 use App\Models\User;
 use Carbon\Carbon;
@@ -71,7 +72,8 @@ class OrderRewardController extends Controller
             $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
             $time = $createdAt->format('H:i');
 
-            $pickupTime = $this->statusStoreService->storeStatus()->getData($time)->data->time;
+            $storeStatusData = $this->statusStoreService->storeStatus()->getData($time);
+            $pickupTime = $storeStatusData['data']['time'] ?? 'Default Time';
 
             $order->schedule_pickup = $pickupTime;
 
@@ -120,6 +122,12 @@ class OrderRewardController extends Controller
         $remainingPoints = $userPoints - $totalPoints;
         Point::where('user_id', $userId)->update(['point' => $remainingPoints]);
 
+        PointTransaction::create([
+            'user_id' => $userId,
+            'points' => $totalPoints,
+            'type' => 'used',
+        ]);
+
         $order = new OrderReward();
         $order->id = $this->generateCustomUUID();
         $order->user_id = $userId;
@@ -137,8 +145,8 @@ class OrderRewardController extends Controller
 
         $createdAt = $order->created_at->setTimezone('Asia/Jakarta');
         $time = $createdAt->format('H:i');
-
-        $pickupTime = $this->statusStoreService->storeStatus()->getData($time)->data->time;
+        $storeStatusData = $this->statusStoreService->storeStatus()->getData($time);
+        $pickupTime = $storeStatusData['data']['time'] ?? 'Default Time';
 
         $order->schedule_pickup = $pickupTime;
         $order->save();
